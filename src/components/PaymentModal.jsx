@@ -273,7 +273,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
                 To'lov Cheki Muvaffaqiyatli Yuborildi!
               </h4>
               <p className="text-xs text-gray-600 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
-                Sizning {plans[selectedPlan]?.name} to'lov chekingiz qabul qilindi. Tez orada admin kartaga pul tushganini tekshirib tasdiqlaydi (odatda 5-15 daqiqa). Tasdiqlangach sizga shaxsiy bildirishnoma boradi va Telegram guruh ochiladi.
+                Sizning {plans[selectedPlan]?.name} to'lov chekingiz qabul qilindi. Tez orada admin kartaga pul tushganini tekshirib tasdiqlaydi (odatda 1 soatdan - 2 soatgacha). Tasdiqlangach sizga shaxsiy bildirishnoma boradi va Telegram guruh ochiladi.
               </p>
               <button
                 onClick={handleReset}

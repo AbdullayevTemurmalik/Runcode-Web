@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -31,8 +31,11 @@ const ProtectedRoute = ({ children }) => {
 
 const AppContent = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('1_month');
+
+  const isCheckout = location.pathname.startsWith('/checkout') || location.pathname.startsWith('/payment');
 
   // Butun platforma bo'ylab nusxa olish va screenshotga qarshi global qalqon
   const { isPrtScnTriggered, warningMessage } = useSecurityShield({
@@ -47,7 +50,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900 dark:bg-[#0b0f19] dark:text-gray-100 transition-colors protected-container">
+    <div className={`flex flex-col ${isCheckout ? 'h-screen max-h-screen overflow-hidden' : 'min-h-screen'} bg-gray-50 text-gray-900 dark:bg-[#0b0f19] dark:text-gray-100 transition-colors protected-container`}>
       <SecurityCurtain 
         isPrtScnTriggered={isPrtScnTriggered} 
         isWindowBlurred={false} 
@@ -56,7 +59,7 @@ const AppContent = () => {
       <ScrollToTop />
       <Navbar onOpenPaymentModal={handleOpenPayment} />
 
-      <main className="flex-1 pb-24 md:pb-0">
+      <main className={`flex-1 ${isCheckout ? 'overflow-hidden flex flex-col' : 'pb-24 md:pb-0'}`}>
         <Routes>
           <Route path="/" element={<HomePage onOpenPaymentModal={handleOpenPayment} />} />
           <Route path="/tariffs" element={<TariffsPage onOpenPaymentModal={handleOpenPayment} />} />
@@ -112,8 +115,8 @@ const AppContent = () => {
         </Routes>
       </main>
 
-      <Footer />
-      <MobileBottomBar />
+      {!isCheckout && <Footer />}
+      {!isCheckout && <MobileBottomBar />}
 
       <PaymentModal
         isOpen={isPaymentModalOpen}
