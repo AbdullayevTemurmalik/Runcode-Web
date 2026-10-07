@@ -40,9 +40,9 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
   const [error, setError] = useState(null);
 
   const [plans, setPlans] = useState({
-    '1_month': { name: '1 Oylik Kirish', price: '50 000 so\'m', amount: 50000 },
-    '2_months': { name: '2 Oylik Kirish', price: '90 000 so\'m', amount: 90000, recommended: true },
-    '3_months': { name: '3 Oylik Kirish', price: '120 000 so\'m', amount: 120000 }
+    '1_month': { name: 'Plus (1 Oylik)', price: '50 000 so\'m', amount: 50000 },
+    '2_months': { name: 'Pro (2 Oylik)', price: '90 000 so\'m', amount: 90000, recommended: true },
+    '3_months': { name: 'Ultra (3 Oylik)', price: '120 000 so\'m', amount: 120000 }
   });
 
   const [cardInfo, setCardInfo] = useState({
@@ -54,7 +54,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
   });
 
   useEffect(() => {
-    if (initialPlan) {
+    if (initialPlan && initialPlan !== 'free') {
       setSelectedPlan(initialPlan);
     }
   }, [initialPlan]);
@@ -84,7 +84,22 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
       try {
         const res = await api.get('/payments/config');
         if (res.success) {
-          if (res.plans) setPlans(res.plans);
+          if (res.plans) {
+            const paidPlans = {};
+            for (const [k, v] of Object.entries(res.plans)) {
+              if (k !== 'free' && !v.isFree) {
+                paidPlans[k] = {
+                  name: k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro (2 Oylik)' : 'Plus (1 Oylik)',
+                  price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : '50 000 so\'m'),
+                  amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 90000 : 50000),
+                  recommended: k === '2_months'
+                };
+              }
+            }
+            if (Object.keys(paidPlans).length > 0) {
+              setPlans(paidPlans);
+            }
+          }
           if (res.cardDetails) {
             setCardInfo({
               number: res.cardDetails.cardNumber,
@@ -284,13 +299,18 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
                       onClick={() => setSelectedPlan(key)}
                       className={`p-3 rounded-2xl border text-center relative transition-all cursor-pointer ${
                         selectedPlan === key
-                          ? 'border-brand-500 bg-brand-500/5 ring-2 ring-brand-500/20'
+                          ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/30 shadow-md scale-[1.02]'
                           : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
                       }`}
                     >
                       {plan.recommended && (
-                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-brand-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-brand-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                           Tavsiya
+                        </span>
+                      )}
+                      {key === '3_months' && (
+                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                          Super Tejam
                         </span>
                       )}
                       <p className="text-xs font-bold text-gray-900 dark:text-white">{plan.name}</p>
@@ -406,10 +426,16 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
 
               {/* Karta ma'lumotlari */}
               <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 space-y-3">
+                <div className="flex items-center justify-between text-xs text-gray-500 pb-2 border-b border-gray-200/60 dark:border-gray-700/60">
+                  <span className="font-semibold">Tanlangan tarif:</span>
+                  <span className="font-bold text-xs text-brand-600 dark:text-brand-400">
+                    {plans[selectedPlan]?.name || (selectedPlan === '3_months' ? 'Ultra (3 Oylik)' : selectedPlan === '2_months' ? 'Pro (2 Oylik)' : 'Plus (1 Oylik)')}
+                  </span>
+                </div>
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>To'lov miqdori:</span>
                   <span className="font-bold text-sm text-gray-900 dark:text-white">
-                    {(plans[selectedPlan]?.amount || 50000).toLocaleString()} so'm
+                    {(plans[selectedPlan]?.amount || (selectedPlan === '3_months' ? 120000 : selectedPlan === '2_months' ? 90000 : 50000)).toLocaleString()} so'm
                   </span>
                 </div>
                 

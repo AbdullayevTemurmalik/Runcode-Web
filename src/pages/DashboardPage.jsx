@@ -33,7 +33,7 @@ import { CustomInput } from '../components/CustomInput';
 import { CustomDatePicker } from '../components/CustomDatePicker';
 
 export const DashboardPage = ({ onOpenPaymentModal }) => {
-  const { user, hasSubscription, updateUser, logout } = useAuth();
+  const { user, hasSubscription, updateUser, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
@@ -126,6 +126,9 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        if (typeof refreshUser === 'function') {
+          await refreshUser();
+        }
         const orderRes = await api.get('/payments/my-orders');
         if (orderRes && orderRes.success) setOrders(orderRes.orders || []);
       } catch (err) {
