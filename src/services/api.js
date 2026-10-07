@@ -29,6 +29,15 @@ api.interceptors.response.use(
         })
       );
     }
+    if (error.response?.data?.code === 'INACTIVITY_TIMEOUT') {
+      window.dispatchEvent(
+        new CustomEvent('runcode:inactivity_timeout', {
+          detail: {
+            message: error.response.data.message || '5 kun davomida kirmaganingiz sababli login va parol orqali qayta kiring.'
+          }
+        })
+      );
+    }
     const message = error.response?.data?.message || 'Kutilmagan xatolik yuz berdi';
     const customError = new Error(message);
     customError.code = error.response?.data?.code;

@@ -176,6 +176,21 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
   };
 
   const getSubscriptionTierInfo = (subscription) => {
+    if (user?.role === 'admin' && (!subscription || !subscription.is_active)) {
+      return {
+        tier: 'Ultra',
+        title: 'Admin Status',
+        label: 'Tizim Ma\'muri (Cheksiz Kirish)',
+        badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+        textColor: 'text-amber-400',
+        accentBg: 'bg-amber-500/15 text-amber-400',
+        borderGlow: 'border-amber-500/40 shadow-amber-500/10',
+        icon: Crown,
+        durationDays: 999,
+        description: 'Barcha platforma kurslari va resurslariga cheksiz ma\'muriy ruxsat'
+      };
+    }
+
     if (!subscription || !subscription.is_active) {
       return {
         tier: 'Free',

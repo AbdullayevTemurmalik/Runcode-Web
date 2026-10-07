@@ -26,8 +26,8 @@ export const LoginPage = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [successBanner, setSuccessBanner] = useState(location.state?.message || null);
+  const queryMessage = new URLSearchParams(location.search).get('message');
+  const [successBanner, setSuccessBanner] = useState(location.state?.message || queryMessage || null);
 
   // Parolni unutdingizmi modal holatlari
   const [showForgotModal, setShowForgotModal] = useState(false);

@@ -412,20 +412,35 @@ export const CheckoutPage = () => {
                         setIsStarted(false);
                       }
                     }}
-                    className={`p-4 rounded-2xl border flex items-center space-x-3.5 transition-all cursor-pointer ${
+                    className={`p-4 rounded-2xl border flex flex-col justify-between transition-all cursor-pointer ${
                       paymentMethod === 'apps'
-                        ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/20'
+                        ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/20 shadow-md'
                         : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/50 dark:bg-white/[0.02]'
                     }`}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center flex-shrink-0">
-                      <Smartphone className="w-5 h-5" />
+                    <div className="flex items-start space-x-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center flex-shrink-0">
+                        <Smartphone className="w-5 h-5" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-bold text-gray-900 dark:text-white">Ilova orqali to'lov</p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Tezkor o'tkazma</p>
+                        <span className="inline-block mt-0.5 text-[10px] text-brand-600 dark:text-brand-400 font-bold">
+                          ⏱️ 30 daqiqa vaqt beriladi
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">Ilova orqali to'lov</p>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Payme, Click, Uzum</p>
-                      <span className="inline-block mt-1 text-[10px] text-brand-600 dark:text-brand-400 font-bold">
-                        30 daqiqa vaqt beriladi
+
+                    {/* Rasmiy brendlar nishoni: Payme, Click, Uzum */}
+                    <div className="flex items-center space-x-1.5 mt-3 pt-2.5 border-t border-gray-100 dark:border-white/5">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-[#00cccc]/10 text-[#008f8f] dark:text-[#00ffff] border border-[#00cccc]/20">
+                        Payme
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-[#0073ff]/10 text-[#005cd4] dark:text-[#4da3ff] border border-[#0073ff]/20">
+                        Click
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-[#7b2cbf]/10 text-[#7b2cbf] dark:text-[#c77dff] border border-[#7b2cbf]/20">
+                        Uzum Bank
                       </span>
                     </div>
                   </button>
@@ -439,24 +454,56 @@ export const CheckoutPage = () => {
                         setIsStarted(false);
                       }
                     }}
-                    className={`p-4 rounded-2xl border flex items-center space-x-3.5 transition-all cursor-pointer ${
+                    className={`p-4 rounded-2xl border flex flex-col justify-between transition-all cursor-pointer ${
                       paymentMethod === 'bankomat'
-                        ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/20'
+                        ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/20 shadow-md'
                         : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/50 dark:bg-white/[0.02]'
                     }`}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0">
-                      <Building2 className="w-5 h-5" />
+                    <div className="flex items-start space-x-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-5 h-5" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-bold text-gray-900 dark:text-white">Bankomat orqali to'lov</p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Naqd pul / Terminal</p>
+                        <span className="inline-block mt-0.5 text-[10px] text-amber-600 dark:text-amber-400 font-bold">
+                          ⏱️ 1 soat (60 daqiqa) beriladi
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">Bankomat orqali to'lov</p>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Naqd / Terminal</p>
-                      <span className="inline-block mt-1 text-[10px] text-amber-600 dark:text-amber-400 font-bold">
-                        1 soat (60 daqiqa) beriladi
+
+                    {/* Rasmiy brendlar nishoni: Terminal, Naqd, Paynet */}
+                    <div className="flex items-center space-x-1.5 mt-3 pt-2.5 border-t border-gray-100 dark:border-white/5">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                        Terminal
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                        Naqd Pul
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20">
+                        Paynet / ATM
                       </span>
                     </div>
                   </button>
                 </div>
+
+                {/* Tizimga kirmagan bo'lsa ogohlantirish */}
+                {!isAuthenticated && (
+                  <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-xs">
+                    <div className="flex items-center space-x-2 text-amber-800 dark:text-amber-300 font-medium">
+                      <Info className="w-4 h-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+                      <span>To'lov profilingizga biriktirilishi uchun tizimga kiring:</span>
+                    </div>
+                    <Link
+                      to="/login"
+                      state={{ returnUrl: `/checkout?plan=${selectedPlan}` }}
+                      className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-colors cursor-pointer"
+                    >
+                      Kirish
+                    </Link>
+                  </div>
+                )}
 
                 {/* To'lovni boshlash tugmasi */}
                 {!isStarted ? (
@@ -576,14 +623,23 @@ export const CheckoutPage = () => {
 
                 <div className="relative z-10 flex flex-col justify-between min-h-[220px] space-y-6">
                   
-                  {/* Karta tepasi: Chip va HUMO logosi */}
+                  {/* Karta tepasi: Chip, Contactless va HUMO logosi */}
                   <div className="flex items-center justify-between">
-                    {/* Realistik Gold EMV Chip */}
-                    <div className="w-12 h-9 rounded-lg bg-gradient-to-tr from-[#ffe082] via-[#ffd54f] to-[#ffb300] p-1 border border-amber-500/50 shadow-inner flex flex-col justify-between relative overflow-hidden">
-                      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-amber-700/60" />
-                      <div className="absolute inset-y-0 left-1/3 w-[1px] bg-amber-700/60" />
-                      <div className="absolute inset-y-0 right-1/3 w-[1px] bg-amber-700/60" />
-                      <div className="w-full h-full border border-amber-600/30 rounded-[4px]" />
+                    <div className="flex items-center space-x-3">
+                      {/* Realistik Gold EMV Chip */}
+                      <div className="w-12 h-9 rounded-lg bg-gradient-to-tr from-[#ffe082] via-[#ffd54f] to-[#ffb300] p-1 border border-amber-500/50 shadow-inner flex flex-col justify-between relative overflow-hidden">
+                        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-amber-700/60" />
+                        <div className="absolute inset-y-0 left-1/3 w-[1px] bg-amber-700/60" />
+                        <div className="absolute inset-y-0 right-1/3 w-[1px] bg-amber-700/60" />
+                        <div className="w-full h-full border border-amber-600/30 rounded-[4px]" />
+                      </div>
+
+                      {/* Contactless to'lqin belgisi */}
+                      <svg className="w-5 h-5 text-emerald-300/60 rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <path d="M8.5 16.5a5 5 0 0 1 0-9" />
+                        <path d="M12 19a8.5 8.5 0 0 1 0-14" />
+                        <path d="M15.5 21.5a12 12 0 0 1 0-19" />
+                      </svg>
                     </div>
 
                     {/* HUMO Logosi */}

@@ -68,9 +68,17 @@ export const AuthProvider = ({ children }) => {
       });
     };
 
+    const handleInactivity = (e) => {
+      logout();
+      const msg = encodeURIComponent(e.detail?.message || "Xavfsizlik yuzasidan: 5 kun davomida kirmaganingiz sababli login va parol orqali qayta kiring.");
+      window.location.href = `/login?message=${msg}`;
+    };
+
     window.addEventListener('runcode:concurrent_login', handleConcurrent);
+    window.addEventListener('runcode:inactivity_timeout', handleInactivity);
     return () => {
       window.removeEventListener('runcode:concurrent_login', handleConcurrent);
+      window.removeEventListener('runcode:inactivity_timeout', handleInactivity);
     };
   }, [logout]);
 
