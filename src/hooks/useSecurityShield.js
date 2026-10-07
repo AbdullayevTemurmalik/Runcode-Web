@@ -1,13 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * useSecurityShield
  * 
  * Saytdagi darslar, imtihonlar va o'quv materiallarini
- * nusxa ko'chirish (copy, cut, select, right click) va skrinshot (PrintScreen, Snipping tool, flameshot)
+ * nusxa ko'chirish (copy, cut, select, right click) va skrinshot (PrintScreen, Snipping tool, flameshot, Mac screenshot)
  * lardan maksimal darajada himoya qiluvchi React hook.
+ * 
+ * Maxsus istisno (Exemption):
+ * Agar foydalanuvchi admin yoki 'temur' / 'temurmalik' bo'lsa,
+ * xatoliklarni tekshirish, skrinshot qilish va matnlarni ko'chirib olish uchun
+ * barcha cheklovlar to'liq bekor qilinadi (bypass).
  */
 export const useSecurityShield = (options = {}) => {
+  const { user } = useAuth();
+  const isExempt = Boolean(
+    user?.role === 'admin' || 
+    user?.username === 'temur' || 
+    user?.username === 'temurmalik'
+  );
+
   const {
     enableAntiCopy = true,
     enableAntiScreenshot = true,
@@ -19,17 +32,31 @@ export const useSecurityShield = (options = {}) => {
   const [isWindowBlurred, setIsWindowBlurred] = useState(false);
   const [warningMessage, setWarningMessage] = useState(null);
 
+  // Body klassini admin/temur uchun dinamik sozlash
+  useEffect(() => {
+    if (isExempt) {
+      document.body.classList.add('security-exempt');
+    } else {
+      document.body.classList.remove('security-exempt');
+    }
+    return () => {
+      document.body.classList.remove('security-exempt');
+    };
+  }, [isExempt]);
+
   const showSecurityWarning = useCallback((msg) => {
+    if (isExempt) return;
     setWarningMessage(msg);
     if (onWarning) onWarning(msg);
     const timer = setTimeout(() => {
       setWarningMessage(null);
     }, 2500);
     return () => clearTimeout(timer);
-  }, [onWarning]);
+  }, [isExempt, onWarning]);
 
   // Nusxalash va Clipboard ni tozalash
   const clearClipboard = useCallback(() => {
+    if (isExempt) return;
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText('').catch(() => {});
@@ -37,10 +64,10 @@ export const useSecurityShield = (options = {}) => {
     } catch (e) {
       // Ignored
     }
-  }, []);
+  }, [isExempt]);
 
   useEffect(() => {
-    if (!enableAntiCopy && !enableAntiScreenshot) return;
+    if (isExempt || (!enableAntiCopy && !enableAntiScreenshot)) return;
 
     // 1. O'ng tugma (Context Menu) ni bloklash
     const handleContextMenu = (e) => {
@@ -90,6 +117,19 @@ export const useSecurityShield = (options = {}) => {
 
       // PrintScreen / Fn + PrtScn tugmasi (Windows, Linux, Mac)
       if (e.key === 'PrintScreen' || keyCode === 44 || key === 'printscreen') {
+        e.preventDefault();
+        clearClipboard();
+        setIsPrtScnTriggered(true);
+        showSecurityWarning("⚠️ Skrinshot olish qat'iyan man etiladi! Mualliflik huquqi himoyalangan.");
+        setTimeout(() => {
+          setIsPrtScnTriggered(false);
+          clearClipboard();
+        }, 1800);
+        return false;
+      }
+
+      // Mac skrinshot kombinatsiyalari (Cmd + Shift + 3 / 4 / 5)
+      if (isCtrlOrCmd && e.shiftKey && (key === '3' || key === '4' || key === '5' || key === '6' || keyCode === 51 || keyCode === 52 || keyCode === 53)) {
         e.preventDefault();
         clearClipboard();
         setIsPrtScnTriggered(true);
@@ -211,9 +251,10 @@ export const useSecurityShield = (options = {}) => {
   }, [enableAntiCopy, enableAntiScreenshot, enableBlurShield, clearClipboard, showSecurityWarning]);
 
   return {
-    isPrtScnTriggered,
-    isWindowBlurred,
-    warningMessage,
+    isPrtScnTriggered: isExempt ? false : isPrtScnTriggered,
+    isWindowBlurred: isExempt ? false : isWindowBlurred,
+    warningMessage: isExempt ? null : warningMessage,
+    isExempt,
     clearWarning: () => setWarningMessage(null)
   };
 };

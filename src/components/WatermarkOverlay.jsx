@@ -3,6 +3,13 @@ import { useAuth } from '../context/AuthContext';
 
 export const WatermarkOverlay = ({ text }) => {
   const { user } = useAuth();
+  const isExempt = Boolean(
+    user?.role === 'admin' || 
+    user?.username === 'temur' || 
+    user?.username === 'temurmalik'
+  );
+
+  if (isExempt) return null;
 
   const watermarkText = useMemo(() => {
     if (text) return text;

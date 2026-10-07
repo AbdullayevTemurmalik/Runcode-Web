@@ -100,3 +100,23 @@ img, video {
   }
 }
 
+/* Admin / Temur uchun to'liq ruxsat (Admin testlar va tekshiruvlar o'tkazishi uchun) */
+body.security-exempt,
+body.security-exempt .protected-content,
+body.security-exempt .protected-container,
+body.security-exempt * {
+  -webkit-touch-callout: default !important;
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+  user-select: auto !important;
+}
+
+@media print {
+  body.security-exempt,
+  body.security-exempt * {
+    display: block !important;
+    visibility: visible !important;
+  }
+}
+

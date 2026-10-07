@@ -7,8 +7,6 @@ import {
   Bell, 
   User, 
   LogOut, 
-  Menu, 
-  X, 
   CheckCircle2, 
   Clock, 
   ShieldCheck, 
@@ -26,7 +24,6 @@ export const Navbar = ({ onOpenPaymentModal }) => {
   const { isDark, toggleTheme } = useTheme();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotification();
   
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -307,101 +304,8 @@ export const Navbar = ({ onOpenPaymentModal }) => {
                 </Link>
               </div>
             )}
-
-            {/* Mobile Hamburger Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-xl text-gray-600 dark:text-gray-300 md:hidden hover:bg-gray-100 dark:hover:bg-gray-800"
-              aria-label="Menyu"
-            >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
           </div>
         </div>
-
-        {/* Mobile Navigation Drawer */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-800 animate-in fade-in slide-in-from-top-2">
-            <div className="flex flex-col space-y-2">
-              {navLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  {item.label}
-                </Link>
-              ))}
-
-              {isAuthenticated ? (
-                <div className="pt-2 border-t border-gray-100 dark:border-gray-800 space-y-1">
-                  <Link
-                    to="/dashboard"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <User className="w-4 h-4 mr-2.5 text-brand-500" />
-                    Shaxsiy Kabinet ({user?.fullName || user?.username})
-                  </Link>
-
-                  {isAdmin && (
-                    <a
-                      href="http://localhost:5174"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center px-4 py-2.5 rounded-xl text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
-                    >
-                      <ShieldCheck className="w-4 h-4 mr-2.5" />
-                      Admin Panel
-                    </a>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setIsLogoutModalOpen(true);
-                    }}
-                    className="w-full flex items-center px-4 py-2.5 rounded-xl text-sm font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
-                  >
-                    <LogOut className="w-4 h-4 mr-2.5" />
-                    Chiqish
-                  </button>
-                </div>
-              ) : (
-                <div className="pt-2 flex flex-col space-y-2 border-t border-gray-100 dark:border-gray-800">
-                  <Link
-                    to="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full py-2.5 text-center text-sm font-semibold rounded-xl border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200"
-                  >
-                    Kirish
-                  </Link>
-                  <Link
-                    to="/register"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full py-2.5 text-center text-sm font-semibold rounded-xl bg-brand-600 text-white shadow-md shadow-brand-500/20"
-                  >
-                    Ro'yxatdan o'tish
-                  </Link>
-                </div>
-              )}
-
-              {!hasSubscription && (
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    if (onOpenPaymentModal) onOpenPaymentModal('1_month');
-                  }}
-                  className="w-full flex items-center justify-center px-4 py-3 rounded-xl bg-brand-600 text-white font-semibold text-sm shadow-lg shadow-brand-500/20 mt-2"
-                >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Obuna Bo'lish
-                </button>
-              )}
-            </div>
-          </div>
-        )}
 
       </div>
 
