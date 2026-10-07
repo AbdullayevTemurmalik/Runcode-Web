@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -18,6 +18,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { TariffsPage } from './pages/TariffsPage';
+import { CheckoutPage } from './pages/CheckoutPage';
 import { useSecurityShield } from './hooks/useSecurityShield';
 import { SecurityCurtain } from './components/SecurityCurtain';
 
@@ -29,6 +30,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const AppContent = () => {
+  const navigate = useNavigate();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('1_month');
 
@@ -41,7 +43,7 @@ const AppContent = () => {
 
   const handleOpenPayment = (plan = '1_month') => {
     setSelectedPlan(plan);
-    setIsPaymentModalOpen(true);
+    navigate(`/checkout?plan=${plan}`);
   };
 
   return (
@@ -59,6 +61,8 @@ const AppContent = () => {
           <Route path="/" element={<HomePage onOpenPaymentModal={handleOpenPayment} />} />
           <Route path="/tariffs" element={<TariffsPage onOpenPaymentModal={handleOpenPayment} />} />
           <Route path="/premium" element={<TariffsPage onOpenPaymentModal={handleOpenPayment} />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/payment" element={<CheckoutPage />} />
           <Route
             path="/courses"
             element={<CoursesPage onOpenPaymentModal={handleOpenPayment} />}

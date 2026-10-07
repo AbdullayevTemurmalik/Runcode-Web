@@ -470,75 +470,38 @@ export const HomePage = ({ onOpenPaymentModal }) => {
             HTML kursi har doim Free (Bepul). Qolgan barcha chuqur darslar va yopiq Telegram mentorlik guruhi uchun Plus, Pro yoki Ultra tariflaridan birini tanlang.
           </p>
 
-          {/* Plan Selector Tabs & Navigation */}
-          <div className="space-y-4 pt-4">
-            {/* Quick Switcher Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {plansToDisplay.map((plan, idx) => {
-                const isSelected = activePlanIndex === idx;
-                const isPro = plan.id === '2_months' || plan.tier === 'Pro';
-                const isUltra = plan.id === '3_months' || plan.tier === 'Ultra';
-                const isPlus = plan.id === '1_month' || plan.tier === 'Plus';
-                const isFree = plan.isFree;
+          {/* Plan Navigation Controls (Faqat mobil va planshetda < > tugmalari, kompyuterda yo'q) */}
+          <div className="lg:hidden flex items-center justify-center space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={handlePrevPlan}
+              disabled={activePlanIndex === 0}
+              className="p-2.5 rounded-2xl bg-white dark:bg-[#0c0d12] border border-gray-200 dark:border-white/10 hover:border-brand-500 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm cursor-pointer"
+              aria-label="Oldingi tarif"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
 
-                return (
-                  <button
-                    key={plan.id}
-                    type="button"
-                    onClick={() => scrollToPlan(idx)}
-                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all duration-300 flex items-center space-x-1.5 cursor-pointer ${
-                      isSelected
-                        ? isPro
-                          ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30 scale-105 ring-2 ring-brand-500'
-                          : isUltra
-                          ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 scale-105 ring-2 ring-purple-500'
-                          : isPlus
-                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105 ring-2 ring-blue-500'
-                          : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-md scale-105 ring-2 ring-gray-400'
-                        : 'bg-white dark:bg-[#0c0d12] border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:border-brand-500/50'
-                    }`}
-                  >
-                    {isPro && <Star className="w-3.5 h-3.5 fill-current" />}
-                    {isUltra && <Crown className="w-3.5 h-3.5 fill-current" />}
-                    <span>{plan.name}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <span className="text-xs font-bold text-gray-700 dark:text-gray-300 px-3.5 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200/50 dark:border-white/5">
+              {plansToDisplay[activePlanIndex]?.name || `${activePlanIndex + 1} / ${plansToDisplay.length}`}
+            </span>
 
-            {/* Navigation Arrows & Current Plan Badge */}
-            <div className="flex items-center justify-center space-x-3">
-              <button
-                type="button"
-                onClick={handlePrevPlan}
-                disabled={activePlanIndex === 0}
-                className="p-2.5 rounded-2xl bg-white dark:bg-[#0c0d12] border border-gray-200 dark:border-white/10 hover:border-brand-500 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm cursor-pointer"
-                aria-label="Oldingi tarif"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-
-              <span className="text-xs font-bold text-gray-700 dark:text-gray-300 px-3.5 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200/50 dark:border-white/5">
-                {plansToDisplay[activePlanIndex]?.name || `${activePlanIndex + 1} / ${plansToDisplay.length}`}
-              </span>
-
-              <button
-                type="button"
-                onClick={handleNextPlan}
-                disabled={activePlanIndex === plansToDisplay.length - 1}
-                className="p-2.5 rounded-2xl bg-white dark:bg-[#0c0d12] border border-gray-200 dark:border-white/10 hover:border-brand-500 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm cursor-pointer"
-                aria-label="Keyingi tarif"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleNextPlan}
+              disabled={activePlanIndex === plansToDisplay.length - 1}
+              className="p-2.5 rounded-2xl bg-white dark:bg-[#0c0d12] border border-gray-200 dark:border-white/10 hover:border-brand-500 text-gray-700 dark:text-gray-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm cursor-pointer"
+              aria-label="Keyingi tarif"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
-        {/* Responsive Plans Container (Desktop 4 cards side-by-side, mobile/tablet smooth swipe) */}
+        {/* Responsive Plans Container (Kompyuterda 4 ta card bir qatorda yonma-yon, mobilda silliq swipe) */}
         <div 
           ref={carouselRef}
-          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar gap-6 py-6 px-1 items-stretch"
+          className="flex lg:grid lg:grid-cols-4 overflow-x-auto lg:overflow-visible snap-x snap-mandatory lg:snap-none scroll-smooth no-scrollbar gap-6 py-6 px-1 items-stretch"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {plansToDisplay.map((plan, idx) => {
@@ -553,7 +516,7 @@ export const HomePage = ({ onOpenPaymentModal }) => {
                 key={plan.id}
                 ref={(el) => (cardRefs.current[idx] = el)}
                 onClick={() => setActivePlanIndex(idx)}
-                className={`snap-center flex-shrink-0 w-[85vw] sm:w-[320px] md:w-[340px] lg:w-[calc(25%-18px)] rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative transition-all duration-300 cursor-pointer ${
+                className={`snap-center flex-shrink-0 w-[85vw] sm:w-[320px] md:w-[340px] lg:w-full lg:max-w-none rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative transition-all duration-300 cursor-pointer ${
                   isPro
                     ? 'bg-white dark:bg-[#0f111a] border-2 border-brand-500 shadow-2xl shadow-brand-500/20'
                     : isUltra
