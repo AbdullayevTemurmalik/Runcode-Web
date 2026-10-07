@@ -60,37 +60,54 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
     enableBlurShield: true
   });
 
-  // Kurs va darslar ro'yxatini olish
+  // Kurs va darslar ro'yxatini olish (Flicker-free lesson switching)
   useEffect(() => {
-    const fetchCourseData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await api.get(`/courses/${courseSlug}`);
-        if (data.success && data.course) {
-          setCourse(data.course);
+    let isCancelled = false;
 
-          // Qaysi darsni ko'rsatish
-          const lessons = data.course.lessons || [];
-          if (lessons.length > 0) {
-            let targetLesson = null;
-            if (lessonId) {
-              targetLesson = lessons.find(l => String(l.id) === String(lessonId));
+    const fetchCourseData = async () => {
+      // Agar kurs allaqachon yuklangan bo'lsa va shu kurs bo'lsa, butun sahifani qayta loading qilmaymiz!
+      if (!course || course.slug !== courseSlug) {
+        setLoading(true);
+        setError(null);
+        try {
+          const data = await api.get(`/courses/${courseSlug}`);
+          if (!isCancelled && data.success && data.course) {
+            setCourse(data.course);
+
+            const lessons = data.course.lessons || [];
+            if (lessons.length > 0) {
+              let targetLesson = null;
+              if (lessonId) {
+                targetLesson = lessons.find(l => String(l.id) === String(lessonId));
+              }
+              if (!targetLesson) {
+                targetLesson = lessons[0];
+              }
+              fetchLessonDetail(targetLesson.id);
             }
-            if (!targetLesson) {
-              targetLesson = lessons[0];
-            }
+          }
+        } catch (err) {
+          if (!isCancelled) setError(err.message || 'Kurs ma\'lumotlarini yuklashda xatolik yuz berdi.');
+        } finally {
+          if (!isCancelled) setLoading(false);
+        }
+      } else {
+        // Kurs bor, faqat lessonId o'zgargan - sahifani unmount qilmasdan darsni yangilaymiz!
+        const lessons = course.lessons || [];
+        if (lessons.length > 0 && lessonId) {
+          const targetLesson = lessons.find(l => String(l.id) === String(lessonId));
+          if (targetLesson && targetLesson.id !== currentLesson?.id) {
             fetchLessonDetail(targetLesson.id);
           }
         }
-      } catch (err) {
-        setError(err.message || 'Kurs ma\'lumotlarini yuklashda xatolik yuz berdi.');
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchCourseData();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [courseSlug, lessonId]);
 
   const fetchLessonDetail = async (id) => {
@@ -115,15 +132,15 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
     return checkModuleAccess(rawModules, courseSlug, user?.id, user?.role);
   }, [rawModules, courseSlug, user?.id, user?.role, quizRefreshToken]);
 
-  // Faol dars tegishli modulni agar ochiq bo'lsa avtomatik kengaytirish
+  // Faol dars tegishli modulni agar ochiq bo'lsa avtomatik faollashtirish (faqat shu modul ochiq qoladi)
   useEffect(() => {
     if (currentLesson && modules.length > 0) {
       const currentMod = modules.find(m => m.lessons.some(l => l.id === currentLesson.id));
       if (currentMod && currentMod.isUnlocked) {
-        setExpandedModules(prev => ({ ...prev, [currentMod.id]: true }));
+        setExpandedModules({ [currentMod.id]: true });
       }
     }
-  }, [currentLesson, modules]);
+  }, [currentLesson?.id, modules]);
 
   const toggleModule = (mod) => {
     if (!mod.isUnlocked && user?.role !== 'admin') {
@@ -131,10 +148,11 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
       setTimeout(() => setLockedToast(null), 4000);
       return;
     }
-    setExpandedModules(prev => ({
-      ...prev,
-      [mod.id]: !prev[mod.id]
-    }));
+    setExpandedModules((prev) => {
+      const isCurrentlyOpen = !!prev[mod.id];
+      // Faqat bitta modul ochiq qoladi
+      return isCurrentlyOpen ? {} : { [mod.id]: true };
+    });
   };
 
   const handleSelectLesson = (lessonOrId, targetMod = null) => {
@@ -153,21 +171,19 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
 
   const handleQuizSuccess = ({ moduleIndex, score }) => {
     setQuizRefreshToken(prev => prev + 1);
+    setQuizModal({ isOpen: false, moduleIndex: 1 });
     const nextModIndex = moduleIndex + 1;
     
-    // Keyingi modulni ochamiz
-    setExpandedModules(prev => ({
-      ...prev,
+    // Keyingi modulni faol qilib ochamiz (boshqalari yopiladi)
+    setExpandedModules({
       [`mod-${nextModIndex}`]: true
-    }));
+    });
 
     // Yangi ochilgan modulning birinchi darsiga o'tamiz
-    setTimeout(() => {
-      const nextMod = rawModules.find(m => m.index === nextModIndex);
-      if (nextMod && nextMod.lessons.length > 0) {
-        navigate(`/courses/${courseSlug}/lesson/${nextMod.lessons[0].id}`);
-      }
-    }, 400);
+    const nextMod = rawModules.find(m => m.index === nextModIndex);
+    if (nextMod && nextMod.lessons.length > 0) {
+      navigate(`/courses/${courseSlug}/lesson/${nextMod.lessons[0].id}`);
+    }
   };
 
   const handleCompleteLesson = async () => {

@@ -539,32 +539,36 @@ export const CourseDetailPage = ({ onOpenPaymentModal }) => {
     }));
   }, [dbCourse, staticInfo, courseSlug]);
 
+  const isUpcoming = staticInfo.isUpcoming;
+
   const modules = useMemo(() => {
+    if (isUpcoming) {
+      return rawModules.map((m) => ({ ...m, isUnlocked: true }));
+    }
     return checkModuleAccess(rawModules, courseSlug, user?.id, user?.role);
-  }, [rawModules, courseSlug, user?.id, user?.role]);
+  }, [rawModules, courseSlug, user?.id, user?.role, isUpcoming]);
 
   // Dastlabki 1-modulni avtomatik ochib qo'yish (boshqa modullar yopiq)
   useEffect(() => {
     if (modules.length > 0) {
       setExpandedModules({ [modules[0].id]: true });
     }
-  }, [modules]);
+  }, [courseSlug, modules.length]);
 
   const toggleModule = (mod) => {
-    if (!mod.isUnlocked && user?.role !== 'admin') {
+    if (!mod.isUnlocked && user?.role !== 'admin' && !isUpcoming) {
       setToastMessage(`${mod.index}-Modul qulflangan! Avval ${mod.index - 1}-modul darslarini to'liq tugatib, 10 ta savolli oraliq testdan kamida 70% to'plang.`);
       setTimeout(() => setToastMessage(null), 4000);
       return;
     }
-    setExpandedModules((prev) => ({
-      ...prev,
-      [mod.id]: !prev[mod.id]
-    }));
+    setExpandedModules((prev) => {
+      const isCurrentlyOpen = !!prev[mod.id];
+      return isCurrentlyOpen ? {} : { [mod.id]: true };
+    });
   };
 
   const isPremium = dbCourse ? dbCourse.is_premium : staticInfo.is_premium;
   const canAccess = !isPremium || hasSubscription;
-  const isUpcoming = staticInfo.isUpcoming;
   const totalLessonsCount = dbCourse?.lessons?.length || modules.reduce((sum, m) => sum + m.lessons.length, 0);
 
   // Kursni boshlash tugmasi bosilganda

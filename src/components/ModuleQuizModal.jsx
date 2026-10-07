@@ -128,10 +128,6 @@ export const ModuleQuizModal = ({
       } catch (e) {
         // confetti fallback
       }
-
-      if (onSuccess) {
-        onSuccess({ moduleIndex, score, passed: true });
-      }
     }
   };
 
