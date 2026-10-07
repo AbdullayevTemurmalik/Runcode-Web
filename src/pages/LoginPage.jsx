@@ -26,6 +26,7 @@ export const LoginPage = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const queryMessage = new URLSearchParams(location.search).get('message');
   const [successBanner, setSuccessBanner] = useState(location.state?.message || queryMessage || null);
 

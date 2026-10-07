@@ -425,8 +425,9 @@ export const CheckoutPage = () => {
                       <div className="text-left">
                         <p className="text-xs font-bold text-gray-900 dark:text-white">Ilova orqali to'lov</p>
                         <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Tezkor o'tkazma</p>
-                        <span className="inline-block mt-0.5 text-[10px] text-brand-600 dark:text-brand-400 font-bold">
-                          ⏱️ 30 daqiqa vaqt beriladi
+                        <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] text-brand-600 dark:text-brand-400 font-bold">
+                          <Clock className="w-3 h-3 text-brand-500" />
+                          30 daqiqa vaqt beriladi
                         </span>
                       </div>
                     </div>
@@ -467,8 +468,9 @@ export const CheckoutPage = () => {
                       <div className="text-left">
                         <p className="text-xs font-bold text-gray-900 dark:text-white">Bankomat orqali to'lov</p>
                         <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Naqd pul / Terminal</p>
-                        <span className="inline-block mt-0.5 text-[10px] text-amber-600 dark:text-amber-400 font-bold">
-                          ⏱️ 1 soat (60 daqiqa) beriladi
+                        <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] text-amber-600 dark:text-amber-400 font-bold">
+                          <Clock className="w-3 h-3 text-amber-500" />
+                          1 soat (60 daqiqa) beriladi
                         </span>
                       </div>
                     </div>
