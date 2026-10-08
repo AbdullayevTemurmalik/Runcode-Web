@@ -50,10 +50,14 @@ export const CheckoutPage = () => {
 
   // URL query o'zgarsa rejani yangilash
   useEffect(() => {
+    if (isStarted && (order?.plan_name || order?.planName)) {
+      setSelectedPlan(order.plan_name || order.planName);
+      return;
+    }
     if (planParam && plans[planParam]) {
       setSelectedPlan(planParam);
     }
-  }, [planParam]);
+  }, [planParam, isStarted, order]);
 
   // Backend konfiguratsiyasi va faol buyurtmani tekshirish
   useEffect(() => {
@@ -99,9 +103,15 @@ export const CheckoutPage = () => {
             setOrder(active);
             setSelectedPlan(active.planName || '7_days');
             setPaymentMethod(active.paymentMethod || 'apps');
-            setTimeLeft(active.remainingSeconds || 0);
-            setIsStarted(true);
-            setStatusNotice('Sizda avvaldan faollashtirilgan to\'lov so\'rovi mavjud. Belgilangan vaqt ichida chek suratini yuklang.');
+            
+            if (active.hasReceipt) {
+              setIsSuccess(true);
+              setStatusNotice('Sizning to\'lov chekingiz admin tomonidan tekshirilmoqda. Ushbu to\'lov yakunlanmaguncha (tasdiqlanmaguncha yoki rad etilmaguncha), yangi to\'lov qila olmaysiz.');
+            } else {
+              setTimeLeft(active.remainingSeconds || 0);
+              setIsStarted(true);
+              setStatusNotice(`Siz ayni damda to'lov jarayonidasiz. Ushbu to'lov yakunlanmaguncha boshqa tarifni tanlay olmaysiz.`);
+            }
           }
         }
       } catch (err) {

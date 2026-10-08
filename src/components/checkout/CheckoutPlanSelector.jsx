@@ -10,7 +10,8 @@ import {
   Loader2,
   CheckCircle2,
   AlertTriangle,
-  X
+  X,
+  Lock
 } from 'lucide-react';
 
 export const CheckoutPlanSelector = ({
@@ -113,28 +114,51 @@ export const CheckoutPlanSelector = ({
           <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Barcha 4 kurs ochiq</span>
         </div>
 
+        {/* Faol to'lov jarayoni ogohlantirish banneri */}
+        {isStarted && (
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start space-x-2.5 text-xs text-amber-800 dark:text-amber-300 animate-in fade-in">
+            <Lock className="w-4 h-4 flex-shrink-0 text-amber-500 mt-0.5" />
+            <div className="leading-relaxed">
+              <span className="font-black">To'lov jarayoni faol: </span>
+              Siz ayni damda <strong className="font-bold underline">{plans[selectedPlan]?.name || selectedPlan}</strong> tarifi uchun to'lov qilyapsiz. Ushbu to'lov yakunlanmaguncha (tasdiqlanmaguncha yoki rad etilmaguncha), boshqa tarifni tanlay olmaysiz. To'lov tasdiqlangach yangi tarifga qo'shishingiz mumkin.
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
           {Object.entries(plans).map(([key, plan]) => {
             const isSelected = selectedPlan === key;
+            const isLocked = isStarted && !isSelected;
+
             return (
               <button
                 key={key}
                 type="button"
                 onClick={() => {
-                  setSelectedPlan(key);
                   if (isStarted) {
-                    setIsStarted(false);
-                    if (setStatusNotice) setStatusNotice(null);
+                    if (key !== selectedPlan && setStatusNotice) {
+                      setStatusNotice(`Siz ayni damda to'lov jarayonidasiz (${plans[selectedPlan]?.name || selectedPlan}). Ushbu to'lov yakunlanmaguncha (tasdiqlanmaguncha yoki rad etilmaguncha), boshqa tarifni tanlay olmaysiz. To'lov tasdiqlangach yangi tarifga qo'shishingiz mumkin.`);
+                    }
+                    return;
                   }
+                  setSelectedPlan(key);
                 }}
-                className={`p-2.5 sm:p-3 rounded-2xl border-2 text-left relative transition-all duration-150 cursor-pointer flex flex-col justify-between ${
-                  isSelected
-                    ? `${getPlanSelectedStyle(key)} shadow-sm scale-[1.01]`
-                    : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/60 dark:bg-white/[0.02]'
+                className={`p-2.5 sm:p-3 rounded-2xl border-2 text-left relative transition-all duration-150 flex flex-col justify-between ${
+                  isLocked
+                    ? 'opacity-50 cursor-not-allowed border-gray-200 dark:border-white/5 bg-gray-50/40 dark:bg-white/[0.01]'
+                    : isSelected
+                    ? `${getPlanSelectedStyle(key)} shadow-sm scale-[1.01] cursor-pointer`
+                    : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/60 dark:bg-white/[0.02] cursor-pointer'
                 }`}
               >
                 <div className="flex items-center justify-between gap-1 mb-1.5">
                   {getPlanBadge(key, plan)}
+                  {isLocked && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-400">
+                      <Lock className="w-3 h-3" />
+                      Qulflangan
+                    </span>
+                  )}
                   {isSelected && (
                     <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${
                       key === '3_months' ? 'text-purple-500' :
@@ -170,12 +194,13 @@ export const CheckoutPlanSelector = ({
           <button
             type="button"
             onClick={() => {
+              if (isStarted) return;
               setPaymentMethod('apps');
-              if (isStarted && paymentMethod !== 'apps') {
-                setIsStarted(false);
-              }
             }}
-            className={`p-3 rounded-2xl border-2 flex flex-col justify-between transition-all cursor-pointer ${
+            disabled={isStarted && paymentMethod !== 'apps'}
+            className={`p-3 rounded-2xl border-2 flex flex-col justify-between transition-all ${
+              isStarted && paymentMethod !== 'apps' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+            } ${
               paymentMethod === 'apps'
                 ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/20 shadow-sm'
                 : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/60 dark:bg-white/[0.02]'
@@ -212,12 +237,13 @@ export const CheckoutPlanSelector = ({
           <button
             type="button"
             onClick={() => {
+              if (isStarted) return;
               setPaymentMethod('bankomat');
-              if (isStarted && paymentMethod !== 'bankomat') {
-                setIsStarted(false);
-              }
             }}
-            className={`p-3 rounded-2xl border-2 flex flex-col justify-between transition-all cursor-pointer ${
+            disabled={isStarted && paymentMethod !== 'bankomat'}
+            className={`p-3 rounded-2xl border-2 flex flex-col justify-between transition-all ${
+              isStarted && paymentMethod !== 'bankomat' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+            } ${
               paymentMethod === 'bankomat'
                 ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/20 shadow-sm'
                 : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/60 dark:bg-white/[0.02]'
