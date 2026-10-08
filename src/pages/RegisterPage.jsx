@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   User, 
   Lock, 
-  Phone, 
   ArrowRight, 
   Code2, 
   AlertCircle, 
@@ -23,7 +22,6 @@ export const RegisterPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [birthDate, setBirthDate] = useState(''); // 'YYYY-MM-DD'
-  const [phone, setPhone] = useState('+998 ');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -129,13 +127,6 @@ export const RegisterPage = () => {
       return;
     }
 
-    // Validate phone number
-    const digitsOnly = phone.replace(/\D/g, '');
-    if (digitsOnly.length < 12) {
-      setError('Telefon raqamini to\'liq kiriting: +998 90 123 45 67');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -144,8 +135,7 @@ export const RegisterPage = () => {
         lastName: lastName.trim(),
         username: username.trim().toLowerCase(),
         password,
-        birthDate,
-        phone: phone.trim()
+        birthDate
       });
 
       if (data.success) {
@@ -301,25 +291,6 @@ export const RegisterPage = () => {
             required={true}
             value={birthDate}
             onChange={(val) => setBirthDate(val)}
-          />
-
-          {/* 5. Telefon raqami: Custom Phone Input (+998 auto-format) */}
-          <CustomInput
-            label="Telefon raqami:"
-            icon={Phone}
-            isPhone={true}
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+998 90 123 45 67"
-            inputClassName="font-mono font-medium"
-            sublabel={
-              phone.replace(/\D/g, '').length >= 12 ? (
-                <span className="text-emerald-500 font-bold flex items-center">
-                  <CheckCircle2 className="w-3 h-3 mr-1" /> To'g'ri format
-                </span>
-              ) : null
-            }
           />
 
           {/* Submit Button */}
