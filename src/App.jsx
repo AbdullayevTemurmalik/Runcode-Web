@@ -50,7 +50,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className={`flex flex-col ${isCheckout ? 'h-screen max-h-screen overflow-hidden' : 'min-h-screen'} bg-gray-50 text-gray-900 dark:bg-[#0b0f19] dark:text-gray-100 transition-colors protected-container`}>
+    <div className={`flex flex-col ${isCheckout ? 'min-h-screen lg:h-screen lg:max-h-screen overflow-y-auto lg:overflow-hidden' : 'min-h-screen'} bg-gray-50 text-gray-900 dark:bg-[#0b0f19] dark:text-gray-100 transition-colors protected-container`}>
       <SecurityCurtain 
         isPrtScnTriggered={isPrtScnTriggered} 
         isWindowBlurred={false} 
@@ -60,7 +60,7 @@ const AppContent = () => {
       <ScrollToTop />
       <Navbar onOpenPaymentModal={handleOpenPayment} />
 
-      <main className={`flex-1 ${isCheckout ? 'overflow-hidden flex flex-col' : 'pb-24 md:pb-0'}`}>
+      <main className={`flex-1 ${isCheckout ? 'flex flex-col min-h-0 overflow-y-auto lg:overflow-hidden' : 'pb-24 md:pb-0'}`}>
         <Routes>
           <Route path="/" element={<HomePage onOpenPaymentModal={handleOpenPayment} />} />
           <Route path="/tariffs" element={<TariffsPage onOpenPaymentModal={handleOpenPayment} />} />

@@ -237,20 +237,20 @@ export const CheckoutPage = () => {
   const activePlanObj = plans[selectedPlan] || plans['1_month'];
 
   return (
-    <div className="w-full h-full flex flex-col bg-gray-50 dark:bg-[#070a12] p-2 sm:p-3 lg:p-3.5 transition-colors overflow-y-auto lg:overflow-hidden select-none">
-      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col min-h-0 space-y-2 sm:space-y-2.5">
+    <div className="w-full flex-1 flex flex-col bg-gray-50 dark:bg-[#070a12] p-2.5 sm:p-3.5 lg:p-4 transition-colors overflow-y-auto lg:overflow-hidden select-none">
+      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col min-h-0 space-y-2.5 sm:space-y-3">
         
         {/* Yuqori navigatsiya paneli */}
         <div className="flex items-center justify-between flex-shrink-0 pt-0.5">
           <Link
             to="/tariffs"
-            className="inline-flex items-center space-x-1.5 text-xs font-bold text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+            className="inline-flex items-center space-x-2 text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Tariflarga qaytish</span>
           </Link>
 
-          <div className="flex items-center space-x-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
             <Lock className="w-3.5 h-3.5" />
             <span>256-bit Xavfsiz To'lov Kanali</span>
           </div>
@@ -258,14 +258,14 @@ export const CheckoutPage = () => {
 
         {/* Ogohlantirishlar va Xatoliklar */}
         {error && (
-          <div className="p-2 sm:p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 flex items-center space-x-2 text-rose-700 dark:text-rose-300 text-xs animate-in fade-in flex-shrink-0">
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 flex items-center space-x-2 text-rose-700 dark:text-rose-300 text-xs sm:text-sm animate-in fade-in flex-shrink-0">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <p className="leading-tight font-medium truncate">{error}</p>
           </div>
         )}
 
         {statusNotice && !error && (
-          <div className="p-2 sm:p-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs flex items-center space-x-2 animate-in fade-in flex-shrink-0">
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs sm:text-sm flex items-center space-x-2 animate-in fade-in flex-shrink-0">
             <Info className="w-4 h-4 flex-shrink-0" />
             <p className="leading-tight font-medium truncate">{statusNotice}</p>
           </div>
@@ -274,9 +274,9 @@ export const CheckoutPage = () => {
         {isSuccess ? (
           <CheckoutSuccessView activePlanObj={activePlanObj} cardInfo={cardInfo} />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 xl:gap-3.5 items-start flex-1 min-h-0">
-            {/* CHAP USTUN: Reja tanlash, To'lov turi va Chek yuklash */}
-            <div className="lg:col-span-7 flex flex-col gap-2 sm:gap-2.5 min-h-0">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 xl:gap-5 items-start flex-1 min-h-0">
+            {/* CHAP USTUN: Reja tanlash, To'lov turi va Chek yuklash (7 ustun) */}
+            <div className="lg:col-span-7 flex flex-col gap-3 sm:gap-3.5 min-h-0">
               <CheckoutPlanSelector
                 plans={plans}
                 selectedPlan={selectedPlan}
@@ -303,16 +303,18 @@ export const CheckoutPage = () => {
               />
             </div>
 
-            {/* O'NG USTUN: Realistik Zumrad HUMO Kartasi va 4 Qoida */}
-            <CheckoutCardPreview
-              cardInfo={cardInfo}
-              activePlanObj={activePlanObj}
-              paymentMethod={paymentMethod}
-              copiedCard={copiedCard}
-              copyCardNumber={copyCardNumber}
-              copiedPhone={copiedPhone}
-              copyPhoneNumber={copyPhoneNumber}
-            />
+            {/* O'NG USTUN: Realistik Zumrad HUMO Kartasi va 4 Qoida (5 ustun) */}
+            <div className="lg:col-span-5 flex flex-col gap-3 sm:gap-3.5 min-h-0">
+              <CheckoutCardPreview
+                cardInfo={cardInfo}
+                activePlanObj={activePlanObj}
+                paymentMethod={paymentMethod}
+                copiedCard={copiedCard}
+                copyCardNumber={copyCardNumber}
+                copiedPhone={copiedPhone}
+                copyPhoneNumber={copyPhoneNumber}
+              />
+            </div>
           </div>
         )}
 
