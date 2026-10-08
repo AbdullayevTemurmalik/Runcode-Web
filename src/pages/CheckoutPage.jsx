@@ -35,7 +35,8 @@ export const CheckoutPage = () => {
   const [plans, setPlans] = useState({
     '1_month': { name: 'Plus (1 Oylik)', price: '50 000 so\'m', amount: 50000, duration: '1 oy to\'liq ochiq' },
     '2_months': { name: 'Pro (2 Oylik)', price: '90 000 so\'m', amount: 90000, duration: '2 oy to\'liq ochiq', recommended: true },
-    '3_months': { name: 'Ultra (3 Oylik)', price: '120 000 so\'m', amount: 120000, duration: '3 oy to\'liq ochiq', superSaver: true }
+    '3_months': { name: 'Ultra (3 Oylik)', price: '120 000 so\'m', amount: 120000, duration: '3 oy to\'liq ochiq', superSaver: true },
+    '6_months': { name: 'VIP Max (6 Oylik)', price: '200 000 so\'m', amount: 200000, duration: '6 oy to\'liq ochiq', isVip: true }
   });
 
   const [cardInfo, setCardInfo] = useState({
@@ -65,12 +66,13 @@ export const CheckoutPage = () => {
             for (const [k, v] of Object.entries(configRes.plans)) {
               if (k !== 'free' && !v.isFree) {
                 paid[k] = {
-                  name: k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro (2 Oylik)' : 'Plus (1 Oylik)',
-                  price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : '50 000 so\'m'),
-                  amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 90000 : 50000),
-                  duration: v.duration || (k === '3_months' ? '3 oy to\'liq' : k === '2_months' ? '2 oy to\'liq' : '1 oy to\'liq'),
+                  name: v.name || (k === '6_months' ? 'VIP Max (6 Oylik)' : k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro (2 Oylik)' : 'Plus (1 Oylik)'),
+                  price: v.price || (k === '6_months' ? '200 000 so\'m' : k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : '50 000 so\'m'),
+                  amount: v.amount || (k === '6_months' ? 200000 : k === '3_months' ? 120000 : k === '2_months' ? 90000 : 50000),
+                  duration: v.duration || (k === '6_months' ? '6 oy to\'liq' : k === '3_months' ? '3 oy to\'liq' : k === '2_months' ? '2 oy to\'liq' : '1 oy to\'liq'),
                   recommended: k === '2_months',
-                  superSaver: k === '3_months'
+                  superSaver: k === '3_months',
+                  isVip: k === '6_months'
                 };
               }
             }
@@ -235,8 +237,8 @@ export const CheckoutPage = () => {
   const activePlanObj = plans[selectedPlan] || plans['1_month'];
 
   return (
-    <div className="w-full h-full flex flex-col justify-between bg-gray-50 dark:bg-[#070a12] p-2 sm:p-3 lg:p-3.5 transition-colors overflow-y-auto lg:overflow-hidden select-none">
-      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col justify-between min-h-0 space-y-2 lg:space-y-2.5">
+    <div className="w-full h-full flex flex-col bg-gray-50 dark:bg-[#070a12] p-2 sm:p-3 lg:p-3.5 transition-colors overflow-y-auto lg:overflow-hidden select-none">
+      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col min-h-0 space-y-2 sm:space-y-2.5">
         
         {/* Yuqori navigatsiya paneli */}
         <div className="flex items-center justify-between flex-shrink-0 pt-0.5">
@@ -244,11 +246,11 @@ export const CheckoutPage = () => {
             to="/tariffs"
             className="inline-flex items-center space-x-1.5 text-xs font-bold text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-4 h-4" />
             <span>Tariflarga qaytish</span>
           </Link>
 
-          <div className="flex items-center space-x-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center space-x-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
             <Lock className="w-3.5 h-3.5" />
             <span>256-bit Xavfsiz To'lov Kanali</span>
           </div>
@@ -272,9 +274,9 @@ export const CheckoutPage = () => {
         {isSuccess ? (
           <CheckoutSuccessView activePlanObj={activePlanObj} cardInfo={cardInfo} />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 xl:gap-3.5 items-stretch flex-1 min-h-0">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 xl:gap-3.5 items-start flex-1 min-h-0">
             {/* CHAP USTUN: Reja tanlash, To'lov turi va Chek yuklash */}
-            <div className="lg:col-span-7 flex flex-col justify-between gap-2 sm:gap-2.5 min-h-0">
+            <div className="lg:col-span-7 flex flex-col gap-2 sm:gap-2.5 min-h-0">
               <CheckoutPlanSelector
                 plans={plans}
                 selectedPlan={selectedPlan}
@@ -301,7 +303,7 @@ export const CheckoutPage = () => {
               />
             </div>
 
-            {/* O'NG USTUN: Realistik Zumrad HUMO Kartasi va Tafsilotlar */}
+            {/* O'NG USTUN: Realistik Zumrad HUMO Kartasi va 4 Qoida */}
             <CheckoutCardPreview
               cardInfo={cardInfo}
               activePlanObj={activePlanObj}

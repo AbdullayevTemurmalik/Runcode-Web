@@ -7,7 +7,8 @@ import {
   Building2, 
   Clock, 
   Info, 
-  Loader2 
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 
 export const CheckoutPlanSelector = ({
@@ -25,21 +26,63 @@ export const CheckoutPlanSelector = ({
   isAuthenticated,
   setStatusNotice
 }) => {
+  const getPlanBadge = (key, plan) => {
+    if (key === '6_months' || plan.isVip) {
+      return (
+        <span className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+          VIP Max
+        </span>
+      );
+    }
+    if (key === '3_months' || plan.superSaver) {
+      return (
+        <span className="bg-emerald-600 text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+          Super Tejam
+        </span>
+      );
+    }
+    if (key === '2_months' || plan.recommended) {
+      return (
+        <span className="bg-brand-600 text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+          Tavsiya
+        </span>
+      );
+    }
+    return (
+      <span className="bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/25 text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+        Plus
+      </span>
+    );
+  };
+
+  const getPlanSelectedStyle = (key) => {
+    switch (key) {
+      case '6_months':
+        return 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30 dark:bg-amber-500/10';
+      case '3_months':
+        return 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/30 dark:bg-emerald-500/10';
+      case '2_months':
+        return 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/30 dark:bg-brand-500/10';
+      default:
+        return 'border-sky-500 bg-sky-500/10 ring-2 ring-sky-500/30 dark:bg-sky-500/10';
+    }
+  };
+
   return (
     <>
-      {/* 1. Tarif tanlash qismi */}
-      <div className="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-[#0c101a] border border-gray-200 dark:border-white/10 shadow-sm flex flex-col justify-between">
-        <div className="flex items-center justify-between mb-1.5">
+      {/* 1. Tarif tanlash qismi - 4 ta Reja */}
+      <div className="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-[#0c101a] border border-gray-200 dark:border-white/10 shadow-sm flex flex-col space-y-2">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-brand-500" />
-            <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+            <Sparkles className="w-4 h-4 text-brand-500" />
+            <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
               1. Tarif Rejasini Tanlang
             </h3>
           </div>
-          <span className="text-[10px] text-gray-400 font-medium">Barcha kurslar ochiq</span>
+          <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium">Barcha 4 kurs ochiq</span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {Object.entries(plans).map(([key, plan]) => {
             const isSelected = selectedPlan === key;
             return (
@@ -53,26 +96,24 @@ export const CheckoutPlanSelector = ({
                     if (setStatusNotice) setStatusNotice(null);
                   }
                 }}
-                className={`p-2 sm:p-2.5 rounded-xl border text-left relative transition-all duration-150 cursor-pointer ${
+                className={`p-2 sm:p-2.5 rounded-xl border text-left relative transition-all duration-150 cursor-pointer flex flex-col justify-between ${
                   isSelected
-                    ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/30 shadow-sm scale-[1.01]'
-                    : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/50 dark:bg-white/[0.02]'
+                    ? `${getPlanSelectedStyle(key)} shadow-sm scale-[1.01]`
+                    : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/60 dark:bg-white/[0.02]'
                 }`}
               >
-                {plan.recommended && (
-                  <span className="absolute -top-2 right-2 bg-brand-500 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow-sm">
-                    Tavsiya
-                  </span>
-                )}
-                {plan.superSaver && (
-                  <span className="absolute -top-2 right-2 bg-purple-600 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow-sm">
-                    Super Tejam
-                  </span>
-                )}
+                <div className="flex items-center justify-between gap-1 mb-1">
+                  {getPlanBadge(key, plan)}
+                  {isSelected && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-500 flex-shrink-0" />
+                  )}
+                </div>
 
-                <p className="text-[11px] font-bold text-gray-900 dark:text-white truncate">{plan.name}</p>
-                <p className="text-xs sm:text-sm font-black text-brand-600 dark:text-brand-400 mt-0.5">{plan.price}</p>
-                <p className="text-[9px] text-gray-400 font-medium truncate mt-0.5">{plan.duration}</p>
+                <div>
+                  <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{plan.name}</p>
+                  <p className="text-xs sm:text-sm font-black text-brand-600 dark:text-brand-400 mt-0.5">{plan.price}</p>
+                  <p className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400 font-medium truncate mt-0.5">{plan.duration}</p>
+                </div>
               </button>
             );
           })}
@@ -80,10 +121,10 @@ export const CheckoutPlanSelector = ({
       </div>
 
       {/* 2. To'lov usulini tanlash (Ilova vs Bankomat) */}
-      <div className="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-[#0c101a] border border-gray-200 dark:border-white/10 shadow-sm flex flex-col justify-between">
-        <div className="flex items-center space-x-1.5 mb-1.5">
-          <CreditCard className="w-3.5 h-3.5 text-brand-500" />
-          <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+      <div className="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-[#0c101a] border border-gray-200 dark:border-white/10 shadow-sm flex flex-col space-y-2">
+        <div className="flex items-center space-x-1.5">
+          <CreditCard className="w-4 h-4 text-brand-500" />
+          <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
             2. To'lov Usulini Tanlang
           </h3>
         </div>
@@ -101,7 +142,7 @@ export const CheckoutPlanSelector = ({
             className={`p-2 sm:p-2.5 rounded-xl border flex flex-col justify-between transition-all cursor-pointer ${
               paymentMethod === 'apps'
                 ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/20 shadow-sm'
-                : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/50 dark:bg-white/[0.02]'
+                : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/60 dark:bg-white/[0.02]'
             }`}
           >
             <div className="flex items-start space-x-2">
@@ -142,8 +183,8 @@ export const CheckoutPlanSelector = ({
             }}
             className={`p-2 sm:p-2.5 rounded-xl border flex flex-col justify-between transition-all cursor-pointer ${
               paymentMethod === 'bankomat'
-                ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/20 shadow-sm'
-                : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/50 dark:bg-white/[0.02]'
+                ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/20 shadow-sm'
+                : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/60 dark:bg-white/[0.02]'
             }`}
           >
             <div className="flex items-start space-x-2">
@@ -176,7 +217,7 @@ export const CheckoutPlanSelector = ({
 
         {/* Tizimga kirmagan bo'lsa ogohlantirish */}
         {!isAuthenticated && (
-          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-[11px] mt-1.5">
+          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-[11px]">
             <div className="flex items-center space-x-1.5 text-amber-800 dark:text-amber-300 font-medium">
               <Info className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
               <span>To'lov profilingizga biriktirilishi uchun tizimga kiring:</span>
@@ -197,22 +238,22 @@ export const CheckoutPlanSelector = ({
             type="button"
             onClick={handleStartPayment}
             disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-brand-500/20 flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:opacity-50 mt-1.5"
+            className="w-full py-2.5 sm:py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-brand-500/20 flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
             <span>To'lovni Boshlash va Rekvizitlarni Faollashtirish</span>
           </button>
         ) : (
-          <div className="p-2 rounded-xl bg-gradient-to-r from-emerald-500/10 via-brand-500/10 to-teal-500/10 border border-brand-500/30 flex items-center justify-between mt-1.5">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/10 via-brand-500/10 to-teal-500/10 border border-brand-500/30 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 rounded-lg bg-brand-500 text-white flex items-center justify-center animate-pulse">
+              <div className="w-7 h-7 rounded-lg bg-brand-500 text-white flex items-center justify-center animate-pulse flex-shrink-0">
                 <Clock className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-[11px] font-bold text-gray-900 dark:text-white leading-tight">
+                <p className="text-[11px] sm:text-xs font-bold text-gray-900 dark:text-white leading-tight">
                   {paymentMethod === 'bankomat' ? 'Bankomat to\'lovi uchun qolgan vaqt:' : 'Chek yuklash uchun qolgan vaqt:'}
                 </p>
-                <p className="text-[9px] text-gray-500 dark:text-gray-400">
+                <p className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">
                   {paymentMethod === 'bankomat' ? '1 soat (60 daqiqa) limit' : '30 daqiqa limit'} • Taymer tugamasdan chekni yuboring
                 </p>
               </div>
