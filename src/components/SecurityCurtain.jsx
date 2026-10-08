@@ -1,7 +1,8 @@
 import React from 'react';
 import { ShieldAlert, EyeOff, Lock } from 'lucide-react';
 
-export const SecurityCurtain = ({ isPrtScnTriggered, isWindowBlurred, warningMessage }) => {
+export const SecurityCurtain = ({ isPrtScnTriggered, isWindowBlurred, warningMessage, isExempt }) => {
+  if (isExempt) return null;
   return (
     <>
       {/* 1. PrintScreen bosilganda qoraytiruvchi qalqon */}

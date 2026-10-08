@@ -4,30 +4,34 @@ import {
   Award, 
   CheckCircle2, 
   XCircle, 
-  AlertTriangle, 
   ArrowRight, 
   ArrowLeft, 
   RotateCcw, 
-  Sparkles, 
   X, 
-  HelpCircle,
-  Clock,
-  Check,
-  BookOpen,
-  Lock,
-  Unlock
+  Clock, 
+  Check, 
+  BookOpen, 
+  Unlock,
+  Loader2
 } from 'lucide-react';
+import api from '../services/api';
 import { MODULE_INTERIM_QUIZZES, saveCourseQuizResult } from '../data/courseQuizzes';
 
 export const ModuleQuizModal = ({
   isOpen,
   onClose,
   courseSlug = 'html',
-  moduleIndex = 1, // 1 -> unlocks 2; 2 -> unlocks 3; 3 -> unlocks 4
+  moduleIndex = 1,
+  lessonId = null,
+  lessonTitle = '',
   userId = 'guest',
   onSuccess
 }) => {
   const quizConfig = MODULE_INTERIM_QUIZZES[courseSlug]?.[moduleIndex];
+
+  const [backendQuiz, setBackendQuiz] = useState(null);
+  const [loadingQuiz, setLoadingQuiz] = useState(false);
+  const [submittingQuiz, setSubmittingQuiz] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({}); // { [questionIndex]: selectedOptionIndex }
@@ -35,6 +39,30 @@ export const ModuleQuizModal = ({
   const [result, setResult] = useState(null);
   const [timeLeft, setTimeLeft] = useState(600); // 10 daqiqa (600 sek)
   const [showReview, setShowReview] = useState(false);
+
+  // Backenddan dars bo'yicha progressiv savollarni yuklash
+  useEffect(() => {
+    if (isOpen && lessonId) {
+      setLoadingQuiz(true);
+      api.get(`/courses/lessons/${lessonId}/quiz`)
+        .then(res => {
+          if (res.success && res.questions) {
+            setBackendQuiz(res);
+            // Savollar soniga qarab dinamik taymer: har bir savol uchun 1 daqiqa
+            const count = res.questions.length || 5;
+            setTimeLeft(Math.max(300, count * 60));
+          }
+        })
+        .catch(err => {
+          console.error('Darslik testi yuklanmadi:', err);
+        })
+        .finally(() => {
+          setLoadingQuiz(false);
+        });
+    } else {
+      setBackendQuiz(null);
+    }
+  }, [isOpen, lessonId]);
 
   // Reset holat
   useEffect(() => {
@@ -46,7 +74,7 @@ export const ModuleQuizModal = ({
       setTimeLeft(600);
       setShowReview(false);
     }
-  }, [isOpen, courseSlug, moduleIndex]);
+  }, [isOpen, courseSlug, moduleIndex, lessonId]);
 
   // Taymer
   useEffect(() => {
@@ -65,9 +93,10 @@ export const ModuleQuizModal = ({
     return () => clearInterval(timer);
   }, [isOpen, submitted]);
 
-  if (!isOpen || !quizConfig) return null;
+  if (!isOpen) return null;
 
-  const questions = quizConfig.questions || [];
+  // Faol savollar ro'yxati
+  const questions = lessonId ? (backendQuiz?.questions || []) : (quizConfig?.questions || []);
   const currentQuestion = questions[currentIndex];
   const targetNextModule = moduleIndex + 1;
 
@@ -91,7 +120,55 @@ export const ModuleQuizModal = ({
     }
   };
 
-  const handleSubmitQuiz = () => {
+  const handleSubmitQuiz = async () => {
+    if (submittingQuiz || submitted) return;
+
+    // 1. Darslik bo'yicha test (Backend Source of Truth)
+    if (lessonId) {
+      setSubmittingQuiz(true);
+      try {
+        const answersPayload = {};
+        questions.forEach((q, idx) => {
+          if (answers[idx] !== undefined) {
+            answersPayload[q.id] = answers[idx];
+          }
+        });
+
+        const res = await api.post(`/courses/lessons/${lessonId}/quiz-submit`, {
+          answers: answersPayload
+        });
+
+        const resultData = {
+          score: res.score || 0,
+          correctCount: res.correctCount || 0,
+          totalQuestions: res.totalQuestions || questions.length,
+          passed: !!res.passed,
+          passingScore: res.passingScore || 70,
+          message: res.message
+        };
+
+        setResult(resultData);
+        setSubmitted(true);
+
+        if (res.passed) {
+          try {
+            confetti({
+              particleCount: 120,
+              spread: 80,
+              origin: { y: 0.6 }
+            });
+          } catch (e) {}
+          if (onSuccess) onSuccess({ lessonId, score: res.score, passed: true });
+        }
+      } catch (err) {
+        console.error('Quiz topshirishda xatolik:', err);
+      } finally {
+        setSubmittingQuiz(false);
+      }
+      return;
+    }
+
+    // 2. Modul oraliq testi fallback
     let correctCount = 0;
     questions.forEach((q, idx) => {
       if (answers[idx] === q.correctOption) {
@@ -100,34 +177,30 @@ export const ModuleQuizModal = ({
     });
 
     const totalQuestions = questions.length;
-    const score = Math.round((correctCount / totalQuestions) * 100);
-    const passed = score >= (quizConfig.passingScore || 70);
+    const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+    const passed = score >= (quizConfig?.passingScore || 70);
 
     const res = {
       score,
       correctCount,
       totalQuestions,
       passed,
-      passingScore: quizConfig.passingScore || 70
+      passingScore: quizConfig?.passingScore || 70
     };
 
     setResult(res);
     setSubmitted(true);
 
     if (passed) {
-      // Natijani saqlash
       saveCourseQuizResult(courseSlug, moduleIndex, res, userId);
-      
-      // Konfetti otish
       try {
         confetti({
           particleCount: 120,
           spread: 80,
           origin: { y: 0.6 }
         });
-      } catch (e) {
-        // confetti fallback
-      }
+      } catch (e) {}
+      if (onSuccess) onSuccess({ moduleIndex, score, passed: true });
     }
   };
 
@@ -136,18 +209,31 @@ export const ModuleQuizModal = ({
     setAnswers({});
     setSubmitted(false);
     setResult(null);
-    setTimeLeft(600);
+    setTimeLeft(questions.length * 60 || 600);
     setShowReview(false);
   };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   const answeredCount = Object.keys(answers).length;
-  const progressPercent = Math.round((answeredCount / questions.length) * 100);
+  const progressPercent = questions.length > 0 ? Math.round((answeredCount / questions.length) * 100) : 0;
+
+  // Header sarlavhalari
+  const displayTitle = lessonId
+    ? (lessonTitle || backendQuiz?.quiz?.lessonTitle || "Darslik Imtihoni")
+    : (quizConfig?.title || `${moduleIndex}-Modul Oraliq Testi`);
+
+  const displaySubtitle = lessonId
+    ? `Dars yakuniy progressiv testi: ${questions.length} ta savol (${backendQuiz?.quiz?.lessonIndexInModule || 1} × 5 ta savol)`
+    : (quizConfig?.scopeText || "Modulda o'tilgan mavzular bo'yicha");
+
+  const badgeText = lessonId
+    ? `${backendQuiz?.quiz?.moduleIndex || moduleIndex}-Modul • ${backendQuiz?.quiz?.lessonIndexInModule || 1}-Dars`
+    : `${moduleIndex}-Modul Oraliq Testi`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
@@ -164,20 +250,20 @@ export const ModuleQuizModal = ({
             <div>
               <div className="flex items-center space-x-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-brand-500">
-                  {moduleIndex}-Modul Oraliq Testi
+                  {badgeText}
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-bold border border-emerald-500/20">
-                  {targetNextModule}-Modulga O'tish
+                  {lessonId ? "Darsni Yakunlash" : `${targetNextModule}-Modulga O'tish`}
                 </span>
               </div>
-              <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-                {quizConfig.title}
+              <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white line-clamp-1">
+                {displayTitle}
               </h3>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
-            {!submitted && (
+            {!submitted && !loadingQuiz && (
               <div className="flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-mono font-bold">
                 <Clock className="w-3.5 h-3.5" />
                 <span>{formatTime(timeLeft)}</span>
@@ -194,17 +280,24 @@ export const ModuleQuizModal = ({
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1">
-          {!submitted ? (
+          {loadingQuiz ? (
+            <div className="py-20 flex flex-col items-center justify-center space-y-3">
+              <Loader2 className="w-10 h-10 text-brand-500 animate-spin" />
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                Savollar banki yuklanmoqda...
+              </p>
+            </div>
+          ) : !submitted ? (
             <>
               {/* Scope & Instructions */}
               <div className="p-3.5 rounded-2xl bg-brand-50/60 dark:bg-brand-500/5 border border-brand-100 dark:border-brand-500/10 flex items-start space-x-3 text-xs">
                 <BookOpen className="w-4 h-4 text-brand-500 mt-0.5 flex-shrink-0" />
                 <div className="space-y-0.5 text-gray-600 dark:text-gray-300">
                   <p className="font-semibold text-gray-800 dark:text-gray-200">
-                    {quizConfig.scopeText}
+                    {displaySubtitle}
                   </p>
                   <p className="text-[11px] text-gray-500">
-                    O'tish talabi: 10 ta savoldan kamida <strong>7 tasiga (70%)</strong> to'g'ri javob bering.
+                    O'tish talabi: {questions.length} ta savoldan kamida <strong>70%</strong> to'g'ri javob bering.
                   </p>
                 </div>
               </div>
@@ -248,63 +341,65 @@ export const ModuleQuizModal = ({
               </div>
 
               {/* Current Question */}
-              <div className="space-y-4 pt-2">
-                <div className="p-4 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-500">
-                    Savol #{currentIndex + 1}
-                  </span>
-                  <h4 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white mt-1 leading-snug">
-                    {currentQuestion.question}
-                  </h4>
-                </div>
+              {currentQuestion && (
+                <div className="space-y-4 pt-2">
+                  <div className="p-4 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand-500">
+                      Savol #{currentIndex + 1}
+                    </span>
+                    <h4 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white mt-1 leading-snug">
+                      {currentQuestion.question}
+                    </h4>
+                  </div>
 
-                {/* Options List */}
-                <div className="space-y-2.5">
-                  {currentQuestion.options.map((option, optIdx) => {
-                    const isSelected = answers[currentIndex] === optIdx;
-                    const optionLetter = String.fromCharCode(65 + optIdx); // A, B, C, D
+                  {/* Options List */}
+                  <div className="space-y-2.5">
+                    {currentQuestion.options.map((option, optIdx) => {
+                      const isSelected = answers[currentIndex] === optIdx;
+                      const optionLetter = String.fromCharCode(65 + optIdx); // A, B, C, D
 
-                    return (
-                      <button
-                        key={optIdx}
-                        type="button"
-                        onClick={() => handleSelectOption(optIdx)}
-                        className={`w-full p-3.5 rounded-2xl border text-left flex items-center space-x-3 transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-brand-500/10 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm'
-                            : 'bg-white dark:bg-[#131620] border-gray-200 dark:border-white/5 text-gray-700 dark:text-gray-300 hover:border-brand-500/40 hover:bg-gray-50 dark:hover:bg-white/[0.02]'
-                        }`}
-                      >
-                        <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold transition-colors ${
-                          isSelected 
-                            ? 'bg-brand-600 text-white' 
-                            : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'
-                        }`}>
-                          {optionLetter}
-                        </div>
-                        <span className="text-xs sm:text-sm font-medium flex-1">
-                          {option}
-                        </span>
-                        {isSelected && (
-                          <div className="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center">
-                            <Check className="w-3.5 h-3.5" />
+                      return (
+                        <button
+                          key={optIdx}
+                          type="button"
+                          onClick={() => handleSelectOption(optIdx)}
+                          className={`w-full p-3.5 rounded-2xl border text-left flex items-center space-x-3 transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-brand-500/10 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm'
+                              : 'bg-white dark:bg-[#131620] border-gray-200 dark:border-white/5 text-gray-700 dark:text-gray-300 hover:border-brand-500/40 hover:bg-gray-50 dark:hover:bg-white/[0.02]'
+                          }`}
+                        >
+                          <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold transition-colors ${
+                            isSelected 
+                              ? 'bg-brand-600 text-white' 
+                              : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'
+                          }`}>
+                            {optionLetter}
                           </div>
-                        )}
-                      </button>
-                    );
-                  })}
+                          <span className="text-xs sm:text-sm font-medium flex-1">
+                            {option}
+                          </span>
+                          {isSelected && (
+                            <div className="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center">
+                              <Check className="w-3.5 h-3.5" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           ) : (
             /* Result Screen */
             <div className="space-y-6 py-2 text-center animate-fade-in">
               <div className={`mx-auto w-20 h-20 rounded-3xl flex items-center justify-center shadow-xl ${
-                result.passed 
+                result?.passed 
                   ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-emerald-500/30' 
                   : 'bg-gradient-to-tr from-red-500 to-rose-400 text-white shadow-red-500/30'
               }`}>
-                {result.passed ? (
+                {result?.passed ? (
                   <CheckCircle2 className="w-10 h-10" />
                 ) : (
                   <XCircle className="w-10 h-10" />
@@ -313,29 +408,29 @@ export const ModuleQuizModal = ({
 
               <div className="space-y-2">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                  result.passed
+                  result?.passed
                     ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                     : 'bg-red-500/10 text-red-500 border border-red-500/20'
                 }`}>
-                  {result.passed ? "Muvaffaqiyatli O'tdingiz!" : "Oraliq Testdan O'tolmadingiz"}
+                  {result?.passed ? "Muvaffaqiyatli O'tdingiz!" : "Imtihondan O'tolmadingiz"}
                 </span>
 
                 <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">
-                  {result.passed 
-                    ? `Tabriklaymiz! ${targetNextModule}-Modul ochildi!` 
+                  {result?.passed 
+                    ? (lessonId ? "Tabriklaymiz! Darslik yakunlandi!" : `Tabriklaymiz! ${targetNextModule}-Modul ochildi!`)
                     : "Qayta urinib ko'rishingiz lozim"}
                 </h3>
 
                 <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 max-w-md mx-auto leading-relaxed">
-                  {result.passed ? (
+                  {result?.passed ? (
                     <>
-                      Siz 10 ta savoldan <strong>{result.correctCount} tasiga ({result.score}%)</strong> to'g'ri javob berdingiz. 
-                      Endi <strong>{targetNextModule}-Modul darslari</strong> rasman siz uchun ochiq!
+                      Siz {result.totalQuestions} ta savoldan <strong>{result.correctCount} tasiga ({result.score}%)</strong> to'g'ri javob berdingiz. 
+                      Darslik muvaffaqiyatli o'zlashtirildi!
                     </>
                   ) : (
                     <>
-                      Siz 10 ta savoldan <strong>{result.correctCount} tasiga ({result.score}%)</strong> to'g'ri javob berdingiz. 
-                      O'tish uchun kamida <strong>70% (7 ta to'g'ri)</strong> to'plashingiz kerak. Oldingi darslarni takrorlab, qayta urinib ko'ring.
+                      Siz {result?.totalQuestions} ta savoldan <strong>{result?.correctCount} tasiga ({result?.score}%)</strong> to'g'ri javob berdingiz. 
+                      O'tish uchun kamida <strong>70%</strong> to'plashingiz kerak. Mavzuni takrorlab, qayta urinib ko'ring.
                     </>
                   )}
                 </p>
@@ -345,13 +440,13 @@ export const ModuleQuizModal = ({
               <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 max-w-sm mx-auto flex items-center justify-around text-xs">
                 <div>
                   <p className="text-gray-400 text-[10px]">To'g'ri javoblar</p>
-                  <p className="text-base font-black text-emerald-500">{result.correctCount} / {result.totalQuestions}</p>
+                  <p className="text-base font-black text-emerald-500">{result?.correctCount} / {result?.totalQuestions}</p>
                 </div>
                 <div className="w-px h-8 bg-gray-200 dark:bg-white/10" />
                 <div>
                   <p className="text-gray-400 text-[10px]">To'plangan ball</p>
-                  <p className={`text-base font-black ${result.passed ? 'text-brand-500' : 'text-red-500'}`}>
-                    {result.score}%
+                  <p className={`text-base font-black ${result?.passed ? 'text-brand-500' : 'text-red-500'}`}>
+                    {result?.score}%
                   </p>
                 </div>
                 <div className="w-px h-8 bg-gray-200 dark:bg-white/10" />
@@ -361,19 +456,20 @@ export const ModuleQuizModal = ({
                 </div>
               </div>
 
-              {/* Answers Review Toggle */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setShowReview(!showReview)}
-                  className="text-xs font-bold text-brand-500 hover:underline cursor-pointer"
-                >
-                  {showReview ? "Javoblar tekshiruvini yashirish" : "Savollar va to'g'ri javoblarni ko'rish"}
-                </button>
-              </div>
+              {/* Answers Review Toggle (for non-backend or reviewable) */}
+              {!lessonId && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowReview(!showReview)}
+                    className="text-xs font-bold text-brand-500 hover:underline cursor-pointer"
+                  >
+                    {showReview ? "Javoblar tekshiruvini yashirish" : "Savollar va to'g'ri javoblarni ko'rish"}
+                  </button>
+                </div>
+              )}
 
-              {/* Review Accordion */}
-              {showReview && (
+              {showReview && !lessonId && (
                 <div className="space-y-3 text-left pt-2 border-t border-gray-100 dark:border-white/5 max-h-60 overflow-y-auto pr-1">
                   {questions.map((q, idx) => {
                     const userAns = answers[idx];
@@ -416,9 +512,9 @@ export const ModuleQuizModal = ({
               <button
                 type="button"
                 onClick={handlePrev}
-                disabled={currentIndex === 0}
+                disabled={currentIndex === 0 || loadingQuiz}
                 className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 border transition-all cursor-pointer ${
-                  currentIndex === 0
+                  currentIndex === 0 || loadingQuiz
                     ? 'opacity-40 cursor-not-allowed border-gray-200 dark:border-white/5 text-gray-400'
                     : 'border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-300'
                 }`}
@@ -432,15 +528,26 @@ export const ModuleQuizModal = ({
                   <button
                     type="button"
                     onClick={handleSubmitQuiz}
+                    disabled={submittingQuiz || loadingQuiz}
                     className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition-all cursor-pointer flex items-center space-x-1.5"
                   >
-                    <span>Testni Yakunlash ({answeredCount}/{questions.length})</span>
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {submittingQuiz ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Tekshirilmoqda...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Testni Yakunlash ({answeredCount}/{questions.length})</span>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </>
+                    )}
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={handleNext}
+                    disabled={loadingQuiz}
                     className="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all cursor-pointer flex items-center space-x-1.5"
                   >
                     <span>Keyingi Savol</span>
@@ -451,7 +558,7 @@ export const ModuleQuizModal = ({
             </>
           ) : (
             <div className="w-full flex items-center justify-between gap-3">
-              {result.passed ? (
+              {result?.passed ? (
                 <>
                   <button
                     type="button"
@@ -464,12 +571,12 @@ export const ModuleQuizModal = ({
                     type="button"
                     onClick={() => {
                       onClose();
-                      if (onSuccess) onSuccess({ moduleIndex, score: result.score, passed: true });
+                      if (onSuccess) onSuccess({ lessonId, moduleIndex, score: result.score, passed: true });
                     }}
                     className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/30 flex items-center space-x-2 transition-all cursor-pointer"
                   >
                     <Unlock className="w-4 h-4" />
-                    <span>{targetNextModule}-Modulga O'tish</span>
+                    <span>{lessonId ? "Keyingi Darsga O'tish" : `${targetNextModule}-Modulga O'tish`}</span>
                   </button>
                 </>
               ) : (

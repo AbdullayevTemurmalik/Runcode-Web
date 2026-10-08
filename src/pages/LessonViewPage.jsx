@@ -50,7 +50,7 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
   const [expandedModules, setExpandedModules] = useState({ 'mod-1': true });
   const [showExamReadyModal, setShowExamReadyModal] = useState(false);
   const [lockedToast, setLockedToast] = useState(null);
-  const [quizModal, setQuizModal] = useState({ isOpen: false, moduleIndex: 1 });
+  const [quizModal, setQuizModal] = useState({ isOpen: false, moduleIndex: 1, lessonId: null, lessonTitle: '' });
   const [quizRefreshToken, setQuizRefreshToken] = useState(0);
 
   // Darslik ichida anti-copy, anti-screenshot va snipping tool himoyasi
@@ -169,75 +169,80 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
     navigate(`/courses/${courseSlug}/lesson/${id}`);
   };
 
-  const handleQuizSuccess = ({ moduleIndex, score }) => {
-    setQuizRefreshToken(prev => prev + 1);
-    setQuizModal({ isOpen: false, moduleIndex: 1 });
-    const nextModIndex = moduleIndex + 1;
-    
-    // Keyingi modulni faol qilib ochamiz (boshqalari yopiladi)
-    setExpandedModules({
-      [`mod-${nextModIndex}`]: true
-    });
+  const handleQuizSuccess = ({ lessonId, moduleIndex, score }) => {
+    const targetLessonId = lessonId || currentLesson?.id;
 
-    // Yangi ochilgan modulning birinchi darsiga o'tamiz
-    const nextMod = rawModules.find(m => m.index === nextModIndex);
-    if (nextMod && nextMod.lessons.length > 0) {
-      navigate(`/courses/${courseSlug}/lesson/${nextMod.lessons[0].id}`);
+    let updatedLessons = [];
+    setCourse(prev => {
+      if (!prev) return prev;
+      updatedLessons = prev.lessons.map(l => l.id === targetLessonId ? { ...l, is_completed: true } : l);
+      return {
+        ...prev,
+        lessons: updatedLessons
+      };
+    });
+    setCurrentLesson(prev => prev ? { ...prev, is_completed: true } : prev);
+    setQuizRefreshToken(prev => prev + 1);
+    setQuizModal({ isOpen: false, moduleIndex: 1, lessonId: null, lessonTitle: '' });
+
+    // Ushbu dars tegishli modul va uning yakunlanganligi
+    const currentMod = modules.find(m => m.lessons.some(l => l.id === targetLessonId));
+    const modLessons = currentMod ? currentMod.lessons : [];
+    const isModFinished = modLessons.length > 0 && modLessons.every(l => 
+      l.id === targetLessonId ? true : l.is_completed
+    );
+
+    const currentIndex = course?.lessons ? course.lessons.findIndex(l => l.id === targetLessonId) : -1;
+    const isLastLesson = course?.lessons && currentIndex === course.lessons.length - 1;
+    const allCompleted = updatedLessons.length > 0 && updatedLessons.every(l => l.is_completed);
+
+    // Agar bu butun kursning oxirgi darsi bo'lsa (yoki 4-modul yakunlansa) -> Yakuniy imtihon modalini chiqaramiz!
+    if (isModFinished && currentMod && (currentMod.index === 4 || allCompleted || isLastLesson)) {
+      setShowExamReadyModal(true);
+      return;
+    }
+
+    // Keyingi modulga o'tish zarurati bo'lsa
+    if (isModFinished && currentMod && currentMod.index < 4) {
+      const nextModIndex = currentMod.index + 1;
+      setExpandedModules({
+        [`mod-${nextModIndex}`]: true
+      });
+      const nextMod = rawModules.find(m => m.index === nextModIndex);
+      if (nextMod && nextMod.lessons.length > 0) {
+        navigate(`/courses/${courseSlug}/lesson/${nextMod.lessons[0].id}`);
+        return;
+      }
+    }
+
+    // Oddiy keyingi darsga o'tamiz
+    if (course?.lessons && currentIndex < course.lessons.length - 1) {
+      const nextLesson = course.lessons[currentIndex + 1];
+      handleSelectLesson(nextLesson, currentMod);
     }
   };
 
   const handleCompleteLesson = async () => {
     if (!currentLesson || !user) return;
-    setCompleting(true);
-    try {
-      await api.post(`/courses/lessons/${currentLesson.id}/complete`);
 
-      let updatedLessons = [];
-      setCourse(prev => {
-        if (!prev) return prev;
-        updatedLessons = prev.lessons.map(l => l.id === currentLesson.id ? { ...l, is_completed: true } : l);
-        return {
-          ...prev,
-          lessons: updatedLessons
-        };
-      });
-      setCurrentLesson(prev => prev ? { ...prev, is_completed: true } : prev);
-
-      // Ushbu dars qaysi modulga tegishli ekanligini topamiz
+    // Agar dars hali yakunlanmagan bo'lsa -> Progressiv darslik imtihonini ochamiz!
+    if (!currentLesson.is_completed) {
       const currentMod = modules.find(m => m.lessons.some(l => l.id === currentLesson.id));
-      const modLessons = currentMod ? currentMod.lessons : [];
+      setQuizModal({
+        isOpen: true,
+        lessonId: currentLesson.id,
+        lessonTitle: currentLesson.title,
+        moduleIndex: currentMod ? currentMod.index : 1
+      });
+      return;
+    }
 
-      // Shu modulning barcha darslari tugaganmi?
-      const isModFinished = modLessons.length > 0 && modLessons.every(l => 
-        l.id === currentLesson.id ? true : l.is_completed
-      );
-
-      const currentIndex = course.lessons.findIndex(l => l.id === currentLesson.id);
-      const isLastLesson = currentIndex === course.lessons.length - 1;
-      const allCompleted = updatedLessons.length > 0 && updatedLessons.every(l => l.is_completed);
-
-      // Agar modul tugagan bo'lsa:
-      if (isModFinished && currentMod) {
-        if (currentMod.index < 4) {
-          // Modul 1, 2, 3 tugaganda -> 10 ta savolli oraliq test modalini ko'rsatamiz!
-          setQuizModal({ isOpen: true, moduleIndex: currentMod.index });
-          return;
-        } else if (currentMod.index === 4 && (allCompleted || isLastLesson)) {
-          // Modul 4 (oxirgi modul) darslari tugaganda -> Yakuniy 20 ta savolli imtihon modalini chiqaramiz!
-          setShowExamReadyModal(true);
-          return;
-        }
-      }
-
-      // Agar modul hali tugamagan bo'lsa, keyingi darsga o'tamiz
-      if (currentIndex < course.lessons.length - 1) {
-        const nextLesson = course.lessons[currentIndex + 1];
-        handleSelectLesson(nextLesson, currentMod);
-      }
-    } catch (err) {
-      console.error('Darsni yakunlashda xatolik:', err);
-    } finally {
-      setCompleting(false);
+    // Agar dars allaqachon yakunlangan bo'lsa -> keyingi darsga o'tish
+    const currentIndex = course.lessons.findIndex(l => l.id === currentLesson.id);
+    const currentMod = modules.find(m => m.lessons.some(l => l.id === currentLesson.id));
+    if (currentIndex < course.lessons.length - 1) {
+      const nextLesson = course.lessons[currentIndex + 1];
+      handleSelectLesson(nextLesson, currentMod);
     }
   };
 
@@ -909,12 +914,14 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
         </main>
       </div>
 
-      {/* Oraliq Modul Testi Modali (10 ta savol) */}
+      {/* Darslik va Oraliq Modul Testi Modali (Progressiv Savollar) */}
       <ModuleQuizModal
         isOpen={quizModal.isOpen}
-        onClose={() => setQuizModal({ isOpen: false, moduleIndex: 1 })}
+        onClose={() => setQuizModal({ isOpen: false, moduleIndex: 1, lessonId: null, lessonTitle: '' })}
         courseSlug={courseSlug}
         moduleIndex={quizModal.moduleIndex}
+        lessonId={quizModal.lessonId}
+        lessonTitle={quizModal.lessonTitle}
         userId={user?.id || 'guest'}
         onSuccess={handleQuizSuccess}
       />

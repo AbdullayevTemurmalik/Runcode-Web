@@ -120,8 +120,8 @@ export const HomeHero = ({ isAuthenticated }) => {
                     <span className="text-sky-400 font-bold">VIP Faol</span>
                   </div>
                   <div className="flex justify-between text-gray-400">
-                    <span>Sertifikat:</span>
-                    <span className="text-amber-400 font-bold">QR-kodli / Rasmiy</span>
+                    <span>Amaliy loyihalar:</span>
+                    <span className="text-amber-400 font-bold">Real / Interaktiv</span>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 animate-pulse">

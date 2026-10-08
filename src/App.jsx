@@ -38,7 +38,7 @@ const AppContent = () => {
   const isCheckout = location.pathname.startsWith('/checkout') || location.pathname.startsWith('/payment');
 
   // Butun platforma bo'ylab nusxa olish va screenshotga qarshi global qalqon
-  const { isPrtScnTriggered, warningMessage } = useSecurityShield({
+  const { isPrtScnTriggered, warningMessage, isExempt } = useSecurityShield({
     enableAntiCopy: true,
     enableAntiScreenshot: true,
     enableBlurShield: false // Global sahifalarda blur sharti yo'q, faqat dars va imtihonda
@@ -54,7 +54,8 @@ const AppContent = () => {
       <SecurityCurtain 
         isPrtScnTriggered={isPrtScnTriggered} 
         isWindowBlurred={false} 
-        warningMessage={warningMessage} 
+        warningMessage={warningMessage}
+        isExempt={isExempt}
       />
       <ScrollToTop />
       <Navbar onOpenPaymentModal={handleOpenPayment} />
