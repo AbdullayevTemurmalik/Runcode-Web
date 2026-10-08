@@ -199,7 +199,7 @@ export const Navbar = ({ onOpenPaymentModal }) => {
                                     {notif.message}
                                   </p>
                                   <span className="text-[10px] text-gray-400 mt-1 block">
-                                    {new Date(notif.created_at).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(notif.created_at).toLocaleTimeString('uz-UZ', { timeZone: 'Asia/Tashkent', hour: '2-digit', minute: '2-digit' })}
                                   </span>
                                 </div>
                               </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Sparkles, 
@@ -8,7 +8,9 @@ import {
   Clock, 
   Info, 
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle,
+  X
 } from 'lucide-react';
 
 export const CheckoutPlanSelector = ({
@@ -26,6 +28,20 @@ export const CheckoutPlanSelector = ({
   isAuthenticated,
   setStatusNotice
 }) => {
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const handleInitiateClick = () => {
+    if (!isAuthenticated) {
+      handleStartPayment();
+      return;
+    }
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmStart = () => {
+    setShowConfirmModal(false);
+    handleStartPayment();
+  };
   const getPlanBadge = (key, plan) => {
     if (key === '3_months' || plan?.superSaver) {
       return (
@@ -256,7 +272,7 @@ export const CheckoutPlanSelector = ({
         {!isStarted ? (
           <button
             type="button"
-            onClick={handleStartPayment}
+            onClick={handleInitiateClick}
             disabled={loading}
             className="w-full py-3 sm:py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs sm:text-sm uppercase tracking-wider shadow-md shadow-brand-500/20 flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
           >
@@ -284,6 +300,64 @@ export const CheckoutPlanSelector = ({
           </div>
         )}
       </div>
+
+      {/* To'lov usulini tasdiqlash modali */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white dark:bg-[#0c101a] border border-gray-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden p-6 relative">
+            <button
+              type="button"
+              onClick={() => setShowConfirmModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-7 h-7" />
+              </div>
+
+              <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">
+                To'lov Usulini Tasdiqlash
+              </h3>
+
+              <div className="my-3 px-4 py-2 rounded-2xl bg-rose-500/10 border border-rose-500/25">
+                <span className="text-xs font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                  {paymentMethod === 'bankomat' ? 'BANKOMAT ORQALI TO\'LASH' : 'ILOVADAN TO\'LASH'}
+                </span>
+              </div>
+
+              <p className="text-sm text-gray-700 dark:text-gray-300 font-medium leading-relaxed">
+                Siz <span className="font-bold text-rose-600 dark:text-rose-400">{paymentMethod === 'bankomat' ? "BANKOMAT ORQALI TO'LASH" : "ILOVADAN TO'LASH"}</span> metodini tanladingiz. Aynan shu usulda pul to'lamoqchimisiz?
+              </p>
+
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 mb-6">
+                {paymentMethod === 'bankomat'
+                  ? "Tasdiqlaganingizdan so'ng hisob rekvizitlari ochiladi va chek yuklash uchun 1 soat (60 daqiqa) vaqt beriladi."
+                  : "Tasdiqlaganingizdan so'ng hisob rekvizitlari ochiladi va chek yuklash uchun 30 daqiqa vaqt beriladi."}
+              </p>
+
+              <div className="grid grid-cols-2 gap-3 w-full">
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(false)}
+                  className="w-full py-2.5 px-4 rounded-xl border border-gray-300 dark:border-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs sm:text-sm hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmStart}
+                  className="w-full py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-brand-500/20 transition-all cursor-pointer"
+                >
+                  Ha, tasdiqlayman
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
