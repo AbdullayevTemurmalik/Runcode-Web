@@ -21,38 +21,36 @@ import { useAuth } from '../context/AuthContext';
 
 const DEFAULT_PLANS = [
   {
-    id: 'free',
-    tier: 'Free',
-    name: 'Free (Bepul)',
-    statusTitle: 'Free',
-    duration: 'Cheksiz muddat',
-    price: '0 so\'m',
-    amount: 0,
-    desc: 'Dasturlash olamiga ilk qadam qo\'yuvchilar uchun',
+    id: '7_days',
+    tier: 'Plus',
+    name: 'Plus (7 Kunlik)',
+    statusTitle: 'Plus',
+    duration: '7 kun to\'liq ochiq',
+    price: '20 000 so\'m',
+    amount: 20000,
+    desc: 'Test uchun sinang va platformaning barcha imkoniyatlarini sinovdan o\'tkazing',
+    badge: 'Test uchun sinang',
     features: [
-      '11 ta to\'liq HTML darsliklari',
-      'Barcha amaliy topshiriqlar',
-      'Interaktiv kod muharriri va amaliy mashqlar',
+      'Barcha 4 ta kurs: HTML, CSS, JS, React',
+      '73 ta interaktiv amaliy darslik',
+      'Interaktiv kod muharriri va mashqlar',
       'Barcha mavzular bo\'yicha testlar',
-      'Platformadan cheksiz foydalanish'
-    ],
-    notIncluded: [
-      'CSS, JavaScript va React kurslari',
       'Yopiq Telegram mentorlik guruhi'
     ],
-    ctaText: 'Bepul Boshlash',
-    isFree: true,
+    notIncluded: [],
+    ctaText: 'Plus Obuna',
+    isFree: false,
     recommended: false
   },
   {
     id: '1_month',
-    tier: 'Plus',
-    name: 'Plus',
-    statusTitle: 'Plus',
+    tier: 'Pro',
+    name: 'Pro (1 Oylik)',
+    statusTitle: 'Pro',
     duration: '1 oy to\'liq ochiq',
     price: '50 000 so\'m',
     amount: 50000,
-    desc: 'Tez sur\'atda chuqur bilim oluvchilar uchun',
+    desc: 'Tez sur\'atda chuqur bilim oluvchilar uchun optimal reja',
     features: [
       'Barcha 4 ta kurs: HTML, CSS, JS, React',
       '73 ta interaktiv amaliy darslik',
@@ -61,19 +59,19 @@ const DEFAULT_PLANS = [
       'Har kuni middle dasturchilar konsultatsiyasi'
     ],
     notIncluded: [],
-    ctaText: 'Plus Obuna',
+    ctaText: 'Pro Obuna',
     isFree: false,
     recommended: false
   },
   {
     id: '2_months',
-    tier: 'Pro',
-    name: 'Pro',
-    statusTitle: 'Pro',
+    tier: 'Pro+',
+    name: 'Pro+ (2 Oylik)',
+    statusTitle: 'Pro+',
     duration: '2 oy to\'liq ochiq',
     price: '90 000 so\'m',
     amount: 90000,
-    desc: 'Frontend dasturchi bo\'lish uchun eng optimal reja',
+    desc: 'Frontend dasturchi bo\'lish uchun eng tavsiya etilgan reja',
     features: [
       'Barcha 4 ta kurs: HTML, CSS, JS, React',
       '73 ta amaliy darslik va manbalar',
@@ -83,19 +81,19 @@ const DEFAULT_PLANS = [
       'Imtihonlarni qayta topshirish imkoniyati'
     ],
     notIncluded: [],
-    ctaText: 'Pro Obuna',
+    ctaText: 'Pro+ Obuna',
     isFree: false,
     recommended: true
   },
   {
     id: '3_months',
     tier: 'Ultra',
-    name: 'Ultra',
+    name: 'Ultra (3 Oylik)',
     statusTitle: 'Ultra',
     duration: '3 oy to\'liq ochiq',
     price: '120 000 so\'m',
     amount: 120000,
-    desc: 'Maksimal tejamkorlik va to\'liq Full-Stack tayyorgarlik',
+    desc: 'Maksimal tejamkorlik va to\'liq professional tayyorgarlik',
     features: [
       'Barcha mavjud 4 ta kurs va yangi modullar',
       '30 000 so\'m kafolatlangan tejam',
@@ -107,7 +105,8 @@ const DEFAULT_PLANS = [
     notIncluded: [],
     ctaText: 'Ultra Obuna',
     isFree: false,
-    recommended: false
+    recommended: false,
+    superSaver: true
   }
 ];
 
@@ -121,7 +120,10 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
       try {
         const res = await api.get('/payments/config');
         if (res && res.success && res.plans) {
-          setPricingPlans(Object.values(res.plans));
+          const list = Object.values(res.plans).filter(p => !p.isFree && p.id !== 'free');
+          if (list.length > 0) {
+            setPricingPlans(list);
+          }
         }
       } catch (err) {
         console.error('Tariflarni yuklashda xatolik:', err);
@@ -135,15 +137,15 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
   const displayPlans = pricingPlans.length > 0 ? pricingPlans : DEFAULT_PLANS;
 
   const comparisonRows = [
-    { title: 'HTML Dasturlash Asoslari (11 dars)', free: true, plus: true, pro: true, ultra: true },
-    { title: 'CSS & Responsive Dizayn (19 dars)', free: false, plus: true, pro: true, ultra: true },
-    { title: 'JavaScript Chuqur Kurs (28 dars)', free: false, plus: true, pro: true, ultra: true },
-    { title: 'React.js Zamonaviy Ekotizim (15 dars)', free: false, plus: true, pro: true, ultra: true },
-    { title: 'Kelgusi Node.js & Next.js modullari', free: false, plus: false, pro: false, ultra: true },
-    { title: 'Yopiq Telegram Jamiyati & Mentorlik', free: false, plus: true, pro: true, ultra: 'VIP guruh + 24/7' },
-    { title: 'Interaktiv Kod Muharriri & Sandbox', free: true, plus: true, pro: true, ultra: true },
-    { title: 'Foydalanuvchi Profili Statusi', free: 'Free Status', plus: 'Plus Status', pro: 'Pro Status', ultra: 'Ultra Status' },
-    { title: 'Kafolatlangan Tejam', free: '—', plus: '—', pro: '10 000 so\'m', ultra: '30 000 so\'m' },
+    { title: 'HTML Dasturlash Asoslari (11 dars)', plus: true, pro: true, proPlus: true, ultra: true },
+    { title: 'CSS & Responsive Dizayn (19 dars)', plus: true, pro: true, proPlus: true, ultra: true },
+    { title: 'JavaScript Chuqur Kurs (28 dars)', plus: true, pro: true, proPlus: true, ultra: true },
+    { title: 'React.js Zamonaviy Ekotizim (15 dars)', plus: true, pro: true, proPlus: true, ultra: true },
+    { title: 'Kelgusi Node.js & Next.js modullari', plus: false, pro: false, proPlus: false, ultra: true },
+    { title: 'Yopiq Telegram Jamiyati & Mentorlik', plus: '7 kun', pro: '1 oy', proPlus: '2 oy (VIP)', ultra: '3 oy (VIP + 24/7)' },
+    { title: 'Interaktiv Kod Muharriri & Sandbox', plus: true, pro: true, proPlus: true, ultra: true },
+    { title: 'Foydalanuvchi Profili Statusi', plus: 'Plus Status', pro: 'Pro Status', proPlus: 'Pro+ Status', ultra: 'Ultra Status' },
+    { title: 'Kafolatlangan Tejam', plus: 'Test Sinov', pro: '—', proPlus: '10 000 so\'m', ultra: '30 000 so\'m' },
   ];
 
   const handlePlanClick = (plan) => {
@@ -183,24 +185,32 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-5">
           {displayPlans.map((plan) => {
-              const isPro = plan.id === '2_months' || plan.tier === 'Pro';
               const isUltra = plan.id === '3_months' || plan.tier === 'Ultra';
-              const isPlus = plan.id === '1_month' || plan.tier === 'Plus';
-              const isFree = plan.isFree;
+              const isProPlus = plan.id === '2_months' || plan.tier === 'Pro+' || plan.name?.includes('Pro+');
+              const isPro = plan.id === '1_month' || (plan.tier === 'Pro' && !isProPlus);
+              const isPlus = plan.id === '7_days' || plan.tier === 'Plus';
 
               return (
                 <div
                   key={plan.id}
                   className={`rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative transition-all duration-300 hover:-translate-y-1 ${
-                    isPro
-                      ? 'bg-white dark:bg-[#0f111a] border-2 border-brand-500 shadow-2xl shadow-brand-500/20'
+                    isProPlus
+                      ? 'bg-white dark:bg-[#0a1510] border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20'
                       : isUltra
-                      ? 'bg-white dark:bg-[#0d0f17] border-2 border-purple-500/80 shadow-xl shadow-purple-500/10'
-                      : 'bg-white dark:bg-[#0c0d12]/90 border border-gray-200 dark:border-white/5 shadow-sm'
+                      ? 'bg-white dark:bg-[#130d1c] border-2 border-purple-500/80 shadow-xl shadow-purple-500/10'
+                      : isPro
+                      ? 'bg-white dark:bg-[#0c1220] border-2 border-blue-500/60 shadow-lg shadow-blue-500/15'
+                      : 'bg-white dark:bg-[#081520] border-2 border-sky-400/60 shadow-lg shadow-sky-500/10'
                   }`}
                 >
-                  {isPro && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-brand-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-brand-500/30 whitespace-nowrap">
+                  {isPlus && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-sky-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-sky-500/30 whitespace-nowrap">
+                      <Sparkles className="w-3 h-3 mr-1 fill-white" /> Test Uchun Sinang
+                    </div>
+                  )}
+
+                  {isProPlus && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-emerald-500/30 whitespace-nowrap">
                       <Star className="w-3 h-3 mr-1 fill-white" /> Tavsiya Etiladi
                     </div>
                   )}
@@ -215,13 +225,13 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                     {/* Tier Badge */}
                     <div className="flex items-center justify-between">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                        isFree 
-                          ? 'bg-gray-100 dark:bg-white/5 text-gray-500' 
-                          : isPlus 
-                          ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
-                          : isPro
-                          ? 'bg-brand-500/10 text-brand-500 border border-brand-500/20'
-                          : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                        isPlus 
+                          ? 'bg-sky-500/15 text-sky-500 border border-sky-500/25' 
+                          : isPro 
+                          ? 'bg-blue-500/15 text-blue-500 border border-blue-500/25'
+                          : isProPlus
+                          ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/25'
+                          : 'bg-purple-500/15 text-purple-400 border border-purple-500/25'
                       }`}>
                         {plan.statusTitle || plan.name} Status
                       </span>
@@ -232,7 +242,12 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{plan.desc || plan.description}</p>
 
                     <div className="my-6 pb-6 border-b border-gray-100 dark:border-white/5">
-                      <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+                      <span className={`text-3xl font-black tracking-tight ${
+                        isPlus ? 'text-sky-600 dark:text-sky-400' :
+                        isPro ? 'text-blue-600 dark:text-blue-400' :
+                        isProPlus ? 'text-emerald-600 dark:text-emerald-400' :
+                        'text-purple-600 dark:text-purple-400'
+                      }`}>
                         {plan.price}
                       </span>
                     </div>
@@ -242,13 +257,12 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                       <ul className="space-y-2.5 text-xs text-gray-600 dark:text-gray-300">
                         {(plan.features || []).map((feat, i) => (
                           <li key={i} className="flex items-start space-x-2">
-                            <CheckCircle2 className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
-                            <span>{feat}</span>
-                          </li>
-                        ))}
-                        {(plan.notIncluded || []).map((feat, i) => (
-                          <li key={i} className="flex items-start space-x-2 text-gray-400 line-through opacity-60">
-                            <X className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                            <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                              isPlus ? 'text-sky-500' :
+                              isPro ? 'text-blue-500' :
+                              isProPlus ? 'text-emerald-500' :
+                              'text-purple-500'
+                            }`} />
                             <span>{feat}</span>
                           </li>
                         ))}
@@ -257,30 +271,22 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                   </div>
 
                   <div className="pt-8 mt-8 border-t border-gray-100 dark:border-white/5">
-                    {plan.isFree ? (
-                      <Link
-                        to="/courses/html"
-                        className="w-full py-3.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-900 dark:text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition-colors"
-                      >
-                        <span>{plan.ctaText || 'Bepul Boshlash'}</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handlePlanClick(plan)}
-                        className={`w-full py-3.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md ${
-                          isPro
-                            ? 'bg-brand-600 hover:bg-brand-500 text-white shadow-brand-500/25 ring-2 ring-brand-500 ring-offset-2 dark:ring-offset-gray-900'
-                            : isUltra
-                            ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-500/25'
-                            : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-brand-600 dark:hover:bg-brand-500 dark:hover:text-white'
-                        }`}
-                      >
-                        <CreditCard className="w-4 h-4" />
-                        <span>{plan.ctaText || 'Obunani Faollashtirish'}</span>
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handlePlanClick(plan)}
+                      className={`w-full py-3.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md cursor-pointer ${
+                        isProPlus
+                          ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/25 ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-gray-900'
+                          : isUltra
+                          ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-500/25'
+                          : isPro
+                          ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25'
+                          : 'bg-sky-500 hover:bg-sky-400 text-white shadow-sky-500/25'
+                      }`}
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>{plan.ctaText || 'Obunani Faollashtirish'}</span>
+                    </button>
                   </div>
                 </div>
               );
@@ -305,10 +311,10 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
               <thead>
                 <tr className="border-b border-gray-100 dark:border-white/5 text-gray-500 dark:text-gray-400">
                   <th className="py-3 px-4 font-bold">Imkoniyat</th>
-                  <th className="py-3 px-3 text-center font-bold">Free</th>
-                  <th className="py-3 px-3 text-center font-bold">Plus</th>
-                  <th className="py-3 px-3 text-center font-bold text-brand-500">Pro</th>
-                  <th className="py-3 px-3 text-center font-bold text-purple-400">Ultra</th>
+                  <th className="py-3 px-3 text-center font-bold text-sky-500">Plus (7 kun)</th>
+                  <th className="py-3 px-3 text-center font-bold text-blue-500">Pro (1 oy)</th>
+                  <th className="py-3 px-3 text-center font-bold text-emerald-500">Pro+ (2 oy)</th>
+                  <th className="py-3 px-3 text-center font-bold text-purple-400">Ultra (3 oy)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -318,24 +324,24 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                       {row.title}
                     </td>
                     <td className="py-3.5 px-3 text-center">
-                      {typeof row.free === 'boolean' ? (
-                        row.free ? <Check className="w-4 h-4 text-emerald-500 mx-auto" /> : <X className="w-4 h-4 text-gray-400 mx-auto" />
-                      ) : (
-                        <span className="text-xs text-gray-600 dark:text-gray-400">{row.free}</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-3 text-center">
                       {typeof row.plus === 'boolean' ? (
-                        row.plus ? <Check className="w-4 h-4 text-emerald-500 mx-auto" /> : <X className="w-4 h-4 text-gray-400 mx-auto" />
+                        row.plus ? <Check className="w-4 h-4 text-sky-500 mx-auto" /> : <X className="w-4 h-4 text-gray-400 mx-auto" />
                       ) : (
-                        <span className="text-xs text-gray-600 dark:text-gray-400">{row.plus}</span>
+                        <span className="text-xs font-semibold text-sky-500">{row.plus}</span>
                       )}
                     </td>
                     <td className="py-3.5 px-3 text-center">
                       {typeof row.pro === 'boolean' ? (
-                        row.pro ? <Check className="w-4 h-4 text-brand-500 mx-auto" /> : <X className="w-4 h-4 text-gray-400 mx-auto" />
+                        row.pro ? <Check className="w-4 h-4 text-blue-500 mx-auto" /> : <X className="w-4 h-4 text-gray-400 mx-auto" />
                       ) : (
-                        <span className="text-xs font-bold text-brand-500">{row.pro}</span>
+                        <span className="text-xs font-semibold text-blue-500">{row.pro}</span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-3 text-center">
+                      {typeof row.proPlus === 'boolean' ? (
+                        row.proPlus ? <Check className="w-4 h-4 text-emerald-500 mx-auto" /> : <X className="w-4 h-4 text-gray-400 mx-auto" />
+                      ) : (
+                        <span className="text-xs font-bold text-emerald-500">{row.proPlus}</span>
                       )}
                     </td>
                     <td className="py-3.5 px-3 text-center">

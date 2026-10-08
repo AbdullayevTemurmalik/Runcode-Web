@@ -15,7 +15,7 @@ export const CheckoutPage = () => {
   const { isAuthenticated, user } = useAuth();
   const { refreshNotifications } = useNotification();
 
-  const planParam = searchParams.get('plan') || '1_month';
+  const planParam = searchParams.get('plan') || '7_days';
 
   const [selectedPlan, setSelectedPlan] = useState(planParam);
   const [paymentMethod, setPaymentMethod] = useState('apps'); // 'apps' | 'bankomat'
@@ -33,10 +33,10 @@ export const CheckoutPage = () => {
   const [statusNotice, setStatusNotice] = useState(null);
 
   const [plans, setPlans] = useState({
-    '1_month': { name: 'Plus (1 Oylik)', price: '50 000 so\'m', amount: 50000, duration: '1 oy to\'liq ochiq' },
-    '2_months': { name: 'Pro (2 Oylik)', price: '90 000 so\'m', amount: 90000, duration: '2 oy to\'liq ochiq', recommended: true },
-    '3_months': { name: 'Ultra (3 Oylik)', price: '120 000 so\'m', amount: 120000, duration: '3 oy to\'liq ochiq', superSaver: true },
-    '6_months': { name: 'VIP Max (6 Oylik)', price: '200 000 so\'m', amount: 200000, duration: '6 oy to\'liq ochiq', isVip: true }
+    '7_days': { name: 'Plus (7 Kunlik)', price: '20 000 so\'m', amount: 20000, duration: '7 kun to\'liq ochiq' },
+    '1_month': { name: 'Pro (1 Oylik)', price: '50 000 so\'m', amount: 50000, duration: '1 oy to\'liq ochiq' },
+    '2_months': { name: 'Pro+ (2 Oylik)', price: '90 000 so\'m', amount: 90000, duration: '2 oy to\'liq ochiq', recommended: true },
+    '3_months': { name: 'Ultra (3 Oylik)', price: '120 000 so\'m', amount: 120000, duration: '3 oy to\'liq ochiq', superSaver: true }
   });
 
   const [cardInfo, setCardInfo] = useState({
@@ -64,15 +64,14 @@ export const CheckoutPage = () => {
           if (configRes.plans) {
             const paid = {};
             for (const [k, v] of Object.entries(configRes.plans)) {
-              if (k !== 'free' && !v.isFree) {
+              if (k !== 'free' && !v.isFree && k !== '6_months') {
                 paid[k] = {
-                  name: v.name || (k === '6_months' ? 'VIP Max (6 Oylik)' : k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro (2 Oylik)' : 'Plus (1 Oylik)'),
-                  price: v.price || (k === '6_months' ? '200 000 so\'m' : k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : '50 000 so\'m'),
-                  amount: v.amount || (k === '6_months' ? 200000 : k === '3_months' ? 120000 : k === '2_months' ? 90000 : 50000),
-                  duration: v.duration || (k === '6_months' ? '6 oy to\'liq' : k === '3_months' ? '3 oy to\'liq' : k === '2_months' ? '2 oy to\'liq' : '1 oy to\'liq'),
+                  name: v.name || (k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro+ (2 Oylik)' : k === '1_month' ? 'Pro (1 Oylik)' : 'Plus (7 Kunlik)'),
+                  price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : k === '1_month' ? '50 000 so\'m' : '20 000 so\'m'),
+                  amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 90000 : k === '1_month' ? 50000 : 20000),
+                  duration: v.duration || (k === '3_months' ? '3 oy to\'liq' : k === '2_months' ? '2 oy to\'liq' : k === '1_month' ? '1 oy to\'liq' : '7 kun to\'liq'),
                   recommended: k === '2_months',
-                  superSaver: k === '3_months',
-                  isVip: k === '6_months'
+                  superSaver: k === '3_months'
                 };
               }
             }
@@ -98,7 +97,7 @@ export const CheckoutPage = () => {
           if (activeRes && activeRes.success && activeRes.activeOrder) {
             const active = activeRes.activeOrder;
             setOrder(active);
-            setSelectedPlan(active.planName || '1_month');
+            setSelectedPlan(active.planName || '7_days');
             setPaymentMethod(active.paymentMethod || 'apps');
             setTimeLeft(active.remainingSeconds || 0);
             setIsStarted(true);
@@ -234,7 +233,7 @@ export const CheckoutPage = () => {
     }
   };
 
-  const activePlanObj = plans[selectedPlan] || plans['1_month'];
+  const activePlanObj = plans[selectedPlan] || plans['7_days'] || plans['1_month'] || {};
 
   return (
     <div className="w-full flex-1 flex flex-col bg-gray-50 dark:bg-[#070a12] p-2.5 sm:p-3.5 lg:p-4 transition-colors overflow-y-auto lg:overflow-hidden select-none">

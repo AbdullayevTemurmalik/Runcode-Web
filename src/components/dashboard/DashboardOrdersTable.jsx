@@ -32,11 +32,13 @@ export const DashboardOrdersTable = ({ orders, formatDate }) => {
                 {orders.map((ord) => (
                   <tr key={ord.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                     <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                      {ord.plan_name === '1_month' || ord.plan_name === 'plus'
-                        ? 'Plus Obuna (1 Oylik)'
-                        : ord.plan_name === '2_months' || ord.plan_name === 'pro'
-                        ? 'Pro Obuna (2 Oylik)'
-                        : ord.plan_name === '3_months' || ord.plan_name === 'ultra'
+                      {ord.plan_name === '7_days'
+                        ? 'Plus Obuna (7 Kunlik)'
+                        : ord.plan_name === '1_month'
+                        ? 'Pro Obuna (1 Oylik)'
+                        : ord.plan_name === '2_months'
+                        ? 'Pro+ Obuna (2 Oylik)'
+                        : ord.plan_name === '3_months'
                         ? 'Ultra Obuna (3 Oylik)'
                         : (ord.plan_name || 'Standart')}
                     </td>

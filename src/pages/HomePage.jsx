@@ -75,7 +75,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
           setCourses(coursesResult.value.courses);
         }
         if (paymentsResult.status === 'fulfilled' && paymentsResult.value?.success && paymentsResult.value?.plans) {
-          setPricingPlans(Object.values(paymentsResult.value.plans));
+          const list = Object.values(paymentsResult.value.plans).filter(p => !p.isFree && p.id !== 'free');
+          if (list.length > 0) {
+            setPricingPlans(list);
+          }
         }
       } catch (err) {
         console.error('Bosh sahifa ma\'lumotlarini yuklashda xatolik:', err);
@@ -99,37 +102,35 @@ export const HomePage = ({ onOpenPaymentModal }) => {
     { slug: 'next', name: 'Next.js' }
   ];
 
-  // Default plans (Free, Plus, Pro, Ultra)
+  // Default plans (Plus 7 kun, Pro 1 oy, Pro+ 2 oy, Ultra 3 oy)
   const defaultPlans = [
     {
-      id: 'free',
-      tier: 'Free',
-      name: 'Free (Bepul)',
-      duration: 'Cheksiz muddat',
-      price: '0 so\'m',
-      desc: 'Dasturlash olamiga ilk qadam qo\'yuvchilar uchun',
+      id: '7_days',
+      tier: 'Plus',
+      name: 'Plus (7 Kunlik)',
+      duration: '7 kun to\'liq ochiq',
+      price: '20 000 so\'m',
+      desc: 'Test uchun sinang va platformaning barcha imkoniyatlaridan foydalaning',
+      badge: 'Test uchun sinang',
       features: [
-        '11 ta to\'liq HTML darsliklari',
-        'Amaliy kodlash topshiriqlari',
-        'Interaktiv kod muharriri va amaliy mashqlar',
+        'Barcha 4 ta kurs: HTML, CSS, JS, React',
+        '73 ta interaktiv amaliy darslik',
+        'Interaktiv kod muharriri va mashqlar',
         'Barcha mavzular bo\'yicha testlar',
-        'Platformadan cheksiz foydalanish'
-      ],
-      notIncluded: [
-        'CSS, JavaScript va React kurslari',
         'Yopiq Telegram mentorlik guruhi'
       ],
-      ctaText: 'Bepul Boshlash',
-      isFree: true,
+      notIncluded: [],
+      ctaText: 'Plus Obuna',
+      isFree: false,
       recommended: false
     },
     {
       id: '1_month',
-      tier: 'Plus',
-      name: 'Plus',
+      tier: 'Pro',
+      name: 'Pro (1 Oylik)',
       duration: '1 oy to\'liq ochiq',
       price: '50 000 so\'m',
-      desc: 'Tez sur\'atda chuqur bilim oluvchilar uchun',
+      desc: 'Tez sur\'atda chuqur bilim oluvchilar uchun optimal reja',
       features: [
         'Barcha 4 ta kurs: HTML, CSS, JS, React',
         '73 ta interaktiv amaliy darslik',
@@ -138,17 +139,17 @@ export const HomePage = ({ onOpenPaymentModal }) => {
         'Har kuni middle dasturchilar konsultatsiyasi'
       ],
       notIncluded: [],
-      ctaText: 'Plus Obuna',
+      ctaText: 'Pro Obuna',
       isFree: false,
       recommended: false
     },
     {
       id: '2_months',
-      tier: 'Pro',
-      name: 'Pro',
+      tier: 'Pro+',
+      name: 'Pro+ (2 Oylik)',
       duration: '2 oy to\'liq ochiq',
       price: '90 000 so\'m',
-      desc: 'Frontend dasturchi bo\'lish uchun eng optimal reja',
+      desc: 'Frontend dasturchi bo\'lish uchun eng optimal va tavsiya etilgan reja',
       features: [
         'Barcha 4 ta kurs: HTML, CSS, JS, React',
         '73 ta amaliy darslik va manbalar',
@@ -158,17 +159,17 @@ export const HomePage = ({ onOpenPaymentModal }) => {
         'Imtihonlarni qayta topshirish imkoniyati'
       ],
       notIncluded: [],
-      ctaText: 'Pro Obuna',
+      ctaText: 'Pro+ Obuna',
       isFree: false,
       recommended: true
     },
     {
       id: '3_months',
       tier: 'Ultra',
-      name: 'Ultra',
+      name: 'Ultra (3 Oylik)',
       duration: '3 oy to\'liq ochiq',
       price: '120 000 so\'m',
-      desc: 'Maksimal tejamkorlik va to\'liq Full-Stack tayyorgarlik',
+      desc: 'Maksimal tejamkorlik va to\'liq professional tayyorgarlik',
       features: [
         'Barcha mavjud 4 ta kurs va yangi modullar',
         '30 000 so\'m kafolatlangan tejam',
@@ -180,7 +181,8 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       notIncluded: [],
       ctaText: 'Ultra Obuna',
       isFree: false,
-      recommended: false
+      recommended: false,
+      superSaver: true
     }
   ];
 

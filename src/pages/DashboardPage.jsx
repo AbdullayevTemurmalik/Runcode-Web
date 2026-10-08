@@ -191,21 +191,21 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
         tier: 'Ultra',
         title: 'Ultra Status',
         label: 'Ultra Obuna (3 Oylik)',
-        badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-        textColor: 'text-amber-400',
-        accentBg: 'bg-amber-500/15 text-amber-400',
-        borderGlow: 'border-amber-500/40 shadow-amber-500/10',
+        badgeColor: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+        textColor: 'text-purple-400',
+        accentBg: 'bg-purple-500/15 text-purple-400',
+        borderGlow: 'border-purple-500/40 shadow-purple-500/10',
         icon: Crown,
         durationDays: 90,
         description: 'To\'liq Full-Stack dasturlash va VIP Telegram mentorlik'
       };
     }
 
-    if (plan.includes('pro') || plan === '2_months') {
+    if (plan.includes('pro+') || plan.includes('pro_plus') || plan === '2_months') {
       return {
-        tier: 'Pro',
-        title: 'Pro Status',
-        label: 'Pro Obuna (2 Oylik)',
+        tier: 'Pro+',
+        title: 'Pro+ Status',
+        label: 'Pro+ Obuna (2 Oylik)',
         badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
         textColor: 'text-emerald-400',
         accentBg: 'bg-emerald-500/15 text-emerald-400',
@@ -216,18 +216,33 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
       };
     }
 
-    // Default: Plus (1_month)
+    if (plan === '1_month' || (plan.includes('pro') && !plan.includes('plus'))) {
+      return {
+        tier: 'Pro',
+        title: 'Pro Status',
+        label: 'Pro Obuna (1 Oylik)',
+        badgeColor: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+        textColor: 'text-blue-400',
+        accentBg: 'bg-blue-500/15 text-blue-400',
+        borderGlow: 'border-blue-500/40 shadow-blue-500/10',
+        icon: Sparkles,
+        durationDays: 30,
+        description: 'Tezkor amaliy ta\'lim va yopiq Telegram guruhi'
+      };
+    }
+
+    // Default: Plus (7_days)
     return {
       tier: 'Plus',
       title: 'Plus Status',
-      label: 'Plus Obuna (1 Oylik)',
-      badgeColor: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-      textColor: 'text-blue-400',
-      accentBg: 'bg-blue-500/15 text-blue-400',
-      borderGlow: 'border-blue-500/40 shadow-blue-500/10',
+      label: 'Plus Obuna (7 Kunlik)',
+      badgeColor: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
+      textColor: 'text-sky-400',
+      accentBg: 'bg-sky-500/15 text-sky-400',
+      borderGlow: 'border-sky-500/40 shadow-sky-500/10',
       icon: Sparkles,
-      durationDays: 30,
-      description: 'Tezkor amaliy ta\'lim va yopiq Telegram mentorlik guruhi'
+      durationDays: 7,
+      description: 'Platformani sinovdan o\'tkazish uchun 7 kunlik to\'liq kirish'
     };
   };
 

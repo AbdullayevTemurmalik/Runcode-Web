@@ -21,7 +21,7 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 
-export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
+export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   const { user } = useAuth();
   const { refreshNotifications } = useNotification();
 
@@ -40,9 +40,10 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
   const [error, setError] = useState(null);
 
   const [plans, setPlans] = useState({
-    '1_month': { name: 'Plus (1 Oylik)', price: '50 000 so\'m', amount: 50000 },
-    '2_months': { name: 'Pro (2 Oylik)', price: '90 000 so\'m', amount: 90000, recommended: true },
-    '3_months': { name: 'Ultra (3 Oylik)', price: '120 000 so\'m', amount: 120000 }
+    '7_days': { name: 'Plus (7 Kunlik)', price: '20 000 so\'m', amount: 20000 },
+    '1_month': { name: 'Pro (1 Oylik)', price: '50 000 so\'m', amount: 50000 },
+    '2_months': { name: 'Pro+ (2 Oylik)', price: '90 000 so\'m', amount: 90000, recommended: true },
+    '3_months': { name: 'Ultra (3 Oylik)', price: '120 000 so\'m', amount: 120000, superSaver: true }
   });
 
   const [cardInfo, setCardInfo] = useState({
@@ -87,12 +88,13 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
           if (res.plans) {
             const paidPlans = {};
             for (const [k, v] of Object.entries(res.plans)) {
-              if (k !== 'free' && !v.isFree) {
+              if (k !== 'free' && !v.isFree && k !== '6_months') {
                 paidPlans[k] = {
-                  name: k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro (2 Oylik)' : 'Plus (1 Oylik)',
-                  price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : '50 000 so\'m'),
-                  amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 90000 : 50000),
-                  recommended: k === '2_months'
+                  name: v.name || (k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro+ (2 Oylik)' : k === '1_month' ? 'Pro (1 Oylik)' : 'Plus (7 Kunlik)'),
+                  price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : k === '1_month' ? '50 000 so\'m' : '20 000 so\'m'),
+                  amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 90000 : k === '1_month' ? 50000 : 20000),
+                  recommended: k === '2_months',
+                  superSaver: k === '3_months'
                 };
               }
             }
@@ -291,32 +293,51 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '1_month' }) => {
                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Obuna muddatini tanlang:
                 </label>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {Object.entries(plans).map(([key, plan]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setSelectedPlan(key)}
-                      className={`p-3 rounded-2xl border text-center relative transition-all cursor-pointer ${
-                        selectedPlan === key
-                          ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/30 shadow-md scale-[1.02]'
-                          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
-                      }`}
-                    >
-                      {plan.recommended && (
-                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-brand-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-                          Tavsiya
-                        </span>
-                      )}
-                      {key === '3_months' && (
-                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-                          Super Tejam
-                        </span>
-                      )}
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">{plan.name}</p>
-                      <p className="text-[11px] font-semibold text-brand-600 dark:text-brand-400 mt-1">{plan.price}</p>
-                    </button>
-                  ))}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {Object.entries(plans).map(([key, plan]) => {
+                    const isSelected = selectedPlan === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setSelectedPlan(key)}
+                        className={`p-2.5 rounded-2xl border text-center relative transition-all cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? key === '3_months'
+                              ? 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/30 shadow-md scale-[1.02]'
+                              : key === '2_months'
+                              ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/30 shadow-md scale-[1.02]'
+                              : key === '1_month'
+                              ? 'border-blue-500 bg-blue-500/10 ring-2 ring-blue-500/30 shadow-md scale-[1.02]'
+                              : 'border-sky-500 bg-sky-500/10 ring-2 ring-sky-500/30 shadow-md scale-[1.02]'
+                            : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+                        }`}
+                      >
+                        {key === '7_days' && (
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-sky-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap">
+                            Test Sinov
+                          </span>
+                        )}
+                        {plan.recommended && (
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap">
+                            Tavsiya
+                          </span>
+                        )}
+                        {key === '3_months' && (
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap">
+                            Super Tejam
+                          </span>
+                        )}
+                        <p className="text-xs font-bold text-gray-900 dark:text-white mt-1">{plan.name}</p>
+                        <p className={`text-[11px] font-bold mt-1 ${
+                          key === '3_months' ? 'text-purple-600 dark:text-purple-400' :
+                          key === '2_months' ? 'text-emerald-600 dark:text-emerald-400' :
+                          key === '1_month' ? 'text-blue-600 dark:text-blue-400' :
+                          'text-sky-600 dark:text-sky-400'
+                        }`}>{plan.price}</p>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

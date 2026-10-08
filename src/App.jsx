@@ -33,7 +33,7 @@ const AppContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState('1_month');
+  const [selectedPlan, setSelectedPlan] = useState('7_days');
 
   const isCheckout = location.pathname.startsWith('/checkout') || location.pathname.startsWith('/payment');
 
@@ -44,7 +44,7 @@ const AppContent = () => {
     enableBlurShield: false // Global sahifalarda blur sharti yo'q, faqat dars va imtihonda
   });
 
-  const handleOpenPayment = (plan = '1_month') => {
+  const handleOpenPayment = (plan = '7_days') => {
     setSelectedPlan(plan);
     navigate(`/checkout?plan=${plan}`);
   };

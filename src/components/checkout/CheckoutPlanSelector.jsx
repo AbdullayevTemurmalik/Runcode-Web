@@ -27,44 +27,59 @@ export const CheckoutPlanSelector = ({
   setStatusNotice
 }) => {
   const getPlanBadge = (key, plan) => {
-    if (key === '6_months' || plan.isVip) {
+    if (key === '3_months' || plan?.superSaver) {
       return (
-        <span className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
-          VIP Max
-        </span>
-      );
-    }
-    if (key === '3_months' || plan.superSaver) {
-      return (
-        <span className="bg-emerald-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+        <span className="bg-purple-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
           Super Tejam
         </span>
       );
     }
-    if (key === '2_months' || plan.recommended) {
+    if (key === '2_months' || plan?.recommended) {
       return (
-        <span className="bg-brand-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+        <span className="bg-emerald-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
           Tavsiya
         </span>
       );
     }
+    if (key === '1_month') {
+      return (
+        <span className="bg-blue-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+          Pro
+        </span>
+      );
+    }
     return (
-      <span className="bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/25 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
-        Plus
+      <span className="bg-sky-500 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+        Test Sinov
       </span>
     );
   };
 
   const getPlanSelectedStyle = (key) => {
     switch (key) {
-      case '6_months':
-        return 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30 dark:bg-amber-500/10';
       case '3_months':
-        return 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/30 dark:bg-emerald-500/10';
+        return 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/30 dark:bg-purple-500/10';
       case '2_months':
-        return 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/30 dark:bg-brand-500/10';
+        return 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/30 dark:bg-emerald-500/10';
+      case '1_month':
+        return 'border-blue-500 bg-blue-500/10 ring-2 ring-blue-500/30 dark:bg-blue-500/10';
+      case '7_days':
       default:
         return 'border-sky-500 bg-sky-500/10 ring-2 ring-sky-500/30 dark:bg-sky-500/10';
+    }
+  };
+
+  const getPlanPriceColor = (key) => {
+    switch (key) {
+      case '3_months':
+        return 'text-purple-600 dark:text-purple-400';
+      case '2_months':
+        return 'text-emerald-600 dark:text-emerald-400';
+      case '1_month':
+        return 'text-blue-600 dark:text-blue-400';
+      case '7_days':
+      default:
+        return 'text-sky-600 dark:text-sky-400';
     }
   };
 
@@ -105,13 +120,18 @@ export const CheckoutPlanSelector = ({
                 <div className="flex items-center justify-between gap-1 mb-1.5">
                   {getPlanBadge(key, plan)}
                   {isSelected && (
-                    <CheckCircle2 className="w-4 h-4 text-brand-500 flex-shrink-0" />
+                    <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${
+                      key === '3_months' ? 'text-purple-500' :
+                      key === '2_months' ? 'text-emerald-500' :
+                      key === '1_month' ? 'text-blue-500' :
+                      'text-sky-500'
+                    }`} />
                   )}
                 </div>
 
                 <div>
                   <p className="text-xs sm:text-sm font-black text-gray-900 dark:text-white truncate">{plan.name}</p>
-                  <p className="text-sm sm:text-base font-black text-brand-600 dark:text-brand-400 mt-0.5">{plan.price}</p>
+                  <p className={`text-sm sm:text-base font-black mt-0.5 ${getPlanPriceColor(key)}`}>{plan.price}</p>
                   <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium truncate mt-0.5">{plan.duration}</p>
                 </div>
               </button>
