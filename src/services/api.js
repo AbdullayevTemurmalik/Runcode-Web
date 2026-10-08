@@ -38,7 +38,21 @@ api.interceptors.response.use(
         })
       );
     }
-    const message = error.response?.data?.message || 'Kutilmagan xatolik yuz berdi';
+    const serverMessage = error.response?.data?.message;
+    let message = serverMessage;
+    if (!message) {
+      if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+        message = "Server bilan aloqa o'rnatib bo'lmadi. Iltimos, internet yoki serverni tekshiring.";
+      } else if (error.response?.status === 401) {
+        message = "Login yoki parol noto'g'ri.";
+      } else if (error.response?.status === 404) {
+        message = "So'ralgan ma'lumot topilmadi.";
+      } else if (error.response?.status >= 500) {
+        message = "Serverda vaqtinchalik xatolik. Birozdan so'ng qayta urinib ko'ring.";
+      } else {
+        message = error.message || 'Kutilmagan xatolik yuz berdi';
+      }
+    }
     const customError = new Error(message);
     customError.code = error.response?.data?.code;
     customError.status = error.response?.status;

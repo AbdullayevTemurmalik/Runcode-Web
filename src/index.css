@@ -71,8 +71,8 @@
   background: rgba(255, 255, 255, 0.22);
 }
 
-/* RunCode Security Shield: Matn tanlash va nusxa ko'chirishni cheklash (iOS, Android, Windows, Mac, Linux) */
-html, body, .protected-content, .protected-container {
+/* RunCode Security Shield: Matn tanlash va nusxa ko'chirishni cheklash faqat maxsus dars va imtihon kontentlarida */
+.protected-content {
   -webkit-touch-callout: none !important; /* iOS Safari Callout menyusi (Copy, Look Up, Share) */
   -webkit-user-select: none !important;
   -moz-user-select: none !important;

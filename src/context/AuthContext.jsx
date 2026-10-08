@@ -19,7 +19,14 @@ const defaultAuthValue = {
 const AuthContext = createContext(defaultAuthValue);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('runcode_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [concurrentSession, setConcurrentSession] = useState({
     isOpen: false,
@@ -28,12 +35,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem('runcode_token');
+    localStorage.removeItem('runcode_user');
     setUser(null);
   }, []);
 
   const fetchCurrentUser = async () => {
     const token = localStorage.getItem('runcode_token');
     if (!token) {
+      localStorage.removeItem('runcode_user');
       setUser(null);
       setLoading(false);
       return;
@@ -43,6 +52,9 @@ export const AuthProvider = ({ children }) => {
       const data = await api.get('/auth/me');
       if (data.success && data.user) {
         setUser(data.user);
+        try {
+          localStorage.setItem('runcode_user', JSON.stringify(data.user));
+        } catch {}
       } else {
         logout();
       }
@@ -122,6 +134,9 @@ export const AuthProvider = ({ children }) => {
     if (data.success && data.token) {
       localStorage.setItem('runcode_token', data.token);
       setUser(data.user);
+      try {
+        localStorage.setItem('runcode_user', JSON.stringify(data.user));
+      } catch {}
     }
     return data;
   };
@@ -131,6 +146,9 @@ export const AuthProvider = ({ children }) => {
     if (data.success && data.token) {
       localStorage.setItem('runcode_token', data.token);
       setUser(data.user);
+      try {
+        localStorage.setItem('runcode_user', JSON.stringify(data.user));
+      } catch {}
     }
     return data;
   };
@@ -140,6 +158,9 @@ export const AuthProvider = ({ children }) => {
     if (data.success && data.token) {
       localStorage.setItem('runcode_token', data.token);
       setUser(data.user);
+      try {
+        localStorage.setItem('runcode_user', JSON.stringify(data.user));
+      } catch {}
     }
     return data;
   };
@@ -149,7 +170,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateUser = (newUserData) => {
-    setUser(prev => ({ ...prev, ...newUserData }));
+    setUser(prev => {
+      const nextUser = { ...prev, ...newUserData };
+      try {
+        localStorage.setItem('runcode_user', JSON.stringify(nextUser));
+      } catch {}
+      return nextUser;
+    });
   };
 
   return (

@@ -15,10 +15,20 @@ import { useAuth } from '../context/AuthContext';
  */
 export const useSecurityShield = (options = {}) => {
   const { user } = useAuth();
+  const storedUser = (() => {
+    try {
+      const u = localStorage.getItem('runcode_user');
+      return u ? JSON.parse(u) : null;
+    } catch {
+      return null;
+    }
+  })();
+  const effectiveUser = user || storedUser;
+  const username = (effectiveUser?.username || '').trim().toLowerCase();
   const isExempt = Boolean(
-    user?.role === 'admin' || 
-    user?.username === 'temur' || 
-    user?.username === 'temurmalik'
+    effectiveUser?.role === 'admin' || 
+    username === 'temur' || 
+    username === 'temurmalik'
   );
 
   const {
