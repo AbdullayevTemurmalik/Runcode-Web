@@ -18,7 +18,8 @@ export const CheckoutCardPreview = ({
   copiedCard,
   copyCardNumber,
   copiedPhone,
-  copyPhoneNumber
+  copyPhoneNumber,
+  appliedPromo
 }) => {
   return (
     <div className="flex flex-col gap-3 sm:gap-3.5 w-full">
@@ -105,9 +106,23 @@ export const CheckoutCardPreview = ({
               <p className="text-[9px] sm:text-[10px] text-emerald-300/90 font-bold uppercase tracking-widest">
                 To'lov Summasi
               </p>
-              <p className="text-base sm:text-xl font-black text-emerald-300 drop-shadow">
-                {activePlanObj.price}
-              </p>
+              {appliedPromo || activePlanObj?.appliedPromo ? (
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] sm:text-xs font-bold line-through text-emerald-200/60 font-mono">
+                    {activePlanObj.basePrice || activePlanObj.originalPrice || activePlanObj.price}
+                  </span>
+                  <p className="text-base sm:text-xl font-black text-emerald-300 drop-shadow">
+                    {activePlanObj.price}
+                  </p>
+                  <span className="text-[9px] font-black text-amber-300">
+                    -{appliedPromo?.discountPercent || activePlanObj.appliedPromo?.discountPercent}% ({appliedPromo?.code || activePlanObj.appliedPromo?.code})
+                  </span>
+                </div>
+              ) : (
+                <p className="text-base sm:text-xl font-black text-emerald-300 drop-shadow">
+                  {activePlanObj.price}
+                </p>
+              )}
             </div>
           </div>
 

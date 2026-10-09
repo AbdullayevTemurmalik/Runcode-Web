@@ -26,6 +26,8 @@ const DEFAULT_PLANS = [
     name: 'Plus (7 Kunlik)',
     statusTitle: 'Plus',
     duration: '7 kun to\'liq ochiq',
+    originalPrice: '30 000 so\'m',
+    originalAmount: 30000,
     price: '20 000 so\'m',
     amount: 20000,
     desc: 'Test uchun sinang va platformaning barcha imkoniyatlarini sinovdan o\'tkazing',
@@ -48,6 +50,8 @@ const DEFAULT_PLANS = [
     name: 'Pro (1 Oylik)',
     statusTitle: 'Pro',
     duration: '1 oy to\'liq ochiq',
+    originalPrice: '75 000 so\'m',
+    originalAmount: 75000,
     price: '50 000 so\'m',
     amount: 50000,
     desc: 'Tez sur\'atda chuqur bilim oluvchilar uchun optimal reja',
@@ -69,6 +73,8 @@ const DEFAULT_PLANS = [
     name: 'Pro+ (2 Oylik)',
     statusTitle: 'Pro+',
     duration: '2 oy to\'liq ochiq',
+    originalPrice: '125 000 so\'m',
+    originalAmount: 125000,
     price: '90 000 so\'m',
     amount: 90000,
     desc: 'Frontend dasturchi bo\'lish uchun eng tavsiya etilgan reja',
@@ -91,6 +97,8 @@ const DEFAULT_PLANS = [
     name: 'Ultra (3 Oylik)',
     statusTitle: 'Ultra',
     duration: '3 oy to\'liq ochiq',
+    originalPrice: '150 000 so\'m',
+    originalAmount: 150000,
     price: '120 000 so\'m',
     amount: 120000,
     desc: 'Maksimal tejamkorlik va to\'liq professional tayyorgarlik',
@@ -242,14 +250,21 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{plan.desc || plan.description}</p>
 
                     <div className="my-6 pb-6 border-b border-gray-100 dark:border-white/5">
-                      <span className={`text-3xl font-black tracking-tight ${
-                        isPlus ? 'text-sky-600 dark:text-sky-400' :
-                        isPro ? 'text-blue-600 dark:text-blue-400' :
-                        isProPlus ? 'text-emerald-600 dark:text-emerald-400' :
-                        'text-purple-600 dark:text-purple-400'
-                      }`}>
-                        {plan.price}
-                      </span>
+                      <div className="flex items-baseline space-x-2.5">
+                        {plan.originalPrice && (
+                          <span className="text-base sm:text-lg font-bold line-through text-gray-400 dark:text-gray-500">
+                            {plan.originalPrice}
+                          </span>
+                        )}
+                        <span className={`text-3xl font-black tracking-tight ${
+                          isPlus ? 'text-sky-600 dark:text-sky-400' :
+                          isPro ? 'text-blue-600 dark:text-blue-400' :
+                          isProPlus ? 'text-emerald-600 dark:text-emerald-400' :
+                          'text-purple-600 dark:text-purple-400'
+                        }`}>
+                          {plan.price}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="space-y-3">

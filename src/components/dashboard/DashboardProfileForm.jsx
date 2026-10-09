@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   User, 
   Phone, 
@@ -8,8 +8,12 @@ import {
   X, 
   CheckCircle2, 
   AlertCircle, 
-  Loader2 
+  Loader2,
+  Lock,
+  ShieldCheck,
+  KeyRound
 } from 'lucide-react';
+import api from '../../services/api';
 import { CustomInput } from '../CustomInput';
 import { CustomDatePicker } from '../CustomDatePicker';
 
@@ -37,6 +41,57 @@ export const DashboardProfileForm = ({
   daysLeft
 }) => {
   const TierIcon = tierInfo.icon;
+
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passLoading, setPassLoading] = useState(false);
+  const [passSuccess, setPassSuccess] = useState(null);
+  const [passError, setPassError] = useState(null);
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPassError(null);
+    setPassSuccess(null);
+
+    if (!currentPassword) {
+      setPassError('Iltimos, joriy parolingizni kiriting');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPassError('Yangi parol kamida 6 ta belgidan iborat bo\'lishi kerak');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPassError('Yangi parollar bir-biriga mos kelmadi');
+      return;
+    }
+
+    setPassLoading(true);
+    try {
+      const res = await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
+
+      if (res.success) {
+        setPassSuccess(res.message || 'Parolingiz muvaffaqiyatli yangilandi! @RunCodeVerifyBot Telegram boti orqali ham yangi parolingiz darhol qabul qilinadi.');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setIsChangingPassword(false);
+        setTimeout(() => setPassSuccess(null), 5000);
+      } else {
+        setPassError(res.message || 'Parolni yangilashda xatolik yuz berdi');
+      }
+    } catch (err) {
+      setPassError(err.message || 'Parolni yangilashda xatolik yuz berdi');
+    } finally {
+      setPassLoading(false);
+    }
+  };
 
   return (
     <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#0c0d12]/95 border border-gray-200 dark:border-white/10 shadow-sm space-y-6">
@@ -206,6 +261,107 @@ export const DashboardProfileForm = ({
           </div>
         </div>
       )}
+
+      {/* 2. Parolni O'zgartirish (Xavfsizlik & Telegram Bot Sinxronizatsiyasi) */}
+      <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <Lock className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                Xavfsizlik & Parolni O'zgartirish
+              </h3>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                Parol yangilanganda, @RunCodeVerifyBot Telegram botida ham darhol yangi parol faollashadi
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsChangingPassword(!isChangingPassword)}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-white/[0.05] hover:bg-gray-200 dark:hover:bg-white/[0.1] text-gray-700 dark:text-gray-300 font-bold text-xs transition cursor-pointer"
+          >
+            <KeyRound className="w-3.5 h-3.5" />
+            <span>{isChangingPassword ? 'Yopish' : 'Parolni O\'zgartirish'}</span>
+          </button>
+        </div>
+
+        {passSuccess && (
+          <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs flex items-center space-x-2 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+            <span>{passSuccess}</span>
+          </div>
+        )}
+
+        {passError && (
+          <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center space-x-2 animate-in fade-in">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>{passError}</span>
+          </div>
+        )}
+
+        {isChangingPassword && (
+          <form onSubmit={handleChangePassword} className="space-y-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 animate-in fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <CustomInput
+                label="Joriy Parol:"
+                icon={Lock}
+                isPassword={true}
+                required
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Eski parolingiz"
+              />
+              <CustomInput
+                label="Yangi Parol:"
+                icon={Lock}
+                isPassword={true}
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Kamida 6 ta belgi"
+              />
+              <CustomInput
+                label="Yangi Parolni Tasdiqlang:"
+                icon={Lock}
+                isPassword={true}
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Qayta kiriting"
+              />
+            </div>
+
+            <div className="flex items-center justify-end space-x-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsChangingPassword(false);
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                  setPassError(null);
+                }}
+                disabled={passLoading}
+                className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-xs hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
+              >
+                Bekor qilish
+              </button>
+              <button
+                type="submit"
+                disabled={passLoading}
+                className="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-md shadow-brand-500/20 transition disabled:opacity-50 cursor-pointer"
+              >
+                {passLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                <span>Parolni Yangilash</span>
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 };

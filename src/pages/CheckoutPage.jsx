@@ -32,11 +32,17 @@ export const CheckoutPage = () => {
   const [error, setError] = useState(null);
   const [statusNotice, setStatusNotice] = useState(null);
 
+  // Promokod holatlari
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState('');
+
   const [plans, setPlans] = useState({
-    '7_days': { name: 'Plus (7 Kunlik)', price: '20 000 so\'m', amount: 20000, duration: '7 kun to\'liq ochiq' },
-    '1_month': { name: 'Pro (1 Oylik)', price: '50 000 so\'m', amount: 50000, duration: '1 oy to\'liq ochiq' },
-    '2_months': { name: 'Pro+ (2 Oylik)', price: '90 000 so\'m', amount: 90000, duration: '2 oy to\'liq ochiq', recommended: true },
-    '3_months': { name: 'Ultra (3 Oylik)', price: '120 000 so\'m', amount: 120000, duration: '3 oy to\'liq ochiq', superSaver: true }
+    '7_days': { name: 'Plus (7 Kunlik)', originalPrice: '30 000 so\'m', originalAmount: 30000, price: '20 000 so\'m', amount: 20000, duration: '7 kun to\'liq ochiq' },
+    '1_month': { name: 'Pro (1 Oylik)', originalPrice: '75 000 so\'m', originalAmount: 75000, price: '50 000 so\'m', amount: 50000, duration: '1 oy to\'liq ochiq' },
+    '2_months': { name: 'Pro+ (2 Oylik)', originalPrice: '125 000 so\'m', originalAmount: 125000, price: '90 000 so\'m', amount: 90000, duration: '2 oy to\'liq ochiq', recommended: true },
+    '3_months': { name: 'Ultra (3 Oylik)', originalPrice: '150 000 so\'m', originalAmount: 150000, price: '120 000 so\'m', amount: 120000, duration: '3 oy to\'liq ochiq', superSaver: true }
   });
 
   const [cardInfo, setCardInfo] = useState({
@@ -71,6 +77,8 @@ export const CheckoutPage = () => {
               if (k !== 'free' && !v.isFree && k !== '6_months') {
                 paid[k] = {
                   name: v.name || (k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro+ (2 Oylik)' : k === '1_month' ? 'Pro (1 Oylik)' : 'Plus (7 Kunlik)'),
+                  originalPrice: v.originalPrice || (k === '3_months' ? '150 000 so\'m' : k === '2_months' ? '125 000 so\'m' : k === '1_month' ? '75 000 so\'m' : '30 000 so\'m'),
+                  originalAmount: v.originalAmount || (k === '3_months' ? 150000 : k === '2_months' ? 125000 : k === '1_month' ? 75000 : 30000),
                   price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : k === '1_month' ? '50 000 so\'m' : '20 000 so\'m'),
                   amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 90000 : k === '1_month' ? 50000 : 20000),
                   duration: v.duration || (k === '3_months' ? '3 oy to\'liq' : k === '2_months' ? '2 oy to\'liq' : k === '1_month' ? '1 oy to\'liq' : '7 kun to\'liq'),
@@ -104,6 +112,15 @@ export const CheckoutPage = () => {
             setSelectedPlan(active.planName || '7_days');
             setPaymentMethod(active.paymentMethod || 'apps');
             
+            if (active.appliedPromocode) {
+              setAppliedPromo({
+                code: active.appliedPromocode,
+                discountPercent: active.discountPercent || 0,
+                finalAmount: active.finalAmount || active.amount,
+                baseAmount: active.baseAmount || active.amount
+              });
+            }
+
             if (active.hasReceipt) {
               setIsSuccess(true);
               setStatusNotice('Sizning to\'lov chekingiz admin tomonidan tekshirilmoqda. Ushbu to\'lov yakunlanmaguncha (tasdiqlanmaguncha yoki rad etilmaguncha), yangi to\'lov qila olmaysiz.');
@@ -161,6 +178,40 @@ export const CheckoutPage = () => {
     setTimeout(() => setCopiedPhone(false), 2000);
   };
 
+  const handleApplyPromocode = async (codeToApply) => {
+    const cleanCode = (codeToApply || promoCodeInput).trim().toUpperCase();
+    if (!cleanCode) {
+      setPromoError('Iltimos, promokodni kiriting');
+      return;
+    }
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await api.post('/promocodes/apply', {
+        code: cleanCode,
+        planName: selectedPlan
+      });
+      if (res.success && res.promo) {
+        setAppliedPromo(res.promo);
+        setPromoError('');
+      } else {
+        setAppliedPromo(null);
+        setPromoError(res.message || 'Bunday promokod topilmadi yoki noto\'g\'ri kiritilgan');
+      }
+    } catch (err) {
+      setAppliedPromo(null);
+      setPromoError(err.message || 'Bunday promokod topilmadi yoki noto\'g\'ri kiritilgan');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromocode = () => {
+    setAppliedPromo(null);
+    setPromoCodeInput('');
+    setPromoError('');
+  };
+
   const handleStartPayment = async () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { returnUrl: `/checkout?plan=${selectedPlan}` } });
@@ -172,7 +223,8 @@ export const CheckoutPage = () => {
     try {
       const res = await api.post('/payments/start', {
         planName: selectedPlan,
-        paymentMethod
+        paymentMethod,
+        promocode: appliedPromo?.code || undefined
       });
 
       if (res.success && res.order) {
@@ -243,7 +295,19 @@ export const CheckoutPage = () => {
     }
   };
 
-  const activePlanObj = plans[selectedPlan] || plans['7_days'] || plans['1_month'] || {};
+  const basePlanObj = plans[selectedPlan] || plans['7_days'] || plans['1_month'] || {};
+  const activePlanObj = {
+    ...basePlanObj,
+    originalPrice: basePlanObj.originalPrice || basePlanObj.price,
+    originalAmount: basePlanObj.originalAmount || basePlanObj.amount,
+    ...(appliedPromo ? {
+      basePrice: basePlanObj.price,
+      baseAmount: basePlanObj.amount,
+      price: `${appliedPromo.finalAmount?.toLocaleString()} so'm`,
+      amount: appliedPromo.finalAmount,
+      appliedPromo
+    } : {})
+  };
 
   return (
     <div className="w-full flex-1 flex flex-col bg-gray-50 dark:bg-[#070a12] p-2.5 sm:p-3.5 lg:p-4 transition-colors overflow-y-auto lg:overflow-hidden select-none">
@@ -300,6 +364,15 @@ export const CheckoutPage = () => {
                 handleStartPayment={handleStartPayment}
                 isAuthenticated={isAuthenticated}
                 setStatusNotice={setStatusNotice}
+                appliedPromo={appliedPromo}
+                setAppliedPromo={setAppliedPromo}
+                promoCodeInput={promoCodeInput}
+                setPromoCodeInput={setPromoCodeInput}
+                promoLoading={promoLoading}
+                promoError={promoError}
+                setPromoError={setPromoError}
+                handleApplyPromocode={handleApplyPromocode}
+                handleRemovePromocode={handleRemovePromocode}
               />
               <CheckoutReceiptDropzone
                 selectedFile={selectedFile}
@@ -322,6 +395,7 @@ export const CheckoutPage = () => {
                 copyCardNumber={copyCardNumber}
                 copiedPhone={copiedPhone}
                 copyPhoneNumber={copyPhoneNumber}
+                appliedPromo={appliedPromo}
               />
             </div>
           </div>

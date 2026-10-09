@@ -15,7 +15,9 @@ import {
   ShieldCheck,
   Loader2,
   Phone,
-  UserCheck
+  UserCheck,
+  Tag,
+  Percent
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -39,11 +41,17 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState(null);
 
+  // Promokod holatlari
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState('');
+
   const [plans, setPlans] = useState({
-    '7_days': { name: 'Plus (7 Kunlik)', price: '20 000 so\'m', amount: 20000 },
-    '1_month': { name: 'Pro (1 Oylik)', price: '50 000 so\'m', amount: 50000 },
-    '2_months': { name: 'Pro+ (2 Oylik)', price: '90 000 so\'m', amount: 90000, recommended: true },
-    '3_months': { name: 'Ultra (3 Oylik)', price: '120 000 so\'m', amount: 120000, superSaver: true }
+    '7_days': { name: 'Plus (7 Kunlik)', originalPrice: '30 000 so\'m', originalAmount: 30000, price: '20 000 so\'m', amount: 20000 },
+    '1_month': { name: 'Pro (1 Oylik)', originalPrice: '75 000 so\'m', originalAmount: 75000, price: '50 000 so\'m', amount: 50000 },
+    '2_months': { name: 'Pro+ (2 Oylik)', originalPrice: '125 000 so\'m', originalAmount: 125000, price: '90 000 so\'m', amount: 90000, recommended: true },
+    '3_months': { name: 'Ultra (3 Oylik)', originalPrice: '150 000 so\'m', originalAmount: 150000, price: '120 000 so\'m', amount: 120000, superSaver: true }
   });
 
   const [cardInfo, setCardInfo] = useState({
@@ -91,6 +99,8 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
               if (k !== 'free' && !v.isFree && k !== '6_months') {
                 paidPlans[k] = {
                   name: v.name || (k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro+ (2 Oylik)' : k === '1_month' ? 'Pro (1 Oylik)' : 'Plus (7 Kunlik)'),
+                  originalPrice: v.originalPrice || (k === '3_months' ? '150 000 so\'m' : k === '2_months' ? '125 000 so\'m' : k === '1_month' ? '75 000 so\'m' : '30 000 so\'m'),
+                  originalAmount: v.originalAmount || (k === '3_months' ? 150000 : k === '2_months' ? 125000 : k === '1_month' ? 75000 : 30000),
                   price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : k === '1_month' ? '50 000 so\'m' : '20 000 so\'m'),
                   amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 90000 : k === '1_month' ? 50000 : 20000),
                   recommended: k === '2_months',
@@ -119,12 +129,86 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     fetchBackendConfig();
   }, [isOpen]);
 
+  const handleApplyPromocode = async () => {
+    const cleanCode = promoCodeInput.trim().toUpperCase();
+    if (!cleanCode) {
+      setPromoError('Iltimos, promokodni kiriting');
+      return;
+    }
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await api.post('/promocodes/apply', {
+        code: cleanCode,
+        planName: selectedPlan
+      });
+      if (res.success && res.promo) {
+        setAppliedPromo(res.promo);
+        setPromoError('');
+      } else {
+        setAppliedPromo(null);
+        setPromoError(res.message || 'Bunday promokod topilmadi yoki noto\'g\'ri kiritilgan');
+      }
+    } catch (err) {
+      setAppliedPromo(null);
+      setPromoError(err.message || 'Bunday promokod topilmadi yoki noto\'g\'ri kiritilgan');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromocode = () => {
+    setAppliedPromo(null);
+    setPromoCodeInput('');
+    setPromoError('');
+  };
+
+  const handleSelectPlan = async (key) => {
+    setSelectedPlan(key);
+    if (appliedPromo) {
+      try {
+        const res = await api.post('/promocodes/apply', {
+          code: appliedPromo.code,
+          planName: key
+        });
+        if (res && res.success && res.promo) {
+          setAppliedPromo(res.promo);
+          setPromoError('');
+        } else {
+          setAppliedPromo(null);
+          setPromoError(res?.message || 'Ushbu promokod tanlangan tarif uchun amal qilmaydi');
+        }
+      } catch (err) {
+        setAppliedPromo(null);
+        setPromoError(err.message || 'Ushbu promokod tanlangan tarif uchun amal qilmaydi');
+      }
+    }
+  };
+
   // 2-Qadamga o'tish va teskari taymerni boshlash (Ilova: 30 min, Bankomat: 1 soat)
-  const handleStartPayment = () => {
+  const handleStartPayment = async () => {
     setError(null);
-    setIsStepTwo(true);
-    const defaultSeconds = paymentMethod === 'bankomat' ? 3600 : 1800;
-    setTimeLeft(defaultSeconds);
+    setLoading(true);
+    try {
+      const res = await api.post('/payments/start', {
+        planName: selectedPlan,
+        paymentMethod,
+        promocode: appliedPromo?.code || undefined
+      });
+      if (res.success && res.order) {
+        setOrder(res.order);
+        setTimeLeft(res.order.remainingSeconds || (paymentMethod === 'bankomat' ? 3600 : 1800));
+        setIsStepTwo(true);
+      } else {
+        setError(res.message || 'To\'lov so\'rovini yaratishda xatolik');
+      }
+    } catch (err) {
+      setIsStepTwo(true);
+      const defaultSeconds = paymentMethod === 'bankomat' ? 3600 : 1800;
+      setTimeLeft(defaultSeconds);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Teskari taymer hisoblash
@@ -219,6 +303,9 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     setFilePreview(null);
     setIsSuccess(false);
     setError(null);
+    setAppliedPromo(null);
+    setPromoCodeInput('');
+    setPromoError('');
     onClose();
   };
 
@@ -300,7 +387,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                       <button
                         key={key}
                         type="button"
-                        onClick={() => setSelectedPlan(key)}
+                        onClick={() => handleSelectPlan(key)}
                         className={`p-2.5 rounded-2xl border text-center relative transition-all cursor-pointer flex flex-col justify-between ${
                           isSelected
                             ? key === '3_months'
@@ -329,16 +416,107 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                           </span>
                         )}
                         <p className="text-xs font-bold text-gray-900 dark:text-white mt-1">{plan.name}</p>
-                        <p className={`text-[11px] font-bold mt-1 ${
-                          key === '3_months' ? 'text-purple-600 dark:text-purple-400' :
-                          key === '2_months' ? 'text-emerald-600 dark:text-emerald-400' :
-                          key === '1_month' ? 'text-blue-600 dark:text-blue-400' :
-                          'text-sky-600 dark:text-sky-400'
-                        }`}>{plan.price}</p>
+                        <div className="flex items-center justify-center gap-1 mt-1">
+                          {plan.originalPrice && (
+                            <span className="text-[10px] font-bold line-through text-gray-400">
+                              {plan.originalPrice}
+                            </span>
+                          )}
+                          <p className={`text-[11px] font-black ${
+                            key === '3_months' ? 'text-purple-600 dark:text-purple-400' :
+                            key === '2_months' ? 'text-emerald-600 dark:text-emerald-400' :
+                            key === '1_month' ? 'text-blue-600 dark:text-blue-400' :
+                            'text-sky-600 dark:text-sky-400'
+                          }`}>
+                            {isSelected && appliedPromo ? `${appliedPromo.finalAmount?.toLocaleString()} so'm` : plan.price}
+                          </p>
+                        </div>
+                        {isSelected && appliedPromo && (
+                          <span className="inline-block mt-0.5 px-1 py-0.2 rounded text-[8px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                            -{appliedPromo.discountPercent}% Promo
+                          </span>
+                        )}
                       </button>
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Promokod kiritish bloki */}
+              <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-1.5">
+                    <Tag className="w-4 h-4 text-brand-500" />
+                    <span className="text-xs font-bold text-gray-900 dark:text-white">Promokod (Chegirma)</span>
+                  </div>
+                  {appliedPromo && (
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      Promokod faol
+                    </span>
+                  )}
+                </div>
+
+                {!appliedPromo ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                          <Tag className="w-3.5 h-3.5" />
+                        </div>
+                        <input
+                          type="text"
+                          value={promoCodeInput}
+                          onChange={(e) => {
+                            setPromoCodeInput(e.target.value.toUpperCase().replace(/\s+/g, ''));
+                            if (promoError) setPromoError('');
+                          }}
+                          placeholder="RUNCODE2026"
+                          className="w-full pl-8 pr-2.5 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xs font-mono font-bold text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 uppercase"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleApplyPromocode}
+                        disabled={promoLoading || !promoCodeInput.trim()}
+                        className="inline-flex items-center space-x-1 px-3.5 py-2 rounded-xl font-bold text-xs text-white bg-brand-600 hover:bg-brand-500 transition disabled:opacity-50 cursor-pointer flex-shrink-0"
+                      >
+                        {promoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Tag className="w-3.5 h-3.5" />}
+                        <span>Qo'llash</span>
+                      </button>
+                    </div>
+
+                    {promoError && (
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>{promoError}</span>
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black font-mono text-emerald-700 dark:text-emerald-300">
+                          {appliedPromo.code} (-{appliedPromo.discountPercent}%)
+                        </p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                          {appliedPromo.discountAmount?.toLocaleString()} so'm chegirma qo'llandi
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemovePromocode}
+                      className="p-1 text-gray-400 hover:text-rose-600 transition cursor-pointer"
+                      title="Promokodni bekor qilish"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* To'lov usuli tanlash */}
@@ -455,9 +633,21 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>To'lov miqdori:</span>
-                  <span className="font-bold text-sm text-gray-900 dark:text-white">
-                    {(plans[selectedPlan]?.amount || (selectedPlan === '3_months' ? 120000 : selectedPlan === '2_months' ? 90000 : 50000)).toLocaleString()} so'm
-                  </span>
+                  <div className="text-right">
+                    {appliedPromo && (
+                      <span className="text-[10px] line-through text-gray-400 block font-mono">
+                        {(plans[selectedPlan]?.amount || 50000).toLocaleString()} so'm
+                      </span>
+                    )}
+                    <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">
+                      {(appliedPromo ? appliedPromo.finalAmount : (plans[selectedPlan]?.amount || 50000)).toLocaleString()} so'm
+                    </span>
+                    {appliedPromo && (
+                      <span className="block text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                        -{appliedPromo.discountPercent}% ({appliedPromo.code})
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Karta raqami: 9860 3501 4972 8288 */}

@@ -11,8 +11,12 @@ import {
   CheckCircle2,
   AlertTriangle,
   X,
-  Lock
+  Lock,
+  Tag,
+  Check,
+  Percent
 } from 'lucide-react';
+import api from '../../services/api';
 
 export const CheckoutPlanSelector = ({
   plans,
@@ -27,7 +31,16 @@ export const CheckoutPlanSelector = ({
   loading,
   handleStartPayment,
   isAuthenticated,
-  setStatusNotice
+  setStatusNotice,
+  appliedPromo,
+  setAppliedPromo,
+  promoCodeInput,
+  setPromoCodeInput,
+  promoLoading,
+  promoError,
+  setPromoError,
+  handleApplyPromocode,
+  handleRemovePromocode
 }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
@@ -100,6 +113,34 @@ export const CheckoutPlanSelector = ({
     }
   };
 
+  const handleSelectPlan = async (key) => {
+    if (isStarted) {
+      if (key !== selectedPlan && setStatusNotice) {
+        setStatusNotice(`Siz ayni damda to'lov jarayonidasiz (${plans[selectedPlan]?.name || selectedPlan}). Ushbu to'lov yakunlanmaguncha (tasdiqlanmaguncha yoki rad etilmaguncha), boshqa tarifni tanlay olmaysiz. To'lov tasdiqlangach yangi tarifga qo'shishingiz mumkin.`);
+      }
+      return;
+    }
+    setSelectedPlan(key);
+    if (appliedPromo) {
+      try {
+        const res = await api.post('/promocodes/apply', {
+          code: appliedPromo.code,
+          planName: key
+        });
+        if (res && res.success && res.promo) {
+          if (setAppliedPromo) setAppliedPromo(res.promo);
+          if (setPromoError) setPromoError('');
+        } else {
+          if (setAppliedPromo) setAppliedPromo(null);
+          if (setPromoError) setPromoError(res?.message || 'Ushbu promokod tanlangan tarif uchun amal qilmaydi');
+        }
+      } catch (err) {
+        if (setAppliedPromo) setAppliedPromo(null);
+        if (setPromoError) setPromoError(err.message || 'Ushbu promokod tanlangan tarif uchun amal qilmaydi');
+      }
+    }
+  };
+
   return (
     <>
       {/* 1. Tarif tanlash qismi - 4 ta Reja */}
@@ -134,15 +175,7 @@ export const CheckoutPlanSelector = ({
               <button
                 key={key}
                 type="button"
-                onClick={() => {
-                  if (isStarted) {
-                    if (key !== selectedPlan && setStatusNotice) {
-                      setStatusNotice(`Siz ayni damda to'lov jarayonidasiz (${plans[selectedPlan]?.name || selectedPlan}). Ushbu to'lov yakunlanmaguncha (tasdiqlanmaguncha yoki rad etilmaguncha), boshqa tarifni tanlay olmaysiz. To'lov tasdiqlangach yangi tarifga qo'shishingiz mumkin.`);
-                    }
-                    return;
-                  }
-                  setSelectedPlan(key);
-                }}
+                onClick={() => handleSelectPlan(key)}
                 className={`p-2.5 sm:p-3 rounded-2xl border-2 text-left relative transition-all duration-150 flex flex-col justify-between ${
                   isLocked
                     ? 'opacity-50 cursor-not-allowed border-gray-200 dark:border-white/5 bg-gray-50/40 dark:bg-white/[0.01]'
@@ -171,13 +204,128 @@ export const CheckoutPlanSelector = ({
 
                 <div>
                   <p className="text-xs sm:text-sm font-black text-gray-900 dark:text-white truncate">{plan.name}</p>
-                  <p className={`text-sm sm:text-base font-black mt-0.5 ${getPlanPriceColor(key)}`}>{plan.price}</p>
+                  <div className="flex items-baseline gap-1.5 mt-0.5">
+                    {plan.originalPrice && (
+                      <span className="text-[10px] sm:text-xs font-bold line-through text-gray-400 dark:text-gray-500">
+                        {plan.originalPrice}
+                      </span>
+                    )}
+                    <p className={`text-xs sm:text-sm font-black ${getPlanPriceColor(key)}`}>
+                      {isSelected && appliedPromo ? `${appliedPromo.finalAmount?.toLocaleString()} so'm` : plan.price}
+                    </p>
+                  </div>
+                  {isSelected && appliedPromo && (
+                    <div className="mt-0.5">
+                      <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        -{appliedPromo.discountPercent}% Promo
+                      </span>
+                    </div>
+                  )}
                   <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium truncate mt-0.5">{plan.duration}</p>
                 </div>
               </button>
             );
           })}
         </div>
+      </div>
+
+      {/* Promokod kiritish va qo'llash bloki */}
+      <div className="p-3 sm:p-3.5 rounded-3xl bg-white dark:bg-[#0c101a] border border-gray-200 dark:border-white/10 shadow-sm flex flex-col space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Tag className="w-4 h-4 text-brand-500" />
+            <h3 className="text-xs sm:text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
+              Promokod (Chegirma)
+            </h3>
+          </div>
+          {appliedPromo && (
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              Promokod faollashtirildi
+            </span>
+          )}
+        </div>
+
+        {!appliedPromo ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (handleApplyPromocode) handleApplyPromocode();
+            }}
+            className="space-y-2"
+          >
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Tag className="w-4 h-4" />
+                </div>
+                <input
+                  type="text"
+                  disabled={isStarted}
+                  value={promoCodeInput || ''}
+                  onChange={(e) => {
+                    if (setPromoCodeInput) {
+                      setPromoCodeInput(e.target.value.toUpperCase().replace(/\s+/g, ''));
+                    }
+                    if (promoError && setPromoError) setPromoError('');
+                  }}
+                  placeholder="Promokodni kiriting (masalan: RUNCODE2026)"
+                  className="w-full pl-9 pr-3 py-2 sm:py-2.5 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] text-xs font-mono font-bold text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 uppercase disabled:opacity-50"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={promoLoading || isStarted || !promoCodeInput?.trim()}
+                className="inline-flex items-center space-x-1.5 px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs text-white bg-brand-600 hover:bg-brand-500 transition shadow-sm disabled:opacity-50 cursor-pointer flex-shrink-0"
+              >
+                {promoLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Tag className="w-3.5 h-3.5" />
+                )}
+                <span>Qo'llash</span>
+              </button>
+            </div>
+
+            {promoError && (
+              <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <span>{promoError}</span>
+              </div>
+            )}
+          </form>
+        ) : (
+          <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-brand-500/10 border border-emerald-500/30 flex items-center justify-between">
+            <div className="flex items-center space-x-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Check className="w-4 h-4 stroke-[3]" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-black text-xs text-gray-900 dark:text-white uppercase tracking-wider">
+                    {appliedPromo.code}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500 text-white">
+                    -{appliedPromo.discountPercent}% Chegirma
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mt-0.5 truncate">
+                  {appliedPromo.discountAmount?.toLocaleString()} so'm tejaldi • Yakuniy to'lov: <strong className="font-black text-gray-900 dark:text-white font-mono">{appliedPromo.finalAmount?.toLocaleString()} so'm</strong>
+                </p>
+              </div>
+            </div>
+
+            {!isStarted && (
+              <button
+                type="button"
+                onClick={handleRemovePromocode}
+                className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-500/10 rounded-xl transition cursor-pointer flex-shrink-0 ml-2"
+                title="Promokodni bekor qilish"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 2. To'lov usulini tanlash (Ilova vs Bankomat) */}
