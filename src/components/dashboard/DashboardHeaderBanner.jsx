@@ -34,10 +34,23 @@ export const DashboardHeaderBanner = ({
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-400 flex items-center mt-1">
-            <Mail className="w-3.5 h-3.5 mr-1 text-gray-500" />
-            {user?.email || 'Email kiritilmagan'}
-          </p>
+          <div className="flex flex-wrap items-center gap-2.5 mt-1.5">
+            {/* Odamga yaqqol ko'rinadigan 16px-20px qalinlikdagi ID raqami (@RunCodeVerifyBot uchun) */}
+            <div 
+              title="Sizning RunCode ID raqamingiz (@RunCodeVerifyBot uchun)"
+              className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-brand-500/15 border border-brand-500/35 shadow-sm ring-1 ring-brand-500/20"
+            >
+              <span className="text-[11px] uppercase font-bold text-gray-400">ID:</span>
+              <span className="text-base sm:text-lg font-black font-mono tracking-wider text-brand-300">
+                #{user?.id}
+              </span>
+            </div>
+
+            <p className="text-xs text-gray-400 flex items-center">
+              <Mail className="w-3.5 h-3.5 mr-1 text-gray-500" />
+              {user?.email || 'Email kiritilmagan'}
+            </p>
+          </div>
         </div>
       </div>
 

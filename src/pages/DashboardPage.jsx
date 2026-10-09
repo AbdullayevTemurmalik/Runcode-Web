@@ -319,6 +319,7 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
 
       {/* 4. Yopiq Telegram Jamiyat Bloki */}
       <DashboardCommunityCard
+        user={user}
         hasSubscription={hasSubscription}
         handleGetCommunityLink={handleGetCommunityLink}
         communityLoading={communityLoading}

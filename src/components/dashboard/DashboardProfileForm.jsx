@@ -155,6 +155,13 @@ export const DashboardProfileForm = ({
         </form>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="p-3.5 rounded-2xl bg-brand-500/10 border border-brand-500/25 shadow-sm">
+            <span className="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider block">Platforma ID (Bot uchun)</span>
+            <p className="text-sm sm:text-base font-black font-mono text-brand-600 dark:text-brand-300 mt-1">
+              #{user?.id || '—'}
+            </p>
+          </div>
+
           <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">To'liq Ism</span>
             <p className="text-xs font-semibold text-gray-900 dark:text-white mt-1">{user?.fullName || '—'}</p>
