@@ -265,7 +265,7 @@ export const Navbar = ({ onOpenPaymentModal }) => {
 
                       {isAdmin && (
                         <a
-                          href="http://localhost:5174"
+                          href={import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'}
                           target="_blank"
                           rel="noreferrer"
                           className="flex items-center px-4 py-2 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
