@@ -94,7 +94,7 @@ export const DashboardProfileForm = ({
   };
 
   return (
-    <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#0c0d12]/95 border border-gray-200 dark:border-white/10 shadow-sm space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 rounded-3xl bg-white dark:bg-[#0c0d12]/95 border border-gray-200 dark:border-white/10 shadow-sm space-y-6">
       <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
         <div className="flex items-center space-x-2.5">
           <div className="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center">
@@ -264,9 +264,9 @@ export const DashboardProfileForm = ({
 
       {/* 2. Parolni O'zgartirish (Xavfsizlik & Telegram Bot Sinxronizatsiyasi) */}
       <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
               <Lock className="w-4 h-4" />
             </div>
             <div>
@@ -282,7 +282,7 @@ export const DashboardProfileForm = ({
           <button
             type="button"
             onClick={() => setIsChangingPassword(!isChangingPassword)}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-white/[0.05] hover:bg-gray-200 dark:hover:bg-white/[0.1] text-gray-700 dark:text-gray-300 font-bold text-xs transition cursor-pointer"
+            className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-white/[0.05] hover:bg-gray-200 dark:hover:bg-white/[0.1] text-gray-700 dark:text-gray-300 font-bold text-xs transition cursor-pointer self-start sm:self-auto"
           >
             <KeyRound className="w-3.5 h-3.5" />
             <span>{isChangingPassword ? 'Yopish' : 'Parolni O\'zgartirish'}</span>

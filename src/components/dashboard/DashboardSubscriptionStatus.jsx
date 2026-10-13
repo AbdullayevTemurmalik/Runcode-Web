@@ -18,15 +18,15 @@ export const DashboardSubscriptionStatus = ({
   const TierIcon = tierInfo.icon;
 
   return (
-    <div className={`rounded-3xl bg-white dark:bg-[#0c0d12]/95 border ${hasSubscription ? tierInfo.borderGlow : 'border-gray-200 dark:border-white/10'} p-6 sm:p-8 shadow-xl relative overflow-hidden space-y-6 transition-all duration-300`}>
+    <div className={`rounded-3xl bg-white dark:bg-[#0c0d12]/95 border ${hasSubscription ? tierInfo.borderGlow : 'border-gray-200 dark:border-white/10'} p-4 sm:p-6 lg:p-8 shadow-xl relative overflow-hidden space-y-4 sm:space-y-6 transition-all duration-300`}>
       {/* Yuqori qism: Sarlavha va Status Nishoni */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-gray-100 dark:border-white/5 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 sm:pb-6 border-b border-gray-100 dark:border-white/5 gap-3 sm:gap-4">
         <div className="space-y-1">
           <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest">
             <TierIcon className="w-4 h-4" />
             <span>Obuna va Ta'lim Holati</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+          <h2 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
             Mening Obunam va Statusim
           </h2>
           <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -36,12 +36,12 @@ export const DashboardSubscriptionStatus = ({
 
         <div className="flex items-center space-x-2">
           {hasSubscription ? (
-            <div className="flex items-center space-x-2">
-              <span className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center space-x-1.5 ${tierInfo.badgeColor} border shadow-sm`}>
+            <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+              <span className={`px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center space-x-1.5 ${tierInfo.badgeColor} border shadow-sm`}>
                 <TierIcon className="w-4 h-4" />
                 <span>{tierInfo.title}</span>
               </span>
-              <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
+              <span className="inline-flex items-center px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-1.5" />
                 Aktiv
               </span>
@@ -54,61 +54,61 @@ export const DashboardSubscriptionStatus = ({
         </div>
       </div>
 
-      {/* 4 ta Asosiy Ko'rsatkich Kartochkalari */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 4 ta Asosiy Ko'rsatkich Kartochkalari (Mobileda ixcham 2x2 grid) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* 1. Status / Tarif */}
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-2">
-          <div className="flex items-center space-x-2 text-gray-400">
-            <TierIcon className={`w-4 h-4 ${hasSubscription ? tierInfo.textColor : 'text-gray-400'}`} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Tarif Statusi</span>
+        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 text-gray-400">
+            <TierIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${hasSubscription ? tierInfo.textColor : 'text-gray-400'}`} />
+            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate">Tarif Statusi</span>
           </div>
-          <p className={`text-lg sm:text-xl font-black ${hasSubscription ? tierInfo.textColor : 'text-gray-900 dark:text-white'}`}>
+          <p className={`text-sm sm:text-lg lg:text-xl font-black truncate ${hasSubscription ? tierInfo.textColor : 'text-gray-900 dark:text-white'}`}>
             {tierInfo.title}
           </p>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug">
+          <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate">
             {tierInfo.label}
           </p>
         </div>
 
         {/* 2. To'lov Qilingan Sana */}
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-2">
-          <div className="flex items-center space-x-2 text-gray-400">
-            <Calendar className="w-4 h-4 text-brand-500" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">To'langan Sana</span>
+        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 text-gray-400">
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-500" />
+            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate">To'langan Sana</span>
           </div>
-          <p className="text-lg sm:text-xl font-black text-gray-900 dark:text-white font-mono">
+          <p className="text-sm sm:text-lg lg:text-xl font-black text-gray-900 dark:text-white font-mono truncate">
             {hasSubscription ? formatDate(user?.subscription?.start_date) : '—'}
           </p>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug">
-            {hasSubscription ? 'Muvaffaqiyatli faollashgan' : 'Obuna yo\'q'}
+          <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate">
+            {hasSubscription ? 'Muvaffaqiyatli faol' : 'Obuna yo\'q'}
           </p>
         </div>
 
         {/* 3. Amal Qilish Muddati */}
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-2">
-          <div className="flex items-center space-x-2 text-gray-400">
-            <Clock className="w-4 h-4 text-emerald-500" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Amal Qilish Muddati</span>
+        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 text-gray-400">
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
+            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate">Amal Qilish</span>
           </div>
-          <p className="text-lg sm:text-xl font-black text-gray-900 dark:text-white font-mono">
+          <p className="text-sm sm:text-lg lg:text-xl font-black text-gray-900 dark:text-white font-mono truncate">
             {hasSubscription ? formatDate(user?.subscription?.end_date) : 'Cheklanmagan'}
           </p>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug">
-            {hasSubscription ? 'Shu sanagacha to\'liq ochiq' : 'HTML ochiq'}
+          <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate">
+            {hasSubscription ? 'Shu sanagacha ochiq' : 'HTML ochiq'}
           </p>
         </div>
 
         {/* 4. Qolgan Muddat */}
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-2">
-          <div className="flex items-center space-x-2 text-gray-400">
-            <Hourglass className="w-4 h-4 text-amber-500" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Qolgan Muddat</span>
+        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 text-gray-400">
+            <Hourglass className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
+            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate">Qolgan Muddat</span>
           </div>
-          <p className="text-lg sm:text-xl font-black text-gray-900 dark:text-white font-mono">
+          <p className="text-sm sm:text-lg lg:text-xl font-black text-gray-900 dark:text-white font-mono truncate">
             {hasSubscription ? `${daysLeft} kun qoldi` : '0 kun'}
           </p>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug">
-            {hasSubscription ? 'Har kuni 1 kun kamayadi' : 'Obuna kerak'}
+          <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate">
+            {hasSubscription ? 'Har kuni kamayadi' : 'Obuna kerak'}
           </p>
         </div>
       </div>

@@ -13,7 +13,7 @@ export const DashboardCommunityCard = ({
     : `https://t.me/${botUsername}`;
 
   return (
-    <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-800 shadow-sm relative overflow-hidden">
+    <div className="p-4 sm:p-6 lg:p-8 rounded-3xl bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-800 shadow-sm relative overflow-hidden">
       {/* Orqa fon nur effekti */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/5 rounded-full blur-3xl pointer-events-none" />
 

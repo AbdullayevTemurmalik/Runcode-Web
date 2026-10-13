@@ -7,8 +7,11 @@ import {
   Star, 
   Crown, 
   CheckCircle2, 
-  ArrowRight 
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
+import { PromocodeInputBox } from '../PromocodeInputBox';
+import { useActivePromocode } from '../../hooks/useActivePromocode';
 
 export const HomePricingSection = ({
   plansToDisplay,
@@ -20,11 +23,13 @@ export const HomePricingSection = ({
   handleNextPlan,
   onOpenPaymentModal
 }) => {
+  const { getPlanPricing } = useActivePromocode();
+
   return (
     <section id="pricing" className="container-custom">
       
       {/* Section Header with Beautiful Text */}
-      <div className="max-w-3xl mx-auto text-center space-y-4 mb-14">
+      <div className="max-w-3xl mx-auto text-center space-y-4 mb-8">
         <div className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs font-bold uppercase tracking-widest">
           <CreditCard className="w-3.5 h-3.5 text-brand-500" />
           <span>Hamyonbop va Shaffof Obuna</span>
@@ -66,6 +71,9 @@ export const HomePricingSection = ({
         </div>
       </div>
 
+      {/* Promokod Kiritish va Live Countdown Timer Bo'limi */}
+      <PromocodeInputBox />
+
       {/* Responsive Plans Container (Kompyuterda 4 ta card bir qatorda yonma-yon, mobilda silliq swipe) */}
       <div 
         ref={carouselRef}
@@ -78,6 +86,7 @@ export const HomePricingSection = ({
           const isPro = plan.id === '1_month' || (plan.tier === 'Pro' && !isProPlus);
           const isPlus = plan.id === '7_days' || plan.tier === 'Plus';
           const isSelected = activePlanIndex === idx;
+          const pricing = getPlanPricing(plan.id, plan.price, plan.originalPrice);
 
           return (
             <div
@@ -133,14 +142,52 @@ export const HomePricingSection = ({
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{plan.desc || plan.description}</p>
 
                 <div className="my-6 pb-6 border-b border-gray-100 dark:border-white/5">
-                  <span className={`text-3xl font-black tracking-tight ${
-                    isPlus ? 'text-sky-600 dark:text-sky-400' :
-                    isPro ? 'text-blue-600 dark:text-blue-400' :
-                    isProPlus ? 'text-emerald-600 dark:text-emerald-400' :
-                    'text-purple-600 dark:text-purple-400'
-                  }`}>
-                    {plan.price}
-                  </span>
+                  <div className="flex flex-col space-y-1">
+                    {/* Strikethrough Eski Narxlar */}
+                    <div className="flex items-center space-x-2 flex-wrap">
+                      {pricing.isDiscounted ? (
+                        <>
+                          {pricing.superOriginalPrice && (
+                            <span className="text-xs sm:text-sm font-semibold line-through text-gray-400 dark:text-gray-500">
+                              {pricing.superOriginalPrice}
+                            </span>
+                          )}
+                          <span className="text-sm sm:text-base font-bold line-through text-gray-400 dark:text-gray-400">
+                            {pricing.strikethroughPrice}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-black uppercase tracking-wider">
+                            {pricing.badgeText}
+                          </span>
+                        </>
+                      ) : (
+                        pricing.strikethroughPrice && (
+                          <span className="text-base sm:text-lg font-bold line-through text-gray-400 dark:text-gray-500">
+                            {pricing.strikethroughPrice}
+                          </span>
+                        )
+                      )}
+
+                      {pricing.isExcluded && (
+                        <span className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-[10px] font-bold">
+                          Chegirma yo'q
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Joriy Narx */}
+                    <div className="flex items-baseline space-x-1.5 mt-0.5">
+                      <span className={`text-3xl font-black tracking-tight ${
+                        pricing.isDiscounted 
+                          ? 'text-emerald-600 dark:text-emerald-400' 
+                          : isPlus ? 'text-sky-600 dark:text-sky-400' :
+                            isPro ? 'text-blue-600 dark:text-blue-400' :
+                            isProPlus ? 'text-emerald-600 dark:text-emerald-400' :
+                            'text-purple-600 dark:text-purple-400'
+                      }`}>
+                        {pricing.currentPrice}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-3">

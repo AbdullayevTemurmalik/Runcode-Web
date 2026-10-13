@@ -77,7 +77,11 @@ export const HomePage = ({ onOpenPaymentModal }) => {
         if (paymentsResult.status === 'fulfilled' && paymentsResult.value?.success && paymentsResult.value?.plans) {
           const list = Object.values(paymentsResult.value.plans).filter(p => !p.isFree && p.id !== 'free');
           if (list.length > 0) {
-            setPricingPlans(list);
+            setPricingPlans(list.map(p => ({
+              ...p,
+              originalPrice: p.originalPrice || (p.id === '3_months' ? '150 000 so\'m' : p.id === '2_months' ? '125 000 so\'m' : p.id === '1_month' ? '75 000 so\'m' : '30 000 so\'m'),
+              originalAmount: p.originalAmount || (p.id === '3_months' ? 150000 : p.id === '2_months' ? 125000 : p.id === '1_month' ? 75000 : 30000)
+            })));
           }
         }
       } catch (err) {
@@ -109,7 +113,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       tier: 'Plus',
       name: 'Plus (7 Kunlik)',
       duration: '7 kun to\'liq ochiq',
+      originalPrice: '30 000 so\'m',
+      originalAmount: 30000,
       price: '20 000 so\'m',
+      amount: 20000,
       desc: 'Test uchun sinang va platformaning barcha imkoniyatlaridan foydalaning',
       badge: 'Test uchun sinang',
       features: [
@@ -129,7 +136,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       tier: 'Pro',
       name: 'Pro (1 Oylik)',
       duration: '1 oy to\'liq ochiq',
+      originalPrice: '75 000 so\'m',
+      originalAmount: 75000,
       price: '50 000 so\'m',
+      amount: 50000,
       desc: 'Tez sur\'atda chuqur bilim oluvchilar uchun optimal reja',
       features: [
         'Barcha 4 ta kurs: HTML, CSS, JS, React',
@@ -148,7 +158,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       tier: 'Pro+',
       name: 'Pro+ (2 Oylik)',
       duration: '2 oy to\'liq ochiq',
+      originalPrice: '125 000 so\'m',
+      originalAmount: 125000,
       price: '90 000 so\'m',
+      amount: 90000,
       desc: 'Frontend dasturchi bo\'lish uchun eng optimal va tavsiya etilgan reja',
       features: [
         'Barcha 4 ta kurs: HTML, CSS, JS, React',
@@ -168,7 +181,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       tier: 'Ultra',
       name: 'Ultra (3 Oylik)',
       duration: '3 oy to\'liq ochiq',
+      originalPrice: '150 000 so\'m',
+      originalAmount: 150000,
       price: '120 000 so\'m',
+      amount: 120000,
       desc: 'Maksimal tejamkorlik va to\'liq professional tayyorgarlik',
       features: [
         'Barcha mavjud 4 ta kurs va yangi modullar',

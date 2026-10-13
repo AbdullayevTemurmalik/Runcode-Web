@@ -263,7 +263,7 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
   const progressPercent = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDays) * 100)));
 
   return (
-    <div className="container-custom py-10 sm:py-16 space-y-8">
+    <div className="container-custom py-4 sm:py-8 lg:py-12 space-y-4 sm:space-y-6 lg:space-y-8">
       {/* 1. Header Profile Banner */}
       <DashboardHeaderBanner
         user={user}

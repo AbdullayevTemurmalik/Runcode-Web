@@ -17,11 +17,16 @@ import {
   Phone,
   UserCheck,
   Tag,
-  Percent
+  Percent,
+  QrCode,
+  ExternalLink
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { getStoredPromocode, setStoredPromocode } from '../hooks/useActivePromocode';
+
+const UZUM_PAYMENT_URL = 'https://b.2u.uz/ttc?qr=Nzk5MzoyMDU4NjEzMjowMU00VDA0VlgyNjVYQU1IR1k5SjdNV1ZEODp1OVhXZWtrenRJNmNadm5oZVhXQ1NhOWJOdFk9';
 
 export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   const { user } = useAuth();
@@ -129,8 +134,8 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     fetchBackendConfig();
   }, [isOpen]);
 
-  const handleApplyPromocode = async () => {
-    const cleanCode = promoCodeInput.trim().toUpperCase();
+  const handleApplyPromocode = async (codeToUse) => {
+    const cleanCode = (codeToUse || promoCodeInput).trim().toUpperCase();
     if (!cleanCode) {
       setPromoError('Iltimos, promokodni kiriting');
       return;
@@ -143,8 +148,22 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
         planName: selectedPlan
       });
       if (res.success && res.promo) {
+        const excludedList = Array.isArray(res.promo.excludedPlans) ? res.promo.excludedPlans : [];
+        const promoToSave = {
+          code: res.promo.code,
+          discountPercent: res.promo.discountPercent,
+          excludedPlans: excludedList,
+          expiresAt: res.promo.expiresAt,
+          remainingSeconds: res.promo.remainingSeconds
+        };
+        setStoredPromocode(promoToSave);
         setAppliedPromo(res.promo);
-        setPromoError('');
+
+        if (res.promo.isExcluded) {
+          setPromoError('Ushbu promokod tanlangan tarif uchun amal qilmaydi (boshqa tariflar uchun amal qiladi)');
+        } else {
+          setPromoError('');
+        }
       } else {
         setAppliedPromo(null);
         setPromoError(res.message || 'Bunday promokod topilmadi yoki noto\'g\'ri kiritilgan');
@@ -161,39 +180,51 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     setAppliedPromo(null);
     setPromoCodeInput('');
     setPromoError('');
+    setStoredPromocode(null);
   };
 
   const handleSelectPlan = async (key) => {
     setSelectedPlan(key);
-    if (appliedPromo) {
-      try {
-        const res = await api.post('/promocodes/apply', {
-          code: appliedPromo.code,
-          planName: key
-        });
-        if (res && res.success && res.promo) {
-          setAppliedPromo(res.promo);
-          setPromoError('');
-        } else {
-          setAppliedPromo(null);
-          setPromoError(res?.message || 'Ushbu promokod tanlangan tarif uchun amal qilmaydi');
-        }
-      } catch (err) {
-        setAppliedPromo(null);
-        setPromoError(err.message || 'Ushbu promokod tanlangan tarif uchun amal qilmaydi');
+    const activeStored = appliedPromo || getStoredPromocode();
+    if (activeStored?.code) {
+      const isExcluded = Array.isArray(activeStored.excludedPlans) && activeStored.excludedPlans.includes(key);
+      if (isExcluded) {
+        setPromoError('Ushbu tarif uchun chegirma amal qilmaydi (standart narxda to\'lanadi)');
+      } else {
+        setPromoError('');
       }
     }
   };
+
+  // Modal ochilganda localStorage dagi promokodni avtomatik yuklash
+  useEffect(() => {
+    if (!isOpen) return;
+    const stored = getStoredPromocode();
+    if (stored?.code && !appliedPromo) {
+      setPromoCodeInput(stored.code);
+      setAppliedPromo(stored);
+      if (Array.isArray(stored.excludedPlans) && stored.excludedPlans.includes(selectedPlan)) {
+        setPromoError('Ushbu promokod tanlangan tarif uchun amal qilmaydi (boshqa tariflar uchun amal qiladi)');
+      }
+    }
+  }, [isOpen]);
 
   // 2-Qadamga o'tish va teskari taymerni boshlash (Ilova: 30 min, Bankomat: 1 soat)
   const handleStartPayment = async () => {
     setError(null);
     setLoading(true);
     try {
+      const activeStored = appliedPromo || getStoredPromocode();
+      const isPlanExcluded = !!(
+        activeStored &&
+        Array.isArray(activeStored.excludedPlans) &&
+        activeStored.excludedPlans.includes(selectedPlan)
+      );
+
       const res = await api.post('/payments/start', {
         planName: selectedPlan,
         paymentMethod,
-        promocode: appliedPromo?.code || undefined
+        promocode: (!isPlanExcluded && activeStored?.code) ? activeStored.code : undefined
       });
       if (res.success && res.order) {
         setOrder(res.order);
@@ -238,6 +269,14 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
+  const [copiedUzumLink, setCopiedUzumLink] = useState(false);
+
+  const copyUzumLink = () => {
+    navigator.clipboard.writeText(UZUM_PAYMENT_URL);
+    setCopiedUzumLink(true);
+    setTimeout(() => setCopiedUzumLink(false), 2000);
+  };
+
   const copyCardNumber = () => {
     navigator.clipboard.writeText(cardInfo.rawNumber || '9860350149728288');
     setCopiedCard(true);
@@ -250,16 +289,73 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     setTimeout(() => setCopiedPhone(false), 2000);
   };
 
+  // Tanlangan chek faylini sessiyadan qayta tiklash
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const cached = sessionStorage.getItem('runcode_modal_receipt_file');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.dataUrl && parsed?.name) {
+          const arr = parsed.dataUrl.split(',');
+          const mime = arr[0].match(/:(.*?);/)?.[1] || parsed.type || 'image/png';
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          const restoredFile = new File([u8arr], parsed.name, {
+            type: mime,
+            lastModified: parsed.lastModified || Date.now()
+          });
+          setSelectedFile(restoredFile);
+          if (mime.startsWith('image/')) {
+            setFilePreview(parsed.dataUrl);
+          }
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [isOpen]);
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedFile(file);
-      if (file.type.startsWith('image/')) {
-        setFilePreview(URL.createObjectURL(file));
-      } else {
-        setFilePreview(null);
+      if (file.size > 10 * 1024 * 1024) {
+        setError('Fayl hajmi 10MB dan oshmasligi kerak');
+        return;
       }
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        if (file.type.startsWith('image/')) {
+          setFilePreview(dataUrl);
+        } else {
+          setFilePreview(null);
+        }
+        try {
+          sessionStorage.setItem('runcode_modal_receipt_file', JSON.stringify({
+            name: file.name,
+            type: file.type,
+            lastModified: file.lastModified,
+            dataUrl
+          }));
+        } catch (storageErr) {
+          // ignore
+        }
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveFile = (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setSelectedFile(null);
+    setFilePreview(null);
+    sessionStorage.removeItem('runcode_modal_receipt_file');
   };
 
   const handleUploadReceipt = async () => {
@@ -283,6 +379,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
 
       if (data.success) {
         setIsSuccess(true);
+        sessionStorage.removeItem('runcode_modal_receipt_file');
         if (typeof refreshNotifications === 'function') {
           refreshNotifications();
         }
@@ -301,6 +398,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     setOrder(null);
     setSelectedFile(null);
     setFilePreview(null);
+    sessionStorage.removeItem('runcode_modal_receipt_file');
     setIsSuccess(false);
     setError(null);
     setAppliedPromo(null);
@@ -415,27 +513,54 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                             Super Tejam
                           </span>
                         )}
-                        <p className="text-xs font-bold text-gray-900 dark:text-white mt-1">{plan.name}</p>
-                        <div className="flex items-center justify-center gap-1 mt-1">
-                          {plan.originalPrice && (
-                            <span className="text-[10px] font-bold line-through text-gray-400">
-                              {plan.originalPrice}
-                            </span>
-                          )}
-                          <p className={`text-[11px] font-black ${
-                            key === '3_months' ? 'text-purple-600 dark:text-purple-400' :
-                            key === '2_months' ? 'text-emerald-600 dark:text-emerald-400' :
-                            key === '1_month' ? 'text-blue-600 dark:text-blue-400' :
-                            'text-sky-600 dark:text-sky-400'
-                          }`}>
-                            {isSelected && appliedPromo ? `${appliedPromo.finalAmount?.toLocaleString()} so'm` : plan.price}
-                          </p>
-                        </div>
-                        {isSelected && appliedPromo && (
-                          <span className="inline-block mt-0.5 px-1 py-0.2 rounded text-[8px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                            -{appliedPromo.discountPercent}% Promo
-                          </span>
-                        )}
+                        {(() => {
+                          const activeStored = appliedPromo || getStoredPromocode();
+                          const isPromoExcluded = !!(activeStored && Array.isArray(activeStored.excludedPlans) && activeStored.excludedPlans.includes(key));
+
+                          let currentPlanPrice = plan.price;
+                          let showPromoBadge = false;
+                          let promoBadgeText = '';
+
+                          if (activeStored && !isPromoExcluded) {
+                            const baseAmt = plan.amount || 20000;
+                            const discountAmt = Math.round((baseAmt * activeStored.discountPercent) / 100);
+                            const calculatedFinal = Math.max(0, baseAmt - discountAmt);
+                            currentPlanPrice = `${calculatedFinal.toLocaleString('uz-UZ').replace(/,/g, ' ')} so'm`;
+                            showPromoBadge = true;
+                            promoBadgeText = `-${activeStored.discountPercent}% Promo`;
+                          }
+
+                          return (
+                            <>
+                              <p className="text-xs font-bold text-gray-900 dark:text-white mt-1">{plan.name}</p>
+                              <div className="flex items-center justify-center gap-1 mt-1">
+                                {plan.originalPrice && (
+                                  <span className="text-[10px] font-bold line-through text-gray-400">
+                                    {plan.originalPrice}
+                                  </span>
+                                )}
+                                <p className={`text-[11px] font-black ${
+                                  key === '3_months' ? 'text-purple-600 dark:text-purple-400' :
+                                  key === '2_months' ? 'text-emerald-600 dark:text-emerald-400' :
+                                  key === '1_month' ? 'text-blue-600 dark:text-blue-400' :
+                                  'text-sky-600 dark:text-sky-400'
+                                }`}>
+                                  {currentPlanPrice}
+                                </p>
+                              </div>
+                              {showPromoBadge && (
+                                <span className="inline-block mt-0.5 px-1 py-0.2 rounded text-[8px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                  {promoBadgeText}
+                                </span>
+                              )}
+                              {activeStored && isPromoExcluded && (
+                                <span className="inline-block mt-0.5 px-1 py-0.2 rounded text-[8px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                                  Chegirma yo'q
+                                </span>
+                              )}
+                            </>
+                          );
+                        })()}
                       </button>
                     );
                   })}
@@ -507,14 +632,6 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                         </p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleRemovePromocode}
-                      className="p-1 text-gray-400 hover:text-rose-600 transition cursor-pointer"
-                      title="Promokodni bekor qilish"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
                   </div>
                 )}
               </div>
@@ -524,52 +641,72 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   To'lov qayerdan amalga oshiriladi?
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('apps')}
-                    className={`p-3.5 rounded-2xl border flex items-center space-x-3 transition-all cursor-pointer ${
+                    className={`p-3 rounded-2xl border flex flex-col justify-between transition-all cursor-pointer ${
                       paymentMethod === 'apps'
                         ? 'border-brand-500 bg-brand-500/5 ring-2 ring-brand-500/20'
                         : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
                     }`}
                   >
-                    <Smartphone className="w-5 h-5 text-brand-500 flex-shrink-0" />
-                    <div className="text-left">
+                    <div className="flex items-center space-x-2">
+                      <Smartphone className="w-4 h-4 text-brand-500 flex-shrink-0" />
                       <p className="text-xs font-bold text-gray-900 dark:text-white">Ilova orqali</p>
-                      <p className="text-[10px] text-gray-500">Payme, Click, Uzum (30 daqiqa)</p>
                     </div>
+                    <p className="text-[10px] text-gray-500 text-left mt-1">Payme, Click (30 daq)</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('uzum')}
+                    className={`p-3 rounded-2xl border flex flex-col justify-between transition-all cursor-pointer ${
+                      paymentMethod === 'uzum'
+                        ? 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/20'
+                        : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <QrCode className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                      <p className="text-xs font-bold text-gray-900 dark:text-white">Uzum Bank</p>
+                    </div>
+                    <p className="text-[10px] text-purple-400 text-left mt-1">QR & Ilova (30 daq)</p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('bankomat')}
-                    className={`p-3.5 rounded-2xl border flex items-center space-x-3 transition-all cursor-pointer ${
+                    className={`p-3 rounded-2xl border flex flex-col justify-between transition-all cursor-pointer ${
                       paymentMethod === 'bankomat'
-                        ? 'border-brand-500 bg-brand-500/5 ring-2 ring-brand-500/20'
+                        ? 'border-amber-500 bg-amber-500/5 ring-2 ring-amber-500/20'
                         : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
                     }`}
                   >
-                    <Building2 className="w-5 h-5 text-brand-500 flex-shrink-0" />
-                    <div className="text-left">
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">Bankomat orqali</p>
-                      <p className="text-[10px] text-gray-500">Naqd / Terminal (1 soat)</p>
+                    <div className="flex items-center space-x-2">
+                      <Building2 className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      <p className="text-xs font-bold text-gray-900 dark:text-white">Bankomat</p>
                     </div>
+                    <p className="text-[10px] text-gray-500 text-left mt-1">Naqd / ATM (1 soat)</p>
                   </button>
                 </div>
               </div>
 
-              {/* Aniq vaqt va ogohlantirish (User talabi bo'yicha Ilova: 30 min, Bankomat: 1 soat) */}
-              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 text-xs flex items-start space-x-2.5">
+              {/* Aniq vaqt va ogohlantirish */}
+              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 text-xs flex items-start space-x-2.5">
                 <Clock className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
                 <p className="leading-relaxed">
                   {paymentMethod === 'bankomat' ? (
                     <>
-                      "To'lovni Boshlash" tugmasini bosganingizdan so'ng, karta raqami va ma'lumotlar chiqadi va <strong>1 soatlik (60 daqiqa) teskari taymer</strong> ishga tushadi. 1 soat ichida bankomat orqali to'lov qilib, chek suratini yuklashingiz zarur.
+                      "To'lovni Boshlash" tugmasini bosganingizdan so'ng hisob rekvizitlari ochiladi va <strong>1 soatlik (60 daqiqa) teskari taymer</strong> ishga tushadi. 1 soat ichida to'lov qilib chek yuklashingiz zarur.
+                    </>
+                  ) : paymentMethod === 'uzum' ? (
+                    <>
+                      "To'lovni Boshlash" tugmasini bosganingizdan so'ng Uzum Bank rasmiy QR-kodi va ilovada to'lash tugmasi chiqadi hamda <strong>30 daqiqalik teskari taymer</strong> ishga tushadi.
                     </>
                   ) : (
                     <>
-                      "To'lovni Boshlash" tugmasini bosganingizdan so'ng, karta raqami chiqadi va <strong>30 daqiqalik teskari taymer</strong> ishga tushadi. 30 daqiqa ichida chek suratini yuklashingiz zarur.
+                      "To'lovni Boshlash" tugmasini bosganingizdan so'ng karta raqami chiqadi va <strong>30 daqiqalik teskari taymer</strong> ishga tushadi. 30 daqiqa ichida chek yuklashingiz zarur.
                     </>
                   )}
                 </p>
@@ -631,79 +768,153 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                     {plans[selectedPlan]?.name || (selectedPlan === '3_months' ? 'Ultra (3 Oylik)' : selectedPlan === '2_months' ? 'Pro (2 Oylik)' : 'Plus (1 Oylik)')}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>To'lov miqdori:</span>
-                  <div className="text-right">
-                    {appliedPromo && (
-                      <span className="text-[10px] line-through text-gray-400 block font-mono">
-                        {(plans[selectedPlan]?.amount || 50000).toLocaleString()} so'm
-                      </span>
-                    )}
-                    <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">
-                      {(appliedPromo ? appliedPromo.finalAmount : (plans[selectedPlan]?.amount || 50000)).toLocaleString()} so'm
-                    </span>
-                    {appliedPromo && (
-                      <span className="block text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
-                        -{appliedPromo.discountPercent}% ({appliedPromo.code})
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Karta raqami: 9860 3501 4972 8288 */}
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                  <div>
-                    <p className="text-[10px] text-gray-400 font-semibold uppercase">Karta raqami</p>
-                    <p className="text-sm font-mono font-bold text-gray-900 dark:text-white tracking-wider">
-                      {cardInfo.number}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={copyCardNumber}
-                    className="p-2 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg flex items-center space-x-1 text-xs font-semibold cursor-pointer"
-                  >
-                    {copiedCard ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                    <span>{copiedCard ? 'Nusxalandi' : 'Nusxa olish'}</span>
-                  </button>
-                </div>
+                {(() => {
+                  const activeStored = appliedPromo || getStoredPromocode();
+                  const isPromoExcluded = !!(activeStored && Array.isArray(activeStored.excludedPlans) && activeStored.excludedPlans.includes(selectedPlan));
+                  const basePlanAmt = plans[selectedPlan]?.amount || 50000;
+                  const discountAmt = (activeStored && !isPromoExcluded) ? Math.round((basePlanAmt * activeStored.discountPercent) / 100) : 0;
+                  const finalPlanAmt = Math.max(0, basePlanAmt - discountAmt);
+                  const isDiscounted = activeStored && !isPromoExcluded;
 
-                {/* Karta egasi: Temurmalik Abdullayev */}
-                <div className="flex items-center justify-between text-xs py-1 px-1">
-                  <span className="text-gray-500 flex items-center space-x-1.5">
-                    <UserCheck className="w-3.5 h-3.5 text-gray-400" />
-                    <span>Karta egasi:</span>
-                  </span>
-                  <span className="font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
-                    {cardInfo.holder}
-                  </span>
-                </div>
-
-                {/* Bankomat tanlansa ulangan nomer chiqishi: +998 90 696 79 99 */}
-                {paymentMethod === 'bankomat' && (
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50">
-                    <div className="flex items-center space-x-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                        <Phone className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold uppercase">
-                          Ulangan telefon raqam:
-                        </p>
-                        <p className="text-xs font-mono font-bold text-gray-900 dark:text-white">
-                          {cardInfo.phone}
-                        </p>
+                  return (
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>To'lov miqdori:</span>
+                      <div className="text-right">
+                        {isDiscounted && (
+                          <span className="text-[10px] line-through text-gray-400 block font-mono">
+                            {basePlanAmt.toLocaleString('uz-UZ').replace(/,/g, ' ')} so'm
+                          </span>
+                        )}
+                        <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400">
+                          {finalPlanAmt.toLocaleString('uz-UZ').replace(/,/g, ' ')} so'm
+                        </span>
+                        {isDiscounted && (
+                          <span className="block text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                            -{activeStored.discountPercent}% ({activeStored.code})
+                          </span>
+                        )}
+                        {activeStored && isPromoExcluded && (
+                          <span className="block text-[9px] font-bold text-amber-500">
+                            Chegirma yo'q
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={copyPhoneNumber}
-                      className="p-2 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg flex items-center space-x-1 text-xs font-semibold cursor-pointer"
-                    >
-                      {copiedPhone ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                      <span>{copiedPhone ? 'Nusxalandi' : 'Nusxa'}</span>
-                    </button>
+                  );
+                })()}
+                
+                {paymentMethod === 'uzum' ? (
+                  /* Uzum Bank QR & Link Block */
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 via-purple-900/20 to-gray-900/50 border border-purple-500/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 rounded-xl bg-purple-500 text-white flex items-center justify-center">
+                          <QrCode className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-gray-900 dark:text-white uppercase">Uzum Bank QR To'lov</p>
+                          <p className="text-[10px] text-purple-400">Rasmiy QR-kod & Ilova</p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full border border-purple-500/30">
+                        Tezkor QR
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center py-2">
+                      <div className="w-[260px] h-[260px] sm:w-[350px] sm:h-[350px] aspect-square bg-white p-3 sm:p-4 rounded-2xl shadow-xl flex items-center justify-center border-4 border-purple-500/30">
+                        <img
+                          src="/uzum-qr.png"
+                          alt="Uzum Bank QR"
+                          className="w-full h-full object-contain select-none"
+                        />
+                      </div>
+                      <p className="text-[11px] text-gray-500 dark:text-purple-300/80 mt-2 text-center">
+                        Uzum Bank ilovasida QR-kodni skanerlang yoki to'g'ridan-to'g'ri ilovada to'lang
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <a
+                        href={UZUM_PAYMENT_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-1.5 transition shadow-sm cursor-pointer"
+                      >
+                        <Smartphone className="w-4 h-4" />
+                        <span>Uzum Bank Ilovasida To'lash</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+
+                      <button
+                        type="button"
+                        onClick={copyUzumLink}
+                        className="py-2.5 px-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition flex items-center justify-center space-x-1.5 cursor-pointer"
+                        title="To'lov havolasidan nusxa olish"
+                      >
+                        {copiedUzumLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                        <span>{copiedUzumLink ? "Nusxalandi!" : "Nusxa"}</span>
+                      </button>
+                    </div>
                   </div>
+                ) : (
+                  <>
+                    {/* Karta raqami: 9860 3501 4972 8288 */}
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                      <div>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase">Karta raqami</p>
+                        <p className="text-sm font-mono font-bold text-gray-900 dark:text-white tracking-wider">
+                          {cardInfo.number}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={copyCardNumber}
+                        className="p-2 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg flex items-center space-x-1 text-xs font-semibold cursor-pointer"
+                      >
+                        {copiedCard ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                        <span>{copiedCard ? 'Nusxalandi' : 'Nusxa olish'}</span>
+                      </button>
+                    </div>
+
+                    {/* Karta egasi: Temurmalik Abdullayev */}
+                    <div className="flex items-center justify-between text-xs py-1 px-1">
+                      <span className="text-gray-500 flex items-center space-x-1.5">
+                        <UserCheck className="w-3.5 h-3.5 text-gray-400" />
+                        <span>Karta egasi:</span>
+                      </span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                        {cardInfo.holder}
+                      </span>
+                    </div>
+
+                    {/* Bankomat tanlansa ulangan nomer chiqishi: +998 90 696 79 99 */}
+                    {paymentMethod === 'bankomat' && (
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50">
+                        <div className="flex items-center space-x-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                            <Phone className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold uppercase">
+                              Ulangan telefon raqam:
+                            </p>
+                            <p className="text-xs font-mono font-bold text-gray-900 dark:text-white">
+                              {cardInfo.phone}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={copyPhoneNumber}
+                          className="p-2 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg flex items-center space-x-1 text-xs font-semibold cursor-pointer"
+                        >
+                          {copiedPhone ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                          <span>{copiedPhone ? 'Nusxalandi' : 'Nusxa'}</span>
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
 
               </div>
@@ -749,15 +960,35 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
               </div>
 
               {/* Chekni tasdiqlash uchun yuborish */}
-              <button
-                type="button"
-                onClick={handleUploadReceipt}
-                disabled={submitting || !selectedFile || timeLeft <= 0}
-                className="w-full py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-brand-500/20 flex items-center justify-center space-x-2 transition-all disabled:opacity-50 cursor-pointer"
-              >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                <span>Sotib Olish / Chekni Yuborish</span>
-              </button>
+              {selectedFile ? (
+                <button
+                  type="button"
+                  onClick={handleUploadReceipt}
+                  disabled={submitting || timeLeft <= 0}
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl shadow-emerald-500/30 flex items-center justify-center space-x-2.5 transition-all cursor-pointer disabled:opacity-50 active:scale-[0.99] border-2 border-emerald-400/40"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Chek Adminga Yuborilmoqda...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-5 h-5 text-white" />
+                      <span>To'lov Chekini Adminga Yuborish (Tasdiqlash)</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={true}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gray-100 dark:bg-white/[0.04] text-gray-400 dark:text-gray-500 font-bold text-xs sm:text-sm uppercase tracking-wider border border-gray-200 dark:border-white/5 flex items-center justify-center space-x-2 cursor-not-allowed"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Avval to'lov chekini tanlang (tugma faollashadi)</span>
+                </button>
+              )}
 
             </div>
           )}

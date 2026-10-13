@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Copy, 
   Check, 
@@ -7,9 +7,18 @@ import {
   CreditCard, 
   FileCheck, 
   UploadCloud, 
-  Zap,
-  Wifi
+  Zap, 
+  Wifi, 
+  QrCode, 
+  ExternalLink, 
+  Smartphone,
+  ZoomIn,
+  Download,
+  X,
+  Maximize2
 } from 'lucide-react';
+
+const UZUM_PAYMENT_URL = 'https://b.2u.uz/ttc?qr=Nzk5MzoyMDU4NjEzMjowMU00VDA0VlgyNjVYQU1IR1k5SjdNV1ZEODp1OVhXZWtrenRJNmNadm5oZVhXQ1NhOWJOdFk9';
 
 export const CheckoutCardPreview = ({
   cardInfo,
@@ -21,241 +30,581 @@ export const CheckoutCardPreview = ({
   copyPhoneNumber,
   appliedPromo
 }) => {
+  const [copiedUzumLink, setCopiedUzumLink] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+
+  const copyUzumLink = () => {
+    navigator.clipboard.writeText(UZUM_PAYMENT_URL);
+    setCopiedUzumLink(true);
+    setTimeout(() => setCopiedUzumLink(false), 2000);
+  };
+
+  const handleDownloadQR = () => {
+    const link = document.createElement('a');
+    link.href = '/uzum-qr.png';
+    link.download = 'UzumBank_RunCode_QR.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsQrModalOpen(false);
+    };
+    if (isQrModalOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isQrModalOpen]);
+
+  const isUzum = paymentMethod === 'uzum';
+
   return (
-    <div className="flex flex-col gap-3 sm:gap-3.5 w-full">
-      
-      {/* REALISTIK HUMO DEBIT BANK KARTASI (STANDART ID-1 O'LCHAM VA SHAKL) */}
-      <div className="relative w-full rounded-3xl p-4 sm:p-5 lg:p-6 text-white shadow-2xl overflow-hidden border border-emerald-400/30 bg-gradient-to-br from-[#023325] via-[#04261d] to-[#01140e] group transition-all duration-300">
-        
-        {/* Yorug'lik va neft-metall jilo effektlari */}
-        <div className="absolute -top-24 -right-24 w-56 h-56 bg-emerald-400/25 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-56 h-56 bg-teal-400/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#34d399_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.08] pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col justify-between space-y-4 sm:space-y-5">
+    <div className="w-full h-full select-none">
+      {isUzum ? (
+        /* UZUM BANK: QR KOD VA 4 TA QONUN-QOIDA YONMA-YON (TEPADAN PASTGA) */
+        <div className="relative w-full h-auto lg:h-full flex flex-col justify-between rounded-3xl sm:rounded-[2rem] p-4 sm:p-5 lg:p-5.5 xl:p-6 text-white shadow-2xl overflow-hidden border border-purple-500/40 bg-gradient-to-br from-[#240533] via-[#14031d] to-[#09010e]">
           
-          {/* Karta yuqori qismi: EMV Oltin Chip, Wi-Fi NFC to'lqinlari va HUMO logosi */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              
-              {/* Haqiqiy 3D Oltin EMV Mikrosxema (Chip) */}
-              <div className="w-12 h-9 rounded-lg bg-gradient-to-tr from-[#e5a93b] via-[#ffd700] to-[#f4c430] p-1 border border-amber-600/70 shadow-md relative overflow-hidden flex flex-col justify-between">
-                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-amber-900/50" />
-                <div className="absolute inset-y-0 left-1/3 w-[1px] bg-amber-900/50" />
-                <div className="absolute inset-y-0 right-1/3 w-[1px] bg-amber-900/50" />
-                <div className="w-full h-full border border-amber-700/40 rounded-[3px] bg-transparent" />
-              </div>
+          {/* Neon jilo effektlari */}
+          <div className="absolute -top-24 -right-24 w-60 h-60 bg-purple-500/25 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-violet-600/20 rounded-full blur-3xl pointer-events-none" />
 
-              {/* NFC / Kontaktsiz to'lov simvoli */}
-              <div className="flex items-center text-emerald-300/80">
-                <Wifi className="w-5 h-5 rotate-90 drop-shadow" />
+          {/* Yuqori sarlavha */}
+          <div className="relative z-10 flex items-center justify-between pb-3 mb-3 border-b border-purple-500/25">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-[#7b2cbf] to-[#9d4edd] flex items-center justify-center text-white shadow-lg shadow-purple-900/60">
+                <QrCode className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-sm sm:text-base font-black tracking-wider text-white block leading-tight">UZUM BANK</span>
+                <span className="text-xs text-purple-300/90 font-medium">Rasmiy QR To'lov Tizimi</span>
               </div>
             </div>
 
-            {/* Rasmiy HUMO Plastik Kartasi Logotipi */}
-            <div className="flex items-center space-x-2 px-3 py-1 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-inner">
-              <span className="text-xs sm:text-sm font-black tracking-widest text-white drop-shadow">HUMO</span>
+            <div className="flex items-center space-x-2 px-3 py-1 rounded-xl bg-purple-500/20 border border-purple-400/40 shadow-sm">
+              <span className="text-xs font-black text-purple-200 tracking-wide">Tezkor QR</span>
+              <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse shadow-sm shadow-purple-400" />
+            </div>
+          </div>
+
+          {/* 2 USTUNLI ASOSIY BLOK: Chapda QR-kod va tugmalar, O'ngda 4 qoida (1.5x Katta va Chiroyli) */}
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-3.5 lg:gap-4 xl:gap-5 items-stretch flex-1">
+            
+            {/* CHAP USTUN: QR-kod, Narx va Tugmalar (6 ustun) */}
+            <div className="md:col-span-6 flex flex-col justify-between space-y-3 p-3.5 sm:p-4 rounded-3xl bg-white/[0.03] border border-white/[0.08] shadow-inner">
+              
+              {/* QR-Kod container - Yuqori aniqlikdagi skanerlash ramkasi */}
+              <div className="flex flex-col items-center justify-center">
+                <div 
+                  onClick={() => setIsQrModalOpen(true)}
+                  className="group relative cursor-pointer"
+                  title="To'liq ekranda (350x350) ochish uchun bosing"
+                >
+                  <div className="w-[195px] h-[195px] sm:w-[215px] sm:h-[215px] md:w-[200px] md:h-[200px] lg:w-[210px] lg:h-[210px] xl:w-[235px] xl:h-[235px] aspect-square bg-white p-3 sm:p-3.5 rounded-2xl sm:rounded-3xl shadow-2xl flex items-center justify-center border-2 border-purple-500/40 relative overflow-hidden transition-all group-hover:border-purple-400 group-hover:shadow-purple-500/40 group-hover:scale-[1.01]">
+                    
+                    {/* 4 Burchakdagi Skaner Fokus Ramkalari */}
+                    <div className="absolute top-2 left-2 w-5 h-5 border-t-2 border-l-2 border-purple-600 rounded-tl-sm pointer-events-none" />
+                    <div className="absolute top-2 right-2 w-5 h-5 border-t-2 border-r-2 border-purple-600 rounded-tr-sm pointer-events-none" />
+                    <div className="absolute bottom-2 left-2 w-5 h-5 border-b-2 border-l-2 border-purple-600 rounded-bl-sm pointer-events-none" />
+                    <div className="absolute bottom-2 right-2 w-5 h-5 border-b-2 border-r-2 border-purple-600 rounded-br-sm pointer-events-none" />
+
+                    <img 
+                      src="/uzum-qr.png" 
+                      alt="Uzum Bank QR" 
+                      className="w-full h-full object-contain select-none"
+                      style={{ imageRendering: 'crisp-edges' }}
+                    />
+
+                    {/* Hoverda Kattalashtirish overlay belgisi */}
+                    <div className="absolute inset-0 bg-purple-950/40 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 pointer-events-none">
+                      <div className="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center shadow-lg">
+                        <ZoomIn className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-black/70 px-2.5 py-0.5 rounded-full">
+                        350x350 Kattalashtirish
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Skaner qilish tavsiyasi va kattalashtirish tugmasi */}
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <p className="text-xs text-purple-200/90 font-medium text-center">
+                    Uzum Bank orqali to'g'ridan-to'g'ri skanerlang
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsQrModalOpen(true)}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-200 hover:text-white bg-purple-500/25 hover:bg-purple-500/45 px-2.5 py-0.5 rounded-md border border-purple-400/30 transition cursor-pointer"
+                    title="To'liq ekranda ko'rish"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5 text-purple-300" />
+                    <span>Kattalashtirish</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Summa va Havola tugmalari */}
+              <div className="pt-2 border-t border-purple-500/25 space-y-2">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs text-purple-300 font-bold uppercase tracking-wider">
+                    To'lov Summasi:
+                  </span>
+                  <div className="text-right">
+                    {activePlanObj?.isDiscounted && activePlanObj?.appliedPromo ? (
+                      <div className="flex items-baseline gap-1.5 justify-end">
+                        <span className="text-xs font-bold line-through text-purple-300/50 font-mono">
+                          {activePlanObj.basePrice || activePlanObj.originalPrice}
+                        </span>
+                        <span className="text-lg sm:text-2xl font-black text-purple-100 font-mono">
+                          {activePlanObj.price}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-lg sm:text-2xl font-black text-purple-100 font-mono">
+                        {activePlanObj.price}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tugmalar: 1-qator: Ilovada To'lash (full width), 2-qator: Havola va QR (50/50) */}
+                <div className="flex flex-col gap-1.5">
+                  <a
+                    href={UZUM_PAYMENT_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 sm:py-3 px-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white font-bold text-xs sm:text-sm uppercase tracking-wider shadow-md shadow-purple-600/40 flex items-center justify-center space-x-1.5 transition active:scale-[0.99] cursor-pointer"
+                  >
+                    <Smartphone className="w-4 h-4" />
+                    <span>Ilovada To'lash</span>
+                    <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
+                  </a>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={copyUzumLink}
+                      className="py-2 px-2 rounded-xl sm:rounded-2xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-400/30 text-xs font-bold transition cursor-pointer flex items-center justify-center space-x-1 active:scale-95"
+                      title="Havoladan nusxa olish"
+                    >
+                      {copiedUzumLink ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="text-xs">Nusxalandi</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-purple-200" />
+                          <span className="text-xs">Havola Nusxa</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleDownloadQR}
+                      className="py-2 px-2 rounded-xl sm:rounded-2xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-400/30 text-xs font-bold transition cursor-pointer flex items-center justify-center space-x-1 active:scale-95"
+                      title="QR-kod suratini yuklab olish"
+                    >
+                      <Download className="w-3.5 h-3.5 text-purple-200" />
+                      <span className="text-xs">QR Saqlash</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Skanerlash va to'lov yo'riqnomasi (Ota-ona yoki o'z telefonidan) - Katta va Chiroyli */}
+                <div className="p-2.5 sm:p-3 rounded-2xl bg-purple-500/15 border border-purple-400/25 text-xs text-purple-100 text-center leading-snug space-y-0.5">
+                  <p className="font-bold text-white flex items-center justify-center gap-1.5 text-xs sm:text-[13px]">
+                    <QrCode className="w-4 h-4 text-purple-300" />
+                    <span>Boshqa telefon (ota-ona) yoki o'z telefoningizdan to'lash:</span>
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-purple-200/90 leading-tight">
+                    Ota-onangiz yoki boshqa telefondan to'lash uchun kamerani to'g'ridan-to'g'ri ushbu QR-kodga qarating. O'z telefoningizda bo'lsangiz <strong>"Ilovada To'lash"</strong> tugmasini bosing.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* O'NG USTUN: 4 Ta Qonun-Qoida (Tepadan pastga 01 -> 02 -> 03 -> 04) - TO'LIQ KONTAYNER DIVI BILAN */}
+            <div className="md:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 rounded-3xl bg-white/[0.03] border border-white/[0.08] shadow-inner space-y-2.5 sm:space-y-3">
+              
+              <div className="flex items-center justify-between pb-2 border-b border-purple-500/25">
+                <span className="text-xs sm:text-sm md:text-[14.5px] font-black uppercase tracking-wider text-purple-100 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  4 Qonun-Qoida
+                </span>
+                <span className="text-[10.5px] sm:text-xs font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-3 py-0.5 rounded-full">
+                  100% Xavfsiz
+                </span>
+              </div>
+
+              {/* 01. To'lovni o'tkazing */}
+              <div className="p-3 sm:p-3.5 rounded-2xl border border-emerald-500/35 bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-transparent flex items-start space-x-3 shadow-sm hover:border-emerald-400/50 transition-all">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-md shadow-emerald-500/25 flex-shrink-0 mt-0.5">
+                  01
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-black text-white leading-tight">To'lovni O'tkazing</p>
+                  <p className="text-[11px] sm:text-xs text-purple-100/90 mt-1 leading-snug">
+                    Uzum Bank QR yoki mobil ilovasi orqali to'lovni bajaring.
+                  </p>
+                </div>
+              </div>
+
+              {/* 02. Chekni saqlang */}
+              <div className="p-3 sm:p-3.5 rounded-2xl border border-sky-500/35 bg-gradient-to-r from-sky-500/15 via-sky-500/5 to-transparent flex items-start space-x-3 shadow-sm hover:border-sky-400/50 transition-all">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-sky-400 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-md shadow-sky-500/25 flex-shrink-0 mt-0.5">
+                  02
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-black text-white leading-tight">Chekni Saqlang</p>
+                  <p className="text-[11px] sm:text-xs text-purple-100/90 mt-1 leading-snug">
+                    To'lov cheki skrinshotini (fotosurati yoki PDF) saqlab oling.
+                  </p>
+                </div>
+              </div>
+
+              {/* 03. Chekni yuklang */}
+              <div className="p-3 sm:p-3.5 rounded-2xl border border-purple-500/35 bg-gradient-to-r from-purple-500/20 via-purple-500/5 to-transparent flex items-start space-x-3 shadow-sm hover:border-purple-400/50 transition-all">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-purple-400 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-md shadow-purple-500/25 flex-shrink-0 mt-0.5">
+                  03
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-black text-white leading-tight">Chekni Yuklang</p>
+                  <p className="text-[11px] sm:text-xs text-purple-100/90 mt-1 leading-snug">
+                    Ushbu sahifada chek faylini yuklab tizimga yuboring.
+                  </p>
+                </div>
+              </div>
+
+              {/* 04. Tezkor tasdiq */}
+              <div className="p-3 sm:p-3.5 rounded-2xl border border-amber-500/35 bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent flex items-start space-x-3 shadow-sm hover:border-amber-400/50 transition-all">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-md shadow-amber-500/25 flex-shrink-0 mt-0.5">
+                  04
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-black text-white leading-tight">Tezkor Tasdiq</p>
+                  <p className="text-[11px] sm:text-xs text-purple-100/90 mt-1 leading-snug">
+                    Admin 10-15 daqiqada tekshirib tarifingizni faollashtiradi.
+                  </p>
+                </div>
+              </div>
+
+              {/* Pastki Ishonchli Tizim Eslatmasi */}
+              <div className="p-2.5 rounded-xl bg-purple-500/15 border border-purple-400/25 flex items-center justify-center space-x-2 text-[10.5px] sm:text-xs text-purple-200 text-center font-medium">
+                <Zap className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                <span>To'lov 24/7 avtomatlashtirilgan xavfsiz tizim orqali qabul qilinadi</span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      ) : (
+        /* ODDIY HUMO KARTASI VA 4 TA QONUN-QOIDA YONMA-YON (TEPADAN PASTGA) */
+        <div className="relative w-full h-auto lg:h-full flex flex-col justify-between rounded-3xl sm:rounded-[2rem] p-4 sm:p-5 lg:p-5.5 xl:p-6 text-white shadow-2xl overflow-hidden border border-emerald-500/40 bg-gradient-to-br from-[#022a1e] via-[#031d17] to-[#01100b]">
+          
+          {/* Neft-metall jilo effektlari */}
+          <div className="absolute -top-24 -right-24 w-60 h-60 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-teal-400/15 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Yuqori sarlavha */}
+          <div className="relative z-10 flex items-center justify-between pb-3 mb-3 border-b border-emerald-400/25">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-[#059669] to-[#10b981] flex items-center justify-center text-white shadow-lg shadow-emerald-900/60">
+                <CreditCard className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span className="text-sm sm:text-base font-black tracking-wider text-white block leading-tight">HUMO DEBET KARTASI</span>
+                <span className="text-xs text-emerald-300/90 font-medium">Milliy To'lov Tizimi</span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 px-3 py-1 rounded-xl bg-emerald-500/20 border border-emerald-400/40 shadow-sm">
+              <span className="text-xs font-black text-emerald-200 tracking-wide">HUMO</span>
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400" />
             </div>
           </div>
 
-          {/* Karta markazi: Bo'rtma (Embossed) Karta Raqami va Nusxa Tugmasi */}
-          <div className="space-y-1.5 pt-1">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] sm:text-xs text-emerald-300 font-bold uppercase tracking-widest opacity-90 drop-shadow">
-                Karta Raqami
-              </span>
-              <button
-                type="button"
-                onClick={copyCardNumber}
-                className="px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-white border border-emerald-400/30 backdrop-blur-md transition-all cursor-pointer flex items-center space-x-1.5 shadow-sm active:scale-95"
-                title="Karta raqamidan nusxa olish"
-              >
-                {copiedCard ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-300" />
-                    <span className="text-xs font-bold text-emerald-200">Nusxalandi!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 text-white" />
-                    <span className="text-xs font-bold">Nusxa</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            <p className="text-lg sm:text-2xl lg:text-3xl font-mono font-black tracking-widest text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)] select-all py-0.5">
-              {cardInfo.number}
-            </p>
-          </div>
-
-          {/* Karta pasti: Karta Egasi va To'lov Summasi */}
-          <div className="flex items-end justify-between pt-2 border-t border-white/15">
-            <div>
-              <p className="text-[9px] sm:text-[10px] text-emerald-300/90 font-bold uppercase tracking-widest">
-                Karta Egasi
-              </p>
-              <p className="text-sm sm:text-base font-mono font-black tracking-wider text-white drop-shadow uppercase">
-                {cardInfo.holder}
-              </p>
-            </div>
-
-            <div className="text-right">
-              <p className="text-[9px] sm:text-[10px] text-emerald-300/90 font-bold uppercase tracking-widest">
-                To'lov Summasi
-              </p>
-              {appliedPromo || activePlanObj?.appliedPromo ? (
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] sm:text-xs font-bold line-through text-emerald-200/60 font-mono">
-                    {activePlanObj.basePrice || activePlanObj.originalPrice || activePlanObj.price}
-                  </span>
-                  <p className="text-base sm:text-xl font-black text-emerald-300 drop-shadow">
-                    {activePlanObj.price}
-                  </p>
-                  <span className="text-[9px] font-black text-amber-300">
-                    -{appliedPromo?.discountPercent || activePlanObj.appliedPromo?.discountPercent}% ({appliedPromo?.code || activePlanObj.appliedPromo?.code})
-                  </span>
+          {/* 2 USTUNLI ASOSIY BLOK: Chapda Karta rekvizitlari, O'ngda 4 qoida (1.5x Katta va Chiroyli) */}
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-3.5 lg:gap-4 xl:gap-5 items-stretch flex-1">
+            
+            {/* CHAP USTUN: Haqiqiy Humo karta rekvizitlari (6 ustun) */}
+            <div className="md:col-span-6 flex flex-col justify-between space-y-3 p-3.5 sm:p-4 rounded-3xl bg-white/[0.03] border border-white/[0.08] shadow-inner">
+              
+              {/* Karta Chip & Contactless belgisi */}
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-7 rounded-lg bg-gradient-to-tr from-[#e5a93b] via-[#ffd700] to-[#f4c430] p-1 border border-amber-600/70 flex items-center justify-center shadow-md">
+                  <div className="w-full h-full border border-amber-800/40 rounded flex items-center justify-center">
+                    <div className="w-4 h-2 border-t border-b border-amber-900/40" />
+                  </div>
                 </div>
-              ) : (
-                <p className="text-base sm:text-xl font-black text-emerald-300 drop-shadow">
-                  {activePlanObj.price}
+                <div className="flex items-center space-x-1.5 text-emerald-300/80">
+                  <Wifi className="w-4 h-4 rotate-90" />
+                  <span className="text-[10px] font-bold tracking-wider">CONTACTLESS</span>
+                </div>
+              </div>
+
+              {/* Karta Raqami bloki */}
+              <div className="space-y-1.5 p-3 rounded-2xl bg-black/25 border border-emerald-400/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-emerald-300 font-bold uppercase tracking-wider">
+                    Karta Raqami
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copyCardNumber}
+                    className="px-3 py-1 rounded-xl bg-emerald-500/25 hover:bg-emerald-500/40 text-white border border-emerald-400/40 text-xs font-bold transition cursor-pointer flex items-center space-x-1.5 active:scale-95 shadow-sm"
+                    title="Karta raqamidan nusxa olish"
+                  >
+                    {copiedCard ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-300" />
+                        <span>Nusxalandi</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-white" />
+                        <span>Nusxa olish</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <p className="text-base sm:text-xl xl:text-2xl font-mono font-black tracking-widest text-white drop-shadow select-all py-1">
+                  {cardInfo.number}
                 </p>
+              </div>
+
+              {/* Karta egasi va Summa */}
+              <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex items-end justify-between">
+                <div>
+                  <p className="text-[10px] text-emerald-300/80 font-bold uppercase tracking-wider">
+                    Karta Egasi
+                  </p>
+                  <p className="text-xs sm:text-sm font-mono font-black tracking-wide text-white uppercase mt-0.5">
+                    {cardInfo.holder}
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-[10px] text-emerald-300/80 font-bold uppercase tracking-wider">
+                    To'lov Summasi
+                  </p>
+                  {activePlanObj?.isDiscounted && activePlanObj?.appliedPromo ? (
+                    <div className="flex flex-col items-end">
+                      <span className="text-xs font-bold line-through text-emerald-200/50 font-mono">
+                        {activePlanObj.basePrice || activePlanObj.originalPrice}
+                      </span>
+                      <p className="text-base sm:text-xl font-black text-emerald-300 drop-shadow font-mono">
+                        {activePlanObj.price}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-base sm:text-xl font-black text-emerald-300 drop-shadow font-mono">
+                      {activePlanObj.price}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Bankomat tanlanganda ulangan telefon raqami */}
+              {paymentMethod === 'bankomat' && (
+                <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <Phone className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-[10px] text-amber-300 font-bold uppercase">Ulangan Telefon:</p>
+                      <p className="text-xs sm:text-sm font-mono font-bold text-white">{cardInfo.phone}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={copyPhoneNumber}
+                    className="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 text-xs font-bold border border-amber-500/30 transition cursor-pointer"
+                  >
+                    {copiedPhone ? 'Nusxalandi' : 'Nusxa'}
+                  </button>
+                </div>
               )}
+
+              {/* Yo'riqnoma qutisi */}
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-500/15 border border-emerald-400/25 text-xs text-emerald-100 text-center leading-snug space-y-0.5">
+                <p className="font-bold text-white flex items-center justify-center gap-1.5 text-xs sm:text-[13px]">
+                  <CreditCard className="w-4 h-4 text-emerald-300" />
+                  <span>To'lovni amalga oshirish yo'riqnomasi:</span>
+                </p>
+                <p className="text-[11px] sm:text-xs text-emerald-200/90 leading-tight">
+                  Karta raqamiga to'lovni o'tkazing va to'lov kvitansiyasi (chek skrinshoti)ni saqlab oling.
+                </p>
+              </div>
+
             </div>
+
+            {/* O'NG USTUN: 4 Ta Qonun-Qoida (Tepadan pastga 01 -> 02 -> 03 -> 04) - TO'LIQ KONTAYNER DIVI BILAN */}
+            <div className="md:col-span-6 flex flex-col justify-between p-3.5 sm:p-4 rounded-3xl bg-white/[0.03] border border-white/[0.08] shadow-inner space-y-2.5 sm:space-y-3">
+              
+              <div className="flex items-center justify-between pb-2 border-b border-emerald-400/25">
+                <span className="text-xs sm:text-sm md:text-[14.5px] font-black uppercase tracking-wider text-emerald-100 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  4 Qonun-Qoida
+                </span>
+                <span className="text-[10.5px] sm:text-xs font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-3 py-0.5 rounded-full">
+                  100% Xavfsiz
+                </span>
+              </div>
+
+              {/* 01. To'lovni o'tkazing */}
+              <div className="p-3 sm:p-3.5 rounded-2xl border border-emerald-500/35 bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-transparent flex items-start space-x-3 shadow-sm hover:border-emerald-400/50 transition-all">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-md shadow-emerald-500/25 flex-shrink-0 mt-0.5">
+                  01
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-black text-white leading-tight">To'lovni O'tkazing</p>
+                  <p className="text-[11px] sm:text-xs text-emerald-100/90 mt-1 leading-snug">
+                    HUMO kartasiga to'lovni ilovangiz orqali aniq o'tkazing.
+                  </p>
+                </div>
+              </div>
+
+              {/* 02. Chekni saqlang */}
+              <div className="p-3 sm:p-3.5 rounded-2xl border border-sky-500/35 bg-gradient-to-r from-sky-500/15 via-sky-500/5 to-transparent flex items-start space-x-3 shadow-sm hover:border-sky-400/50 transition-all">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-sky-400 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-md shadow-sky-500/25 flex-shrink-0 mt-0.5">
+                  02
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-black text-white leading-tight">Chekni Saqlang</p>
+                  <p className="text-[11px] sm:text-xs text-emerald-100/90 mt-1 leading-snug">
+                    To'lov cheki skrinshotini (fotosurati yoki PDF) saqlab oling.
+                  </p>
+                </div>
+              </div>
+
+              {/* 03. Chekni yuklang */}
+              <div className="p-3 sm:p-3.5 rounded-2xl border border-purple-500/35 bg-gradient-to-r from-purple-500/20 via-purple-500/5 to-transparent flex items-start space-x-3 shadow-sm hover:border-purple-400/50 transition-all">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-purple-400 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-md shadow-purple-500/25 flex-shrink-0 mt-0.5">
+                  03
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-black text-white leading-tight">Chekni Yuklang</p>
+                  <p className="text-[11px] sm:text-xs text-emerald-100/90 mt-1 leading-snug">
+                    Ushbu sahifada chek faylini yuklab tizimga yuboring.
+                  </p>
+                </div>
+              </div>
+
+              {/* 04. Tezkor tasdiq */}
+              <div className="p-3 sm:p-3.5 rounded-2xl border border-amber-500/35 bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent flex items-start space-x-3 shadow-sm hover:border-amber-400/50 transition-all">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 text-white flex items-center justify-center font-black text-xs sm:text-sm shadow-md shadow-amber-500/25 flex-shrink-0 mt-0.5">
+                  04
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-black text-white leading-tight">Tezkor Tasdiq</p>
+                  <p className="text-[11px] sm:text-xs text-emerald-100/90 mt-1 leading-snug">
+                    Admin 10-15 daqiqada tekshirib tarifingizni faollashtiradi.
+                  </p>
+                </div>
+              </div>
+
+              {/* Pastki Ishonchli Tizim Eslatmasi */}
+              <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-400/25 flex items-center justify-center space-x-2 text-[10.5px] sm:text-xs text-emerald-200 text-center font-medium">
+                <Zap className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                <span>To'lov 24/7 avtomatlashtirilgan xavfsiz tizim orqali qabul qilinadi</span>
+              </div>
+
+            </div>
+
           </div>
 
-        </div>
-      </div>
-
-      {/* Bankomat tanlanganda Telefon raqami bloki */}
-      {paymentMethod === 'bankomat' && (
-        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 animate-in fade-in flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
-              <Phone className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider">
-                Kartaga Ulangan Telefon Raqam:
-              </p>
-              <p className="text-sm sm:text-base font-mono font-black text-gray-900 dark:text-white">
-                {cardInfo.phone}
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={copyPhoneNumber}
-            className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-bold transition-all cursor-pointer flex items-center space-x-1.5 border border-amber-500/30"
-          >
-            {copiedPhone ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copiedPhone ? 'Nusxalandi' : 'Nusxa'}</span>
-          </button>
         </div>
       )}
 
-      {/* TO'LOV BO'YICHA 4 TA ASOSIY QONUN-QOIDA (2x2 RANG-BARANG VA KATTA KARTALAR) */}
-      <div className="p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-[#0c101a] border border-gray-200 dark:border-white/10 shadow-sm flex flex-col space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-500" />
-            <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">
-              To'lov Bo'yicha 4 Ta Qonun-Qoida
-            </h4>
+      {/* 350x350 TO'LIQ HAJMDAGI QR-KOD MODALI (NOTEBOOK VA MOBILDA SKANERLASH UCHUN) */}
+      {isQrModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-150"
+          onClick={() => setIsQrModalOpen(false)}
+        >
+          <div 
+            className="relative w-full max-w-sm sm:max-w-md bg-[#13031a] border-2 border-purple-500/60 rounded-3xl p-4 sm:p-5 text-white shadow-2xl flex flex-col items-center space-y-3 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Yuqori sarlavhasi */}
+            <div className="w-full flex items-center justify-between pb-2.5 border-b border-purple-500/30">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#7b2cbf] to-[#9d4edd] flex items-center justify-center text-white shadow-md shadow-purple-900/50">
+                  <QrCode className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-black text-white leading-tight">Uzum Bank QR-Kodi</h4>
+                  <p className="text-[10px] text-purple-300/80 font-medium">350x350 Katta Hajmda Skanerlash</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsQrModalOpen(false)}
+                className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition cursor-pointer"
+                title="Yopish (ESC)"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* 350x350 Maxsus Katta QR-kod container */}
+            <div className="relative w-[285px] h-[285px] sm:w-[340px] sm:h-[340px] aspect-square bg-white p-3.5 sm:p-4 rounded-3xl shadow-2xl flex items-center justify-center border-4 border-purple-500/50">
+              {/* Burchak fokus ramkalari */}
+              <div className="absolute top-2 left-2 w-5 h-5 border-t-4 border-l-4 border-purple-600 rounded-tl-md pointer-events-none" />
+              <div className="absolute top-2 right-2 w-5 h-5 border-t-4 border-r-4 border-purple-600 rounded-tr-md pointer-events-none" />
+              <div className="absolute bottom-2 left-2 w-5 h-5 border-b-4 border-l-4 border-purple-600 rounded-bl-md pointer-events-none" />
+              <div className="absolute bottom-2 right-2 w-5 h-5 border-b-4 border-r-4 border-purple-600 rounded-br-md pointer-events-none" />
+
+              <img 
+                src="/uzum-qr.png" 
+                alt="Uzum Bank QR Katta" 
+                className="w-full h-full object-contain select-none"
+                style={{ imageRendering: 'crisp-edges' }}
+              />
+            </div>
+
+            {/* Summa va Narx */}
+            <div className="w-full py-2 px-3 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-between text-xs">
+              <span className="text-purple-200 font-bold uppercase tracking-wider text-[10px]">To'lov Summasi:</span>
+              <span className="font-mono font-black text-sm sm:text-base text-purple-100">{activePlanObj.price}</span>
+            </div>
+
+            {/* Tugmalar */}
+            <div className="w-full flex flex-col sm:flex-row gap-2">
+              <a
+                href={UZUM_PAYMENT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-purple-600/30 flex items-center justify-center space-x-1.5 transition active:scale-[0.99] cursor-pointer"
+              >
+                <Smartphone className="w-4 h-4" />
+                <span>Ilovada To'lash</span>
+                <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
+              </a>
+
+              <button
+                type="button"
+                onClick={handleDownloadQR}
+                className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 border border-purple-400/30 text-xs font-bold transition cursor-pointer flex items-center justify-center space-x-1.5 active:scale-95 flex-shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                <span>QR Saqlash</span>
+              </button>
+            </div>
+
+            <p className="text-[10px] text-purple-200/90 text-center font-medium leading-tight">
+              Ota-ona yoki boshqa telefondan Uzum Bank ilovasida "QR to'lov" orqali ushbu QR-kodni skanerlang
+            </p>
           </div>
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-            100% Xavfsiz
-          </span>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-          
-          {/* 1-Qonun: To'lovni O'tkazish (Zumrad Yashil) */}
-          <div className="p-3 sm:p-3.5 rounded-2xl border-2 border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 flex flex-col justify-between space-y-2 hover:border-emerald-500/50 transition-all shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="px-2 py-0.5 rounded-lg text-xs font-black bg-emerald-500 text-white shadow-sm">
-                01
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
-                <CreditCard className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm font-black text-gray-900 dark:text-white">
-                To'lovni O'tkazing
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed mt-1">
-                HUMO kartasiga <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{activePlanObj.price}</strong> mablag'ni o'tkazing.
-              </p>
-            </div>
-          </div>
-
-          {/* 2-Qonun: Chekni Saqlab Olish (Moviy / Sky) */}
-          <div className="p-3 sm:p-3.5 rounded-2xl border-2 border-sky-500/30 bg-sky-500/5 dark:bg-sky-950/20 flex flex-col justify-between space-y-2 hover:border-sky-500/50 transition-all shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="px-2 py-0.5 rounded-lg text-xs font-black bg-sky-500 text-white shadow-sm">
-                02
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-sky-500/15 text-sky-500 flex items-center justify-center">
-                <FileCheck className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm font-black text-gray-900 dark:text-white">
-                Chekni Saqlang
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed mt-1">
-                Ilova yoki bankomatdan to'lov cheki skrinshotini yoki suratini oling.
-              </p>
-            </div>
-          </div>
-
-          {/* 3-Qonun: Chekni Yuklash (Binafsha / Purple) */}
-          <div className="p-3 sm:p-3.5 rounded-2xl border-2 border-purple-500/30 bg-purple-500/5 dark:bg-purple-950/20 flex flex-col justify-between space-y-2 hover:border-purple-500/50 transition-all shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="px-2 py-0.5 rounded-lg text-xs font-black bg-purple-500 text-white shadow-sm">
-                03
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-purple-500/15 text-purple-500 flex items-center justify-center">
-                <UploadCloud className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm font-black text-gray-900 dark:text-white">
-                Chekni Yuklang
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed mt-1">
-                Chek faylini saytga yuklab, tasdiqlash uchun yuboring.
-              </p>
-            </div>
-          </div>
-
-          {/* 4-Qonun: Tezkor Tasdiqlash (Qahrabo / Amber) */}
-          <div className="p-3 sm:p-3.5 rounded-2xl border-2 border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/20 flex flex-col justify-between space-y-2 hover:border-amber-500/50 transition-all shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="px-2 py-0.5 rounded-lg text-xs font-black bg-amber-500 text-white shadow-sm">
-                04
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center">
-                <Zap className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm font-black text-gray-900 dark:text-white">
-                Tezkor Tasdiq
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed mt-1">
-                Admin 1 soatdan - 2 soatgacha tekshirib obunani yoqadi.
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
+      )}
     </div>
   );
 };

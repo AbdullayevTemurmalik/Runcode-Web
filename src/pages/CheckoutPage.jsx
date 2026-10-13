@@ -4,10 +4,13 @@ import { ArrowLeft, Lock, AlertCircle, Info } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { getStoredPromocode, setStoredPromocode } from '../hooks/useActivePromocode';
 import { CheckoutSuccessView } from '../components/checkout/CheckoutSuccessView';
 import { CheckoutPlanSelector } from '../components/checkout/CheckoutPlanSelector';
 import { CheckoutReceiptDropzone } from '../components/checkout/CheckoutReceiptDropzone';
 import { CheckoutCardPreview } from '../components/checkout/CheckoutCardPreview';
+import { CheckoutPendingNotice } from '../components/checkout/CheckoutPendingNotice';
+import { CancelOrderModal } from '../components/checkout/CancelOrderModal';
 
 export const CheckoutPage = () => {
   const [searchParams] = useSearchParams();
@@ -17,8 +20,12 @@ export const CheckoutPage = () => {
 
   const planParam = searchParams.get('plan') || '7_days';
 
-  const [selectedPlan, setSelectedPlan] = useState(planParam);
-  const [paymentMethod, setPaymentMethod] = useState('apps'); // 'apps' | 'bankomat'
+  const [selectedPlan, setSelectedPlan] = useState(() => {
+    return sessionStorage.getItem('runcode_checkout_selected_plan') || planParam || '7_days';
+  });
+  const [paymentMethod, setPaymentMethod] = useState(() => {
+    return sessionStorage.getItem('runcode_checkout_payment_method') || 'apps';
+  });
   const [isStarted, setIsStarted] = useState(false);
   const [order, setOrder] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -28,9 +35,24 @@ export const CheckoutPage = () => {
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [cancellingOrder, setCancellingOrder] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState(null);
   const [statusNotice, setStatusNotice] = useState(null);
+
+  // Tanlovlarni sessionStorage ga saqlash
+  useEffect(() => {
+    if (selectedPlan) {
+      sessionStorage.setItem('runcode_checkout_selected_plan', selectedPlan);
+    }
+  }, [selectedPlan]);
+
+  useEffect(() => {
+    if (paymentMethod) {
+      sessionStorage.setItem('runcode_checkout_payment_method', paymentMethod);
+    }
+  }, [paymentMethod]);
 
   // Promokod holatlari
   const [appliedPromo, setAppliedPromo] = useState(null);
@@ -54,16 +76,18 @@ export const CheckoutPage = () => {
     bank: 'HUMO'
   });
 
-  // URL query o'zgarsa rejani yangilash
+  // URL query o'zgarsa yoki mavjud bo'lsa
   useEffect(() => {
     if (isStarted && (order?.plan_name || order?.planName)) {
       setSelectedPlan(order.plan_name || order.planName);
       return;
     }
-    if (planParam && plans[planParam]) {
-      setSelectedPlan(planParam);
+    const queryPlan = searchParams.get('plan');
+    if (queryPlan && plans[queryPlan]) {
+      setSelectedPlan(queryPlan);
+      sessionStorage.setItem('runcode_checkout_selected_plan', queryPlan);
     }
-  }, [planParam, isStarted, order]);
+  }, [searchParams, isStarted, order, plans]);
 
   // Backend konfiguratsiyasi va faol buyurtmani tekshirish
   useEffect(() => {
@@ -109,8 +133,14 @@ export const CheckoutPage = () => {
           if (activeRes && activeRes.success && activeRes.activeOrder) {
             const active = activeRes.activeOrder;
             setOrder(active);
-            setSelectedPlan(active.planName || '7_days');
-            setPaymentMethod(active.paymentMethod || 'apps');
+            if (active.planName) {
+              setSelectedPlan(active.planName);
+              sessionStorage.setItem('runcode_checkout_selected_plan', active.planName);
+            }
+            if (active.paymentMethod) {
+              setPaymentMethod(active.paymentMethod);
+              sessionStorage.setItem('runcode_checkout_payment_method', active.paymentMethod);
+            }
             
             if (active.appliedPromocode) {
               setAppliedPromo({
@@ -192,8 +222,22 @@ export const CheckoutPage = () => {
         planName: selectedPlan
       });
       if (res.success && res.promo) {
+        const excludedList = Array.isArray(res.promo.excludedPlans) ? res.promo.excludedPlans : [];
+        const promoToSave = {
+          code: res.promo.code,
+          discountPercent: res.promo.discountPercent,
+          excludedPlans: excludedList,
+          expiresAt: res.promo.expiresAt,
+          remainingSeconds: res.promo.remainingSeconds
+        };
+        setStoredPromocode(promoToSave);
         setAppliedPromo(res.promo);
-        setPromoError('');
+
+        if (res.promo.isExcluded) {
+          setPromoError('Ushbu promokod tanlangan tarif uchun amal qilmaydi (boshqa tariflar uchun amal qiladi)');
+        } else {
+          setPromoError('');
+        }
       } else {
         setAppliedPromo(null);
         setPromoError(res.message || 'Bunday promokod topilmadi yoki noto\'g\'ri kiritilgan');
@@ -210,7 +254,21 @@ export const CheckoutPage = () => {
     setAppliedPromo(null);
     setPromoCodeInput('');
     setPromoError('');
+    setStoredPromocode(null);
   };
+
+  // localStorage dagi faol promokodni avtomatik yuklash
+  useEffect(() => {
+    if (isStarted) return;
+    const stored = getStoredPromocode();
+    if (stored?.code && !appliedPromo) {
+      setPromoCodeInput(stored.code);
+      setAppliedPromo(stored);
+      if (Array.isArray(stored.excludedPlans) && stored.excludedPlans.includes(selectedPlan)) {
+        setPromoError('Ushbu promokod tanlangan tarif uchun amal qilmaydi (boshqa tariflar uchun amal qiladi)');
+      }
+    }
+  }, [isStarted]);
 
   const handleStartPayment = async () => {
     if (!isAuthenticated) {
@@ -221,10 +279,17 @@ export const CheckoutPage = () => {
     setLoading(true);
     setError(null);
     try {
+      const activeStoredPromo = appliedPromo || getStoredPromocode();
+      const isPlanExcluded = !!(
+        activeStoredPromo &&
+        Array.isArray(activeStoredPromo.excludedPlans) &&
+        activeStoredPromo.excludedPlans.includes(selectedPlan)
+      );
+
       const res = await api.post('/payments/start', {
         planName: selectedPlan,
         paymentMethod,
-        promocode: appliedPromo?.code || undefined
+        promocode: (!isPlanExcluded && activeStoredPromo?.code) ? activeStoredPromo.code : undefined
       });
 
       if (res.success && res.order) {
@@ -246,16 +311,100 @@ export const CheckoutPage = () => {
     }
   };
 
+  const handleCancelOrder = async (reason) => {
+    setCancellingOrder(true);
+    setError(null);
+    try {
+      const res = await api.post('/payments/cancel-order', {
+        orderId: order?.id,
+        reason: reason || 'Foydalanuvchi tomonidan bekor qilindi'
+      });
+
+      if (res && res.success) {
+        setIsStarted(false);
+        setOrder(null);
+        setTimeLeft(0);
+        setSelectedFile(null);
+        setFilePreview(null);
+        sessionStorage.removeItem('runcode_checkout_receipt_file');
+        setShowCancelModal(false);
+        setStatusNotice('To\'lov so\'rovi bekor qilindi. Endi istalgan boshqa tarif rejasini va to\'lov usulini erkin tanlashingiz mumkin.');
+      } else {
+        setError(res?.message || 'Buyurtmani bekor qilishda xatolik yuz berdi');
+      }
+    } catch (err) {
+      setError(err?.message || 'Buyurtmani bekor qilishda xatolik yuz berdi');
+    } finally {
+      setCancellingOrder(false);
+    }
+  };
+
+  // Tanlangan chek faylini sessiyadan qayta tiklash (sahifa yangilanganda / render bo'lganda yo'qolib ketmasligi uchun)
+  useEffect(() => {
+    try {
+      const cached = sessionStorage.getItem('runcode_checkout_receipt_file');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.dataUrl && parsed?.name) {
+          const arr = parsed.dataUrl.split(',');
+          const mime = arr[0].match(/:(.*?);/)?.[1] || parsed.type || 'image/png';
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          const restoredFile = new File([u8arr], parsed.name, {
+            type: mime,
+            lastModified: parsed.lastModified || Date.now()
+          });
+          setSelectedFile(restoredFile);
+          if (mime.startsWith('image/')) {
+            setFilePreview(parsed.dataUrl);
+          }
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedFile(file);
-      if (file.type.startsWith('image/')) {
-        setFilePreview(URL.createObjectURL(file));
-      } else {
-        setFilePreview(null);
+      if (file.size > 10 * 1024 * 1024) {
+        setError('Fayl hajmi 10MB dan oshmasligi kerak.');
+        return;
       }
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        if (file.type.startsWith('image/')) {
+          setFilePreview(dataUrl);
+        } else {
+          setFilePreview(null);
+        }
+        try {
+          sessionStorage.setItem('runcode_checkout_receipt_file', JSON.stringify({
+            name: file.name,
+            type: file.type,
+            lastModified: file.lastModified,
+            dataUrl
+          }));
+        } catch (storageErr) {
+          // ignore if quota exceeded
+        }
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveFile = (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setSelectedFile(null);
+    setFilePreview(null);
+    sessionStorage.removeItem('runcode_checkout_receipt_file');
   };
 
   const handleUploadReceipt = async () => {
@@ -282,6 +431,7 @@ export const CheckoutPage = () => {
 
       if (res.success) {
         setIsSuccess(true);
+        sessionStorage.removeItem('runcode_checkout_receipt_file');
         if (typeof refreshNotifications === 'function') {
           refreshNotifications();
         }
@@ -296,22 +446,45 @@ export const CheckoutPage = () => {
   };
 
   const basePlanObj = plans[selectedPlan] || plans['7_days'] || plans['1_month'] || {};
+  const activeStoredPromo = appliedPromo || getStoredPromocode();
+  const isPlanExcluded = !!(
+    activeStoredPromo &&
+    Array.isArray(activeStoredPromo.excludedPlans) &&
+    activeStoredPromo.excludedPlans.includes(selectedPlan)
+  );
+
+  let planPrice = basePlanObj.price;
+  let planAmount = basePlanObj.amount;
+  let isDiscounted = false;
+
+  if (activeStoredPromo && !isPlanExcluded) {
+    const discountAmount = Math.round((basePlanObj.amount * activeStoredPromo.discountPercent) / 100);
+    planAmount = Math.max(0, basePlanObj.amount - discountAmount);
+    planPrice = `${planAmount.toLocaleString('uz-UZ').replace(/,/g, ' ')} so'm`;
+    isDiscounted = true;
+  }
+
   const activePlanObj = {
     ...basePlanObj,
     originalPrice: basePlanObj.originalPrice || basePlanObj.price,
     originalAmount: basePlanObj.originalAmount || basePlanObj.amount,
-    ...(appliedPromo ? {
-      basePrice: basePlanObj.price,
-      baseAmount: basePlanObj.amount,
-      price: `${appliedPromo.finalAmount?.toLocaleString()} so'm`,
-      amount: appliedPromo.finalAmount,
-      appliedPromo
-    } : {})
+    basePrice: basePlanObj.price,
+    baseAmount: basePlanObj.amount,
+    price: planPrice,
+    amount: planAmount,
+    isDiscounted,
+    isExcluded: isPlanExcluded,
+    appliedPromo: (activeStoredPromo && !isPlanExcluded) ? {
+      code: activeStoredPromo.code,
+      discountPercent: activeStoredPromo.discountPercent,
+      discountAmount: Math.round((basePlanObj.amount * activeStoredPromo.discountPercent) / 100),
+      finalAmount: planAmount
+    } : null
   };
 
   return (
-    <div className="w-full flex-1 flex flex-col bg-gray-50 dark:bg-[#070a12] p-2.5 sm:p-3.5 lg:p-4 transition-colors overflow-y-auto lg:overflow-hidden select-none">
-      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col min-h-0 space-y-2.5 sm:space-y-3">
+    <div className="w-full min-h-screen flex flex-col bg-gray-50 dark:bg-[#070a12] p-2 sm:p-2.5 lg:p-3 transition-colors overflow-y-auto select-none pb-8 lg:pb-3">
+      <div className="w-full max-w-7xl mx-auto flex flex-col space-y-2 sm:space-y-2.5">
         
         {/* Yuqori navigatsiya paneli */}
         <div className="flex items-center justify-between flex-shrink-0 pt-0.5">
@@ -331,14 +504,14 @@ export const CheckoutPage = () => {
 
         {/* Ogohlantirishlar va Xatoliklar */}
         {error && (
-          <div className="p-2.5 sm:p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 flex items-center space-x-2 text-rose-700 dark:text-rose-300 text-xs sm:text-sm animate-in fade-in flex-shrink-0">
+          <div className="p-2 sm:p-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 flex items-center space-x-2 text-rose-700 dark:text-rose-300 text-xs sm:text-sm animate-in fade-in flex-shrink-0">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <p className="leading-tight font-medium truncate">{error}</p>
           </div>
         )}
 
         {statusNotice && !error && (
-          <div className="p-2.5 sm:p-3 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs sm:text-sm flex items-center space-x-2 animate-in fade-in flex-shrink-0">
+          <div className="p-2 sm:p-2.5 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs sm:text-sm flex items-center space-x-2 animate-in fade-in flex-shrink-0">
             <Info className="w-4 h-4 flex-shrink-0" />
             <p className="leading-tight font-medium truncate">{statusNotice}</p>
           </div>
@@ -347,9 +520,9 @@ export const CheckoutPage = () => {
         {isSuccess ? (
           <CheckoutSuccessView activePlanObj={activePlanObj} cardInfo={cardInfo} />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 xl:gap-5 items-start flex-1 min-h-0">
-            {/* CHAP USTUN: Reja tanlash, To'lov turi va Chek yuklash (7 ustun) */}
-            <div className="lg:col-span-7 flex flex-col gap-3 sm:gap-3.5 min-h-0">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 sm:gap-3 xl:gap-3.5 items-start lg:items-stretch">
+            {/* CHAP USTUN: Reja tanlash, To'lov turi va Chek yuklash (Desktopda 6 ustun) */}
+            <div className="lg:col-span-6 flex flex-col gap-2.5 sm:gap-3">
               <CheckoutPlanSelector
                 plans={plans}
                 selectedPlan={selectedPlan}
@@ -373,33 +546,74 @@ export const CheckoutPage = () => {
                 setPromoError={setPromoError}
                 handleApplyPromocode={handleApplyPromocode}
                 handleRemovePromocode={handleRemovePromocode}
+                onOpenCancelModal={() => setShowCancelModal(true)}
               />
-              <CheckoutReceiptDropzone
-                selectedFile={selectedFile}
-                filePreview={filePreview}
-                handleFileChange={handleFileChange}
-                handleUploadReceipt={handleUploadReceipt}
-                submitting={submitting}
-                isStarted={isStarted}
-                timeLeft={timeLeft}
-              />
+
+              {/* MOBILDA: To'lov boshlanganda Karta/QR birinchi ko'rinadi */}
+              {isStarted && (
+                <div className="block lg:hidden">
+                  <CheckoutCardPreview
+                    cardInfo={cardInfo}
+                    activePlanObj={activePlanObj}
+                    paymentMethod={paymentMethod}
+                    copiedCard={copiedCard}
+                    copyCardNumber={copyCardNumber}
+                    copiedPhone={copiedPhone}
+                    copyPhoneNumber={copyPhoneNumber}
+                    appliedPromo={appliedPromo}
+                  />
+                </div>
+              )}
+
+              {/* Chek yuklash maydoni: Faqat to'lov boshlangach (isStarted bo'lganda) chiqadi! */}
+              {isStarted && (
+                <CheckoutReceiptDropzone
+                  selectedFile={selectedFile}
+                  filePreview={filePreview}
+                  handleFileChange={handleFileChange}
+                  handleRemoveFile={handleRemoveFile}
+                  handleUploadReceipt={handleUploadReceipt}
+                  submitting={submitting}
+                  isStarted={isStarted}
+                  timeLeft={timeLeft}
+                />
+              )}
             </div>
 
-            {/* O'NG USTUN: Realistik Zumrad HUMO Kartasi va 4 Qoida (5 ustun) */}
-            <div className="lg:col-span-5 flex flex-col gap-3 sm:gap-3.5 min-h-0">
-              <CheckoutCardPreview
-                cardInfo={cardInfo}
-                activePlanObj={activePlanObj}
-                paymentMethod={paymentMethod}
-                copiedCard={copiedCard}
-                copyCardNumber={copyCardNumber}
-                copiedPhone={copiedPhone}
-                copyPhoneNumber={copyPhoneNumber}
-                appliedPromo={appliedPromo}
-              />
+            {/* O'NG USTUN (Faqat Desktopda ko'rinadi - 6 ustun):
+                - Agar to'lov boshlangan bo'lsa: Karta/QR va 4 Qoida
+                - Agar to'lov boshlanmagan bo'lsa: Himoyalangan xulosa bloki (CheckoutPendingNotice)
+            */}
+            <div className="hidden lg:flex lg:col-span-6 flex-col gap-2.5 sm:gap-3 h-full">
+              {isStarted ? (
+                <CheckoutCardPreview
+                  cardInfo={cardInfo}
+                  activePlanObj={activePlanObj}
+                  paymentMethod={paymentMethod}
+                  copiedCard={copiedCard}
+                  copyCardNumber={copyCardNumber}
+                  copiedPhone={copiedPhone}
+                  copyPhoneNumber={copyPhoneNumber}
+                  appliedPromo={appliedPromo}
+                />
+              ) : (
+                <CheckoutPendingNotice
+                  activePlanObj={activePlanObj}
+                  paymentMethod={paymentMethod}
+                />
+              )}
             </div>
           </div>
         )}
+
+        {/* Buyurtmani Bekor Qilish Modali */}
+        <CancelOrderModal
+          isOpen={showCancelModal}
+          onClose={() => setShowCancelModal(false)}
+          onConfirm={handleCancelOrder}
+          loading={cancellingOrder}
+          order={order}
+        />
 
       </div>
     </div>
