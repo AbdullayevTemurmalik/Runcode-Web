@@ -37,9 +37,7 @@ export const CheckoutPendingNotice = ({ activePlanObj, paymentMethod }) => {
             <span className="font-bold text-gray-900 dark:text-white">
               {paymentMethod === 'uzum'
                 ? 'Uzum Bank (QR & Ilova)'
-                : (paymentMethod === 'apps' || paymentMethod === 'click')
-                ? 'Click Up (QR & Ilova)'
-                : 'Bankomat (Naqd / Terminal)'}
+                : 'Click Up (QR & To\'lov Havolasi)'}
             </span>
           </div>
           <div className="flex items-center justify-between pt-1 border-t border-gray-200/50 dark:border-white/5">
@@ -50,8 +48,8 @@ export const CheckoutPendingNotice = ({ activePlanObj, paymentMethod }) => {
           </div>
         </div>
 
-        {/* Ko'rsatma */}
-        <div className="p-2.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-gray-600 dark:text-gray-300 space-y-1 leading-snug">
+        {/* Ko'rsatma va Qat'iy Ogohlantirish */}
+        <div className="p-2.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-gray-600 dark:text-gray-300 space-y-1.5 leading-snug">
           <p className="font-bold text-emerald-700 dark:text-emerald-400 text-xs">
             Rekvizitlarni qanday faollashtirasiz?
           </p>
@@ -62,13 +60,14 @@ export const CheckoutPendingNotice = ({ activePlanObj, paymentMethod }) => {
             2. To'lov tasdiqlangach, {
               paymentMethod === 'uzum'
                 ? "Uzum Bank rasmiy QR-kodi va ilovada to'lash havolasi"
-                : (paymentMethod === 'apps' || paymentMethod === 'click')
-                ? "Click Up rasmiy QR-kodi va ilovada to'lash havolasi"
-                : "HUMO plastik kartasi rekvizitlari"
+                : "Click Up rasmiy QR-kodi va to'g'ridan-to'g'ri to'lov havolasi"
             } ochiladi.
           </p>
           <p className="text-[10px]">
-            3. Chek suratini yuklash uchun {paymentMethod === 'bankomat' ? '1 soat' : '30 daqiqa'} vaqt beriladi.
+            3. To'lovni amalga oshirish va chek suratini yuklash uchun <strong>30 daqiqa</strong> vaqt beriladi.
+          </p>
+          <p className="text-[10px] font-semibold text-rose-600 dark:text-rose-400 pt-0.5 border-t border-emerald-500/15">
+            Eslatma: To'lov to'liq bo'lishi shart hamda to'lov chekini yuklash majburiydir.
           </p>
         </div>
 

@@ -24,7 +24,9 @@ export const CheckoutPage = () => {
     return sessionStorage.getItem('runcode_checkout_selected_plan') || planParam || '7_days';
   });
   const [paymentMethod, setPaymentMethod] = useState(() => {
-    return sessionStorage.getItem('runcode_checkout_payment_method') || 'apps';
+    const saved = sessionStorage.getItem('runcode_checkout_payment_method');
+    if (saved === 'uzum') return 'uzum';
+    return 'apps';
   });
   const [isStarted, setIsStarted] = useState(false);
   const [order, setOrder] = useState(null);
@@ -138,8 +140,9 @@ export const CheckoutPage = () => {
               sessionStorage.setItem('runcode_checkout_selected_plan', active.planName);
             }
             if (active.paymentMethod) {
-              setPaymentMethod(active.paymentMethod);
-              sessionStorage.setItem('runcode_checkout_payment_method', active.paymentMethod);
+              const safeMethod = active.paymentMethod === 'uzum' ? 'uzum' : 'apps';
+              setPaymentMethod(safeMethod);
+              sessionStorage.setItem('runcode_checkout_payment_method', safeMethod);
             }
             
             if (active.appliedPromocode) {
@@ -294,7 +297,7 @@ export const CheckoutPage = () => {
 
       if (res.success && res.order) {
         setOrder(res.order);
-        setTimeLeft(res.order.remainingSeconds || (paymentMethod === 'bankomat' ? 3600 : 1800));
+        setTimeLeft(res.order.remainingSeconds || 1800);
         setIsStarted(true);
         if (res.isExisting) {
           setStatusNotice('Oldingi faol to\'lov so\'rovingiz qayta tiklandi.');
