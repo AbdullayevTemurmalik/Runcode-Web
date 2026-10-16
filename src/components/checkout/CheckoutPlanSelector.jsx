@@ -381,7 +381,7 @@ export const CheckoutPlanSelector = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {/* 1. Ilova orqali */}
+          {/* 1. Click orqali */}
           <button
             type="button"
             onClick={() => {
@@ -394,30 +394,30 @@ export const CheckoutPlanSelector = ({
               isStarted && paymentMethod !== 'apps' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
             } ${
               paymentMethod === 'apps'
-                ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/20 shadow-sm'
+                ? 'border-blue-500 bg-blue-500/10 ring-2 ring-blue-500/20 shadow-sm'
                 : 'border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 bg-gray-50/60 dark:bg-white/[0.02]'
             }`}
           >
             <div className="flex items-start space-x-2">
-              <div className="w-7 h-7 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center flex-shrink-0">
-                <Smartphone className="w-3.5 h-3.5" />
+              <div className="w-7 h-7 rounded-xl bg-blue-500/15 text-blue-500 flex items-center justify-center flex-shrink-0">
+                <QrCode className="w-3.5 h-3.5" />
               </div>
               <div className="text-left">
-                <p className="text-xs sm:text-sm font-black text-gray-900 dark:text-white leading-tight">Ilova orqali</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Tezkor o'tkazma</p>
-                <span className="inline-flex items-center gap-1 mt-0.5 text-[9.5px] text-brand-600 dark:text-brand-400 font-bold">
-                  <Clock className="w-2.5 h-2.5 text-brand-500" />
+                <p className="text-xs sm:text-sm font-black text-gray-900 dark:text-white leading-tight">Click orqali</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">QR-kod & Ilova</p>
+                <span className="inline-flex items-center gap-1 mt-0.5 text-[9.5px] text-blue-600 dark:text-blue-400 font-bold">
+                  <Clock className="w-2.5 h-2.5 text-blue-500" />
                   30 daqiqa vaqt
                 </span>
               </div>
             </div>
 
             <div className="flex items-center space-x-1.5 mt-1.5 pt-1 border-t border-gray-100 dark:border-white/5">
-              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-[#00cccc]/10 text-[#008f8f] dark:text-[#00ffff] border border-[#00cccc]/20">
-                Payme
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-[#0073ff]/15 text-[#005cd4] dark:text-[#4da3ff] border border-[#0073ff]/25">
+                Click Up
               </span>
-              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-[#0073ff]/10 text-[#005cd4] dark:text-[#4da3ff] border border-[#0073ff]/20">
-                Click
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                QR To'lov
               </span>
             </div>
           </button>

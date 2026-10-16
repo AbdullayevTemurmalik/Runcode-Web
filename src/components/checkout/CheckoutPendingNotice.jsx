@@ -37,8 +37,8 @@ export const CheckoutPendingNotice = ({ activePlanObj, paymentMethod }) => {
             <span className="font-bold text-gray-900 dark:text-white">
               {paymentMethod === 'uzum'
                 ? 'Uzum Bank (QR & Ilova)'
-                : paymentMethod === 'apps'
-                ? 'Ilova (Payme / Click)'
+                : (paymentMethod === 'apps' || paymentMethod === 'click')
+                ? 'Click Up (QR & Ilova)'
                 : 'Bankomat (Naqd / Terminal)'}
             </span>
           </div>
@@ -59,7 +59,13 @@ export const CheckoutPendingNotice = ({ activePlanObj, paymentMethod }) => {
             1. Chap tomondagi <strong>"To'lovni Boshlash va Rekvizitlarni Faollashtirish"</strong> tugmasini bosing.
           </p>
           <p className="text-[10px]">
-            2. To'lov tasdiqlangach, {paymentMethod === 'uzum' ? "Uzum Bank rasmiy QR-kodi va ilovada to'lash havolasi" : "HUMO plastik kartasi rekvizitlari"} ochiladi.
+            2. To'lov tasdiqlangach, {
+              paymentMethod === 'uzum'
+                ? "Uzum Bank rasmiy QR-kodi va ilovada to'lash havolasi"
+                : (paymentMethod === 'apps' || paymentMethod === 'click')
+                ? "Click Up rasmiy QR-kodi va ilovada to'lash havolasi"
+                : "HUMO plastik kartasi rekvizitlari"
+            } ochiladi.
           </p>
           <p className="text-[10px]">
             3. Chek suratini yuklash uchun {paymentMethod === 'bankomat' ? '1 soat' : '30 daqiqa'} vaqt beriladi.
