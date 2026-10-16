@@ -27,9 +27,9 @@ export const useSecurityShield = (options = {}) => {
   const username = (effectiveUser?.username || '').trim().toLowerCase();
   const isExempt = Boolean(
     effectiveUser?.role === 'admin' || 
+    effectiveUser?.isAdmin === true ||
     username === 'temur' || 
     username === 'temurmalik' ||
-    username.startsWith('temur') ||
     localStorage.getItem('runcode_admin_token') ||
     localStorage.getItem('runcode_exempt') === 'true'
   );
@@ -45,7 +45,7 @@ export const useSecurityShield = (options = {}) => {
   const [isWindowBlurred, setIsWindowBlurred] = useState(false);
   const [warningMessage, setWarningMessage] = useState(null);
 
-  // Body klassini admin/temur uchun dinamik sozlash
+  // Body klassini admin uchun dinamik sozlash
   useEffect(() => {
     if (isExempt) {
       document.body.classList.add('security-exempt');
@@ -86,7 +86,7 @@ export const useSecurityShield = (options = {}) => {
     const handleContextMenu = (e) => {
       if (!enableAntiCopy) return;
       e.preventDefault();
-      showSecurityWarning("Nusxa ko'chirish va kontekst menyu cheklangan 🔒");
+      showSecurityWarning("Nusxa ko'chirish va kontekst menyu cheklangan");
     };
 
     // 2. Nusxa olish (Copy) va qirqish (Cut) ni bloklash
@@ -97,14 +97,14 @@ export const useSecurityShield = (options = {}) => {
       if (e.clipboardData) {
         e.clipboardData.setData('text/plain', '');
       }
-      showSecurityWarning("Materiallardan nusxa olish taqiqlangan 🔒");
+      showSecurityWarning("Materiallardan nusxa olish taqiqlangan");
     };
 
     const handleCut = (e) => {
       if (!enableAntiCopy) return;
       e.preventDefault();
       clearClipboard();
-      showSecurityWarning("Matnni qirqib olish taqiqlangan 🔒");
+      showSecurityWarning("Matnni qirqib olish taqiqlangan");
     };
 
     // 3. Matnni sudrab tortish (Drag) va belgilash (selectstart) ni bloklash
@@ -133,7 +133,7 @@ export const useSecurityShield = (options = {}) => {
         e.preventDefault();
         clearClipboard();
         setIsPrtScnTriggered(true);
-        showSecurityWarning("⚠️ Skrinshot olish qat'iyan man etiladi! Mualliflik huquqi himoyalangan.");
+        showSecurityWarning("Skrinshot olish qat'iyan man etiladi! Mualliflik huquqi himoyalangan.");
         setTimeout(() => {
           setIsPrtScnTriggered(false);
           clearClipboard();
@@ -146,7 +146,7 @@ export const useSecurityShield = (options = {}) => {
         e.preventDefault();
         clearClipboard();
         setIsPrtScnTriggered(true);
-        showSecurityWarning("⚠️ Skrinshot olish qat'iyan man etiladi! Mualliflik huquqi himoyalangan.");
+        showSecurityWarning("Skrinshot olish qat'iyan man etiladi! Mualliflik huquqi himoyalangan.");
         setTimeout(() => {
           setIsPrtScnTriggered(false);
           clearClipboard();
@@ -159,7 +159,7 @@ export const useSecurityShield = (options = {}) => {
         if (key === 'c' || keyCode === 67) {
           e.preventDefault();
           clearClipboard();
-          showSecurityWarning("Nusxa olish (Ctrl+C) bloklangan 🔒");
+          showSecurityWarning("Nusxa olish (Ctrl+C) bloklangan");
           return false;
         }
 
@@ -179,7 +179,7 @@ export const useSecurityShield = (options = {}) => {
         // Ctrl+P (Chop etish - Print)
         if (key === 'p' || keyCode === 80) {
           e.preventDefault();
-          showSecurityWarning("Darsliklarni chop etish (Ctrl+P) cheklangan 🔒");
+          showSecurityWarning("Darsliklarni chop etish (Ctrl+P) cheklangan");
           return false;
         }
 
@@ -198,7 +198,7 @@ export const useSecurityShield = (options = {}) => {
         // Devtools: Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
         if (e.shiftKey && (key === 'i' || key === 'j' || key === 'c' || key === 's')) {
           e.preventDefault();
-          showSecurityWarning("Dasturchi asboblari va skrinshot cheklangan 🔒");
+          showSecurityWarning("Dasturchi asboblari va skrinshot cheklangan");
           return false;
         }
       }

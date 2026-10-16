@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
 import { LogoutModal } from './LogoutModal';
+import { smoothScrollToTop } from '../utils/scrollHelper';
 
 export const Navbar = ({ onOpenPaymentModal }) => {
   const { user, isAuthenticated, logout, isAdmin, hasSubscription } = useAuth();
@@ -76,8 +77,13 @@ export const Navbar = ({ onOpenPaymentModal }) => {
             {/* Logo */}
             <Link 
               to="/" 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-              className="flex items-center space-x-3 group"
+              onClick={(e) => {
+                if (location.pathname === '/') {
+                  e.preventDefault();
+                }
+                smoothScrollToTop(750);
+              }}
+              className="flex items-center space-x-3 group cursor-pointer"
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
                 <Code2 className="w-6 h-6 text-white" />

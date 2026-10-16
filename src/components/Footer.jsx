@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Code2, Github, Send, Instagram, ShieldCheck, Heart } from 'lucide-react';
+import { smoothScrollToTop } from '../utils/scrollHelper';
 
 export const Footer = () => {
   return (
@@ -12,8 +13,8 @@ export const Footer = () => {
           <div className="md:col-span-2 space-y-4">
             <Link 
               to="/" 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-              className="flex items-center space-x-3 group"
+              onClick={() => smoothScrollToTop(750)}
+              className="flex items-center space-x-3 group cursor-pointer"
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
                 <Code2 className="w-6 h-6 text-white" />

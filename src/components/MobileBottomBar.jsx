@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, BookOpen, CreditCard, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { smoothScrollToTop } from '../utils/scrollHelper';
 
 export const MobileBottomBar = () => {
   const { isAuthenticated } = useAuth();
@@ -25,7 +26,7 @@ export const MobileBottomBar = () => {
           <NavLink
             key={item.label}
             to={item.path}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
+            onClick={() => smoothScrollToTop(750)}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
                 isActive
