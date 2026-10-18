@@ -21,20 +21,22 @@ export const evaluatePassword = (password = '') => {
 
   const hasMinLength = password.length >= 8;
   const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
+  const hasLower = /[a-z]/.test(password);
   const hasSpecial = /[^A-Za-z0-9]/.test(password);
 
-  let criteriaMet = 0;
-  if (hasMinLength) criteriaMet++;
-  if (hasUpper) criteriaMet++;
-  if (hasLower) criteriaMet++;
-  if (hasNumber) criteriaMet++;
-  if (hasSpecial) criteriaMet++;
+  // Mandatory requirements: min 8 characters, at least 1 uppercase, at least 1 number
+  const isValid = hasMinLength && hasUpper && hasNumber;
 
-  const isValid = hasMinLength && hasUpper && hasLower && hasNumber && hasSpecial;
+  let points = 0;
+  if (hasMinLength) points += 1;
+  if (hasUpper) points += 1;
+  if (hasNumber) points += 1;
+  if (hasLower) points += 0.5;
+  if (hasSpecial) points += 1;
+  if (password.length >= 12) points += 0.5;
 
-  if (criteriaMet <= 2) {
+  if (points <= 2) {
     return {
       score: 1,
       label: 'Oddiy',
@@ -51,14 +53,14 @@ export const evaluatePassword = (password = '') => {
     };
   }
 
-  if (criteriaMet === 3 || criteriaMet === 4) {
+  if (points < 3.5) {
     return {
       score: 2,
       label: "O'rta",
       color: 'text-amber-500',
       barColor: 'bg-amber-500',
       badgeBg: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-      percent: 60,
+      percent: 50,
       hasMinLength,
       hasUpper,
       hasLower,
@@ -68,14 +70,14 @@ export const evaluatePassword = (password = '') => {
     };
   }
 
-  if (criteriaMet === 5 && password.length < 12) {
+  if (points < 4.5 || !hasSpecial) {
     return {
       score: 3,
       label: 'Kuchli',
       color: 'text-blue-500',
       barColor: 'bg-blue-500',
       badgeBg: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-      percent: 85,
+      percent: 80,
       hasMinLength,
       hasUpper,
       hasLower,
@@ -134,19 +136,22 @@ export const PasswordStrengthMeter = ({ password = '', showRequirements = true }
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px]">
           <RequirementItem satisfied={strength.hasMinLength} text="Kamida 8 ta belgi" />
           <RequirementItem satisfied={strength.hasUpper} text="Katta harf (A-Z)" />
-          <RequirementItem satisfied={strength.hasLower} text="Kichik harf (a-z)" />
           <RequirementItem satisfied={strength.hasNumber} text="Raqam (0-9)" />
-          <RequirementItem satisfied={strength.hasSpecial} text="Maxsus belgi (!@#$%...)" />
+          <RequirementItem satisfied={strength.hasSpecial} text="Maxsus belgi (ixtiyoriy)" isOptional={true} />
         </div>
       )}
     </div>
   );
 };
 
-const RequirementItem = ({ satisfied, text }) => (
+const RequirementItem = ({ satisfied, text, isOptional = false }) => (
   <div
     className={`flex items-center space-x-1.5 font-medium transition-colors ${
-      satisfied ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-gray-400 dark:text-gray-500'
+      satisfied 
+        ? 'text-emerald-600 dark:text-emerald-400 font-semibold' 
+        : isOptional
+        ? 'text-gray-400 dark:text-gray-500'
+        : 'text-gray-400 dark:text-gray-500'
     }`}
   >
     {satisfied ? (
