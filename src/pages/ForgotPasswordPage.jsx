@@ -112,6 +112,7 @@ export const ForgotPasswordPage = () => {
     try {
       const res = await api.post('/auth/verify-reset-otp', {
         email: email.trim().toLowerCase(),
+        otpCode: otpCode.trim(),
         code: otpCode.trim()
       });
 
@@ -291,10 +292,13 @@ export const ForgotPasswordPage = () => {
         {/* STEP 2: OTP Verification */}
         {step === 2 && (
           <div className="space-y-5">
-            <div className="text-center">
-              <span className="text-[11px] text-gray-400 font-mono">
+            <div className="text-center space-y-1">
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Emailingizga yuborilgan 6 xonali tiklash kodini kiriting:
+              </p>
+              <p className="text-[11px] font-mono text-brand-600 dark:text-brand-400 font-bold">
                 {email}
-              </span>
+              </p>
             </div>
 
             <div className="space-y-2">
