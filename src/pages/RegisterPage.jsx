@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   User, 
   Lock, 
@@ -14,7 +14,8 @@ import {
   RefreshCw,
   Clock,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  RotateCcw
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -23,30 +24,81 @@ import { CustomDatePicker } from '../components/CustomDatePicker';
 import { OtpInput } from '../components/OtpInput';
 import { PasswordStrengthMeter, evaluatePassword } from '../components/PasswordStrengthMeter';
 
+const SIGNUP_STORAGE_KEY = 'runcode_signup_wizard_state';
+
+const getInitialSignupState = () => {
+  try {
+    const raw = localStorage.getItem(SIGNUP_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // 3 soatdan ortiq eski saqlangan holat bo'lsa tozalash
+    if (parsed.savedAt && Date.now() - parsed.savedAt > 3 * 60 * 60 * 1000) {
+      localStorage.removeItem(SIGNUP_STORAGE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
 export const RegisterPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { updateUser, refreshUser } = useAuth();
 
+  const savedState = React.useMemo(() => getInitialSignupState(), []);
+
+  // URL query va localStorage ni tekshirish
+  const urlStep = parseInt(searchParams.get('step') || '0', 10);
+  let resolvedStep = (urlStep >= 1 && urlStep <= 3) 
+    ? urlStep 
+    : (savedState?.step >= 1 && savedState?.step <= 3 ? savedState.step : 1);
+
+  // Agar 2 yoki 3-bosqich bo'lsa lekin 1-bosqich ma'lumotlari bo'lmasa, 1-bosqichga o'tish
+  if ((resolvedStep === 2 || resolvedStep === 3) && (!savedState?.firstName || !savedState?.username)) {
+    resolvedStep = 1;
+  }
+  // Agar 3-bosqich bo'lsa lekin email yoki emailToken bo'lmasa, 2-bosqichga o'tish
+  if (resolvedStep === 3 && (!savedState?.emailToken || !savedState?.email)) {
+    resolvedStep = savedState?.email ? 2 : 1;
+  }
+
   // 3-Bosqichli Wizard: 1 = Shaxsiy ma'lumotlar, 2 = Email & OTP, 3 = Parol o'rnatish
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(resolvedStep);
 
   // STEP 1 Fields
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
-  const [birthDate, setBirthDate] = useState(''); // 'YYYY-MM-DD'
+  const [firstName, setFirstName] = useState(savedState?.firstName || '');
+  const [lastName, setLastName] = useState(savedState?.lastName || '');
+  const [username, setUsername] = useState(savedState?.username || '');
+  const [birthDate, setBirthDate] = useState(savedState?.birthDate || ''); // 'YYYY-MM-DD'
   const [usernameChecking, setUsernameChecking] = useState(false);
-  const [usernameStatus, setUsernameStatus] = useState(null); // { available: boolean, message: string }
+  const [usernameStatus, setUsernameStatus] = useState(savedState?.usernameStatus || null);
 
   // STEP 2 Fields
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(savedState?.email || '');
   const [otpCode, setOtpCode] = useState('');
-  const [emailToken, setEmailToken] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
+  const [emailToken, setEmailToken] = useState(savedState?.emailToken || '');
+  const [otpSent, setOtpSent] = useState(savedState?.otpSent || false);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
-  const [expiresIn, setExpiresIn] = useState(300);
-  const [cooldown, setCooldown] = useState(0);
+
+  // Aniq hisoblangan qolgan vaqtlar (refresh bo'lganda ham to'g'ri ishlashi uchun)
+  const [expiresIn, setExpiresIn] = useState(() => {
+    if (savedState?.otpExpiresTimestamp) {
+      const remaining = Math.ceil((savedState.otpExpiresTimestamp - Date.now()) / 1000);
+      return remaining > 0 ? remaining : 0;
+    }
+    return 300;
+  });
+
+  const [cooldown, setCooldown] = useState(() => {
+    if (savedState?.cooldownUntilTimestamp) {
+      const remaining = Math.ceil((savedState.cooldownUntilTimestamp - Date.now()) / 1000);
+      return remaining > 0 ? remaining : 0;
+    }
+    return 0;
+  });
 
   // STEP 3 Fields
   const [password, setPassword] = useState('');
@@ -56,6 +108,71 @@ export const RegisterPage = () => {
   // Global Alerts
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+
+  // Bosqichni xavfsiz almashtirish (URL searchParams bilan sinxron)
+  const changeStep = (newStep) => {
+    setStep(newStep);
+    setSearchParams({ step: newStep }, { replace: false });
+    setError(null);
+  };
+
+  // Browser Back/Forward tugmalari bosilganda sahifani saqlash
+  React.useEffect(() => {
+    const currentUrlStep = parseInt(searchParams.get('step') || '0', 10);
+    if (currentUrlStep >= 1 && currentUrlStep <= 3 && currentUrlStep !== step) {
+      setStep(currentUrlStep);
+      setError(null);
+    }
+  }, [searchParams]);
+
+  // URL da ?step parametri bo'lmasa uni o'rnatish
+  React.useEffect(() => {
+    if (!searchParams.get('step')) {
+      setSearchParams({ step: resolvedStep }, { replace: true });
+    }
+  }, []);
+
+  // Har bir o'zgarishda holatni avtomatik localStorage ga saqlash (refresh bo'lganda yo'qolmasligi uchun)
+  React.useEffect(() => {
+    try {
+      const stateToSave = {
+        savedAt: Date.now(),
+        step,
+        firstName,
+        lastName,
+        username,
+        birthDate,
+        usernameStatus,
+        email,
+        emailToken,
+        otpSent,
+        otpExpiresTimestamp: otpSent && expiresIn > 0 ? Date.now() + expiresIn * 1000 : null,
+        cooldownUntilTimestamp: cooldown > 0 ? Date.now() + cooldown * 1000 : null
+      };
+      localStorage.setItem(SIGNUP_STORAGE_KEY, JSON.stringify(stateToSave));
+    } catch (e) {
+      console.warn('Signup state storage error:', e);
+    }
+  }, [step, firstName, lastName, username, birthDate, usernameStatus, email, emailToken, otpSent, expiresIn, cooldown]);
+
+  // Boshidan boshlash (barcha maydonlarni tozalash)
+  const handleResetForm = () => {
+    localStorage.removeItem(SIGNUP_STORAGE_KEY);
+    setFirstName('');
+    setLastName('');
+    setUsername('');
+    setBirthDate('');
+    setUsernameStatus(null);
+    setEmail('');
+    setOtpCode('');
+    setEmailToken('');
+    setOtpSent(false);
+    setPassword('');
+    setConfirmPassword('');
+    setError(null);
+    setSuccessMessage(null);
+    changeStep(1);
+  };
 
   // Timers for Step 2 OTP
   React.useEffect(() => {
@@ -121,7 +238,7 @@ export const RegisterPage = () => {
         return;
       }
       setUsernameStatus({ available: true, message: "Mavjud" });
-      setStep(2);
+      changeStep(2);
     } catch (err) {
       setError(err.message || "Username tekshirishda xatolik yuz berdi.");
     } finally {
@@ -189,7 +306,7 @@ export const RegisterPage = () => {
         setSuccessMessage("Emailingiz muvaffaqiyatli tasdiqlandi!");
         setTimeout(() => {
           setSuccessMessage(null);
-          setStep(3);
+          changeStep(3);
         }, 800);
       } else {
         setError(res.message || "Tasdiqlash kodi noto'g'ri.");
@@ -227,7 +344,7 @@ export const RegisterPage = () => {
 
     if (!emailToken) {
       setError("Email tasdiqlash tokeni topilmadi. Iltimos, 2-bosqichga qaytib emailni qayta tasdiqlang.");
-      setStep(2);
+      changeStep(2);
       return;
     }
 
@@ -249,6 +366,8 @@ export const RegisterPage = () => {
       });
 
       if (res.success && res.token) {
+        // Wizard holatini muvaffaqiyatli yakunlanganda tozalash
+        localStorage.removeItem(SIGNUP_STORAGE_KEY);
         localStorage.setItem('runcode_token', res.token);
         if (res.user) {
           try {
@@ -404,6 +523,19 @@ export const RegisterPage = () => {
               {usernameChecking ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
               <span>Keyingi: Email Tasdiqlash</span>
             </button>
+
+            {(firstName || username || lastName) && (
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={handleResetForm}
+                  className="inline-flex items-center space-x-1 text-[11px] text-gray-400 hover:text-rose-500 transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Ma'lumotlarni tozalash</span>
+                </button>
+              </div>
+            )}
           </form>
         )}
 
@@ -512,18 +644,25 @@ export const RegisterPage = () => {
               </div>
             )}
 
-            {/* Navigation back */}
-            <div className="pt-2 flex justify-start">
+            {/* Navigation back and reset */}
+            <div className="pt-2 flex items-center justify-between border-t border-gray-100 dark:border-white/5">
               <button
                 type="button"
-                onClick={() => {
-                  setStep(1);
-                  setError(null);
-                }}
-                className="inline-flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors cursor-pointer"
+                onClick={() => changeStep(1)}
+                className="inline-flex items-center space-x-1.5 text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>1-bosqichga qaytish</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResetForm}
+                className="inline-flex items-center space-x-1 text-xs text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
+                title="Barcha ma'lumotlarni tozalash"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Boshidan boshlash</span>
               </button>
             </div>
 
@@ -622,6 +761,28 @@ export const RegisterPage = () => {
               {completing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               <span>Ro'yxatdan O'tishni Yakunlash</span>
             </button>
+
+            {/* Navigation back and reset */}
+            <div className="pt-2 flex items-center justify-between border-t border-gray-100 dark:border-white/5">
+              <button
+                type="button"
+                onClick={() => changeStep(2)}
+                className="inline-flex items-center space-x-1.5 text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>2-bosqichga qaytish</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResetForm}
+                className="inline-flex items-center space-x-1 text-xs text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
+                title="Barcha ma'lumotlarni tozalash"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Boshidan boshlash</span>
+              </button>
+            </div>
           </form>
         )}
 
