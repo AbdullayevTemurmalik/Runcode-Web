@@ -37,7 +37,7 @@ export const evaluatePassword = (password = '') => {
   if (criteriaMet <= 2) {
     return {
       score: 1,
-      label: 'Zaif',
+      label: 'Oddiy',
       color: 'text-rose-500',
       barColor: 'bg-rose-500',
       badgeBg: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
