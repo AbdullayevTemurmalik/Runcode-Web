@@ -64,27 +64,27 @@ export const CheckoutPlanSelector = ({
     if (key === '3_months' || plan?.superSaver) {
       return (
         <span className="bg-purple-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
-          Super Tejam
+          MAX
         </span>
       );
     }
     if (key === '2_months' || plan?.recommended) {
       return (
         <span className="bg-emerald-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
-          Tavsiya
+          PRO+ • TAVSIYA
         </span>
       );
     }
     if (key === '1_month') {
       return (
         <span className="bg-blue-600 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
-          Pro
+          PRO
         </span>
       );
     }
     return (
       <span className="bg-sky-500 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
-        Test Sinov
+        TEST PLUS
       </span>
     );
   };

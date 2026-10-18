@@ -19,7 +19,7 @@ const CANCEL_REASONS = [
   {
     id: 'change_plan',
     title: "Boshqa tarif rejasini tanlamoqchiman",
-    desc: "Plus, Pro, Pro+ yoki Ultra tariflaridan boshqasiga o'tmoqchiman"
+    desc: "Test Plus, Pro, Pro+ yoki Max tariflaridan boshqasiga o'tmoqchiman"
   },
   {
     id: 'change_method',

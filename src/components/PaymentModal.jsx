@@ -53,10 +53,10 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   const [promoError, setPromoError] = useState('');
 
   const [plans, setPlans] = useState({
-    '7_days': { name: 'Plus (7 Kunlik)', originalPrice: '30 000 so\'m', originalAmount: 30000, price: '20 000 so\'m', amount: 20000 },
+    '7_days': { name: 'Test Plus (7 Kunlik)', originalPrice: '30 000 so\'m', originalAmount: 30000, price: '20 000 so\'m', amount: 20000 },
     '1_month': { name: 'Pro (1 Oylik)', originalPrice: '75 000 so\'m', originalAmount: 75000, price: '50 000 so\'m', amount: 50000 },
     '2_months': { name: 'Pro+ (2 Oylik)', originalPrice: '125 000 so\'m', originalAmount: 125000, price: '90 000 so\'m', amount: 90000, recommended: true },
-    '3_months': { name: 'Ultra (3 Oylik)', originalPrice: '150 000 so\'m', originalAmount: 150000, price: '120 000 so\'m', amount: 120000, superSaver: true }
+    '3_months': { name: 'Max (3 Oylik)', originalPrice: '150 000 so\'m', originalAmount: 150000, price: '120 000 so\'m', amount: 120000, superSaver: true }
   });
 
   const [cardInfo, setCardInfo] = useState({
@@ -103,7 +103,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
             for (const [k, v] of Object.entries(res.plans)) {
               if (k !== 'free' && !v.isFree && k !== '6_months') {
                 paidPlans[k] = {
-                  name: v.name || (k === '3_months' ? 'Ultra (3 Oylik)' : k === '2_months' ? 'Pro+ (2 Oylik)' : k === '1_month' ? 'Pro (1 Oylik)' : 'Plus (7 Kunlik)'),
+                  name: v.name || (k === '3_months' ? 'Max (3 Oylik)' : k === '2_months' ? 'Pro+ (2 Oylik)' : k === '1_month' ? 'Pro (1 Oylik)' : 'Test Plus (7 Kunlik)'),
                   originalPrice: v.originalPrice || (k === '3_months' ? '150 000 so\'m' : k === '2_months' ? '125 000 so\'m' : k === '1_month' ? '75 000 so\'m' : '30 000 so\'m'),
                   originalAmount: v.originalAmount || (k === '3_months' ? 150000 : k === '2_months' ? 125000 : k === '1_month' ? 75000 : 30000),
                   price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : k === '1_month' ? '50 000 so\'m' : '20 000 so\'m'),
@@ -500,17 +500,22 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                       >
                         {key === '7_days' && (
                           <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-sky-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap">
-                            Test Sinov
+                            TEST PLUS
                           </span>
                         )}
-                        {plan.recommended && (
+                        {key === '1_month' && (
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap">
+                            PRO
+                          </span>
+                        )}
+                        {(key === '2_months' || plan.recommended) && (
                           <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap">
-                            Tavsiya
+                            PRO+ • TAVSIYA
                           </span>
                         )}
                         {key === '3_months' && (
                           <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap">
-                            Super Tejam
+                            MAX
                           </span>
                         )}
                         {(() => {
@@ -765,7 +770,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                 <div className="flex items-center justify-between text-xs text-gray-500 pb-2 border-b border-gray-200/60 dark:border-gray-700/60">
                   <span className="font-semibold">Tanlangan tarif:</span>
                   <span className="font-bold text-xs text-brand-600 dark:text-brand-400">
-                    {plans[selectedPlan]?.name || (selectedPlan === '3_months' ? 'Ultra (3 Oylik)' : selectedPlan === '2_months' ? 'Pro (2 Oylik)' : 'Plus (1 Oylik)')}
+                    {plans[selectedPlan]?.name || (selectedPlan === '3_months' ? 'Max (3 Oylik)' : selectedPlan === '2_months' ? 'Pro+ (2 Oylik)' : selectedPlan === '1_month' ? 'Pro (1 Oylik)' : 'Test Plus (7 Kunlik)')}
                   </span>
                 </div>
                 {(() => {

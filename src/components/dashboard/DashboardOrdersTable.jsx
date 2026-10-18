@@ -21,13 +21,13 @@ export const DashboardOrdersTable = ({ orders, formatDate }) => {
           <div className="block sm:hidden space-y-3">
             {orders.map((ord) => {
               const planTitle = ord.plan_name === '7_days'
-                ? 'Plus Obuna (7 Kunlik)'
+                ? 'Test Plus Obuna (7 Kunlik)'
                 : ord.plan_name === '1_month'
                 ? 'Pro Obuna (1 Oylik)'
                 : ord.plan_name === '2_months'
                 ? 'Pro+ Obuna (2 Oylik)'
-                : ord.plan_name === '3_months'
-                ? 'Ultra Obuna (3 Oylik)'
+                : (ord.plan_name === '3_months' || ord.plan_name === 'ultra' || ord.plan_name === 'max')
+                ? 'Max Obuna (3 Oylik)'
                 : (ord.plan_name || 'Standart');
 
               const methodLabel = ord.payment_method === 'apps' 
@@ -104,13 +104,13 @@ export const DashboardOrdersTable = ({ orders, formatDate }) => {
                     <tr key={ord.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                       <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         {ord.plan_name === '7_days'
-                          ? 'Plus Obuna (7 Kunlik)'
+                          ? 'Test Plus Obuna (7 Kunlik)'
                           : ord.plan_name === '1_month'
                           ? 'Pro Obuna (1 Oylik)'
                           : ord.plan_name === '2_months'
                           ? 'Pro+ Obuna (2 Oylik)'
-                          : ord.plan_name === '3_months'
-                          ? 'Ultra Obuna (3 Oylik)'
+                          : (ord.plan_name === '3_months' || ord.plan_name === 'ultra' || ord.plan_name === 'max')
+                          ? 'Max Obuna (3 Oylik)'
                           : (ord.plan_name || 'Standart')}
                       </td>
                       <td className="px-6 py-4 font-mono font-bold text-gray-900 dark:text-white">

@@ -156,7 +156,7 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
   const getSubscriptionTierInfo = (subscription) => {
     if (user?.role === 'admin' && (!subscription || !subscription.is_active)) {
       return {
-        tier: 'Ultra',
+        tier: 'Max',
         title: 'Admin Status',
         label: 'Tizim Ma\'muri (Cheksiz Kirish)',
         badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
@@ -186,18 +186,18 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
 
     const plan = String(subscription.plan_name || '').toLowerCase();
 
-    if (plan.includes('ultra') || plan === '3_months') {
+    if (plan.includes('ultra') || plan.includes('max') || plan === '3_months') {
       return {
-        tier: 'Ultra',
-        title: 'Ultra Status',
-        label: 'Ultra Obuna (3 Oylik)',
+        tier: 'Max',
+        title: 'Max Status',
+        label: 'Max Obuna (3 Oylik)',
         badgeColor: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
         textColor: 'text-purple-400',
         accentBg: 'bg-purple-500/15 text-purple-400',
         borderGlow: 'border-purple-500/40 shadow-purple-500/10',
         icon: Crown,
         durationDays: 90,
-        description: 'To\'liq Full-Stack dasturlash va VIP Telegram mentorlik'
+        description: 'To\'liq dasturlash va VIP Telegram mentorlik'
       };
     }
 
@@ -231,11 +231,11 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
       };
     }
 
-    // Default: Plus (7_days)
+    // Default: Test Plus (7_days)
     return {
-      tier: 'Plus',
-      title: 'Plus Status',
-      label: 'Plus Obuna (7 Kunlik)',
+      tier: 'Test Plus',
+      title: 'Test Plus Status',
+      label: 'Test Plus Obuna (7 Kunlik)',
       badgeColor: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
       textColor: 'text-sky-400',
       accentBg: 'bg-sky-500/15 text-sky-400',

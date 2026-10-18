@@ -24,16 +24,16 @@ import { useActivePromocode } from '../hooks/useActivePromocode';
 const DEFAULT_PLANS = [
   {
     id: '7_days',
-    tier: 'Plus',
-    name: 'Plus (7 Kunlik)',
-    statusTitle: 'Plus',
+    tier: 'Test Plus',
+    name: 'Test Plus (7 Kunlik)',
+    statusTitle: 'Test Plus',
     duration: '7 kun to\'liq ochiq',
     originalPrice: '30 000 so\'m',
     originalAmount: 30000,
     price: '20 000 so\'m',
     amount: 20000,
     desc: 'Test uchun sinang va platformaning barcha imkoniyatlarini sinovdan o\'tkazing',
-    badge: 'Test uchun sinang',
+    badge: 'TEST PLUS',
     features: [
       'Barcha 4 ta kurs: HTML, CSS, JS, React',
       '73 ta interaktiv amaliy darslik',
@@ -42,7 +42,7 @@ const DEFAULT_PLANS = [
       'Yopiq Telegram mentorlik guruhi'
     ],
     notIncluded: [],
-    ctaText: 'Plus Obuna',
+    ctaText: 'Test Plus Obuna',
     isFree: false,
     recommended: false
   },
@@ -57,6 +57,7 @@ const DEFAULT_PLANS = [
     price: '50 000 so\'m',
     amount: 50000,
     desc: 'Tez sur\'atda chuqur bilim oluvchilar uchun optimal reja',
+    badge: 'PRO',
     features: [
       'Barcha 4 ta kurs: HTML, CSS, JS, React',
       '73 ta interaktiv amaliy darslik',
@@ -80,6 +81,7 @@ const DEFAULT_PLANS = [
     price: '90 000 so\'m',
     amount: 90000,
     desc: 'Frontend dasturchi bo\'lish uchun eng tavsiya etilgan reja',
+    badge: 'PRO+ • TAVSIYA',
     features: [
       'Barcha 4 ta kurs: HTML, CSS, JS, React',
       '73 ta amaliy darslik va manbalar',
@@ -95,15 +97,16 @@ const DEFAULT_PLANS = [
   },
   {
     id: '3_months',
-    tier: 'Ultra',
-    name: 'Ultra (3 Oylik)',
-    statusTitle: 'Ultra',
+    tier: 'Max',
+    name: 'Max (3 Oylik)',
+    statusTitle: 'Max',
     duration: '3 oy to\'liq ochiq',
     originalPrice: '150 000 so\'m',
     originalAmount: 150000,
     price: '120 000 so\'m',
     amount: 120000,
     desc: 'Maksimal tejamkorlik va to\'liq professional tayyorgarlik',
+    badge: 'MAX',
     features: [
       'Barcha mavjud 4 ta kurs va yangi modullar',
       '30 000 so\'m kafolatlangan tejam',
@@ -113,7 +116,7 @@ const DEFAULT_PLANS = [
       'Shaxsiy portfolio loyihalar tahlili (Code Review)'
     ],
     notIncluded: [],
-    ctaText: 'Ultra Obuna',
+    ctaText: 'Max Obuna',
     isFree: false,
     recommended: false,
     superSaver: true
@@ -147,15 +150,15 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
   const displayPlans = pricingPlans.length > 0 ? pricingPlans : DEFAULT_PLANS;
 
   const comparisonRows = [
-    { title: 'HTML Dasturlash Asoslari (11 dars)', plus: true, pro: true, proPlus: true, ultra: true },
-    { title: 'CSS & Responsive Dizayn (19 dars)', plus: true, pro: true, proPlus: true, ultra: true },
-    { title: 'JavaScript Chuqur Kurs (28 dars)', plus: true, pro: true, proPlus: true, ultra: true },
-    { title: 'React.js Zamonaviy Ekotizim (15 dars)', plus: true, pro: true, proPlus: true, ultra: true },
-    { title: 'Kelgusi Node.js & Next.js modullari', plus: false, pro: false, proPlus: false, ultra: true },
-    { title: 'Yopiq Telegram Jamiyati & Mentorlik', plus: '7 kun', pro: '1 oy', proPlus: '2 oy (VIP)', ultra: '3 oy (VIP + 24/7)' },
-    { title: 'Interaktiv Kod Muharriri & Sandbox', plus: true, pro: true, proPlus: true, ultra: true },
-    { title: 'Foydalanuvchi Profili Statusi', plus: 'Plus Status', pro: 'Pro Status', proPlus: 'Pro+ Status', ultra: 'Ultra Status' },
-    { title: 'Kafolatlangan Tejam', plus: 'Test Sinov', pro: '—', proPlus: '10 000 so\'m', ultra: '30 000 so\'m' },
+    { title: 'HTML Dasturlash Asoslari (11 dars)', plus: true, pro: true, proPlus: true, max: true },
+    { title: 'CSS & Responsive Dizayn (19 dars)', plus: true, pro: true, proPlus: true, max: true },
+    { title: 'JavaScript Chuqur Kurs (28 dars)', plus: true, pro: true, proPlus: true, max: true },
+    { title: 'React.js Zamonaviy Ekotizim (15 dars)', plus: true, pro: true, proPlus: true, max: true },
+    { title: 'Kelgusi Node.js & Next.js modullari', plus: false, pro: false, proPlus: false, max: true },
+    { title: 'Yopiq Telegram Jamiyati & Mentorlik', plus: '7 kun', pro: '1 oy', proPlus: '2 oy (VIP)', max: '3 oy (VIP + 24/7)' },
+    { title: 'Interaktiv Kod Muharriri & Sandbox', plus: true, pro: true, proPlus: true, max: true },
+    { title: 'Foydalanuvchi Profili Statusi', plus: 'Test Plus Status', pro: 'Pro Status', proPlus: 'Pro+ Status', max: 'Max Status' },
+    { title: 'Kafolatlangan Tejam', plus: 'TEST PLUS', pro: '—', proPlus: '10 000 so\'m', max: '30 000 so\'m' },
   ];
 
   const handlePlanClick = (plan) => {
@@ -182,7 +185,7 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
         </h1>
         
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-          HTML kursi har doim mutlaqo bepul. CSS, JavaScript va React yo'nalishlariga kirish hamda platformadagi maqomingizni (Free, Plus, Pro, Ultra) belgilash uchun o'zingizga qulay tarifni tanlang.
+          HTML kursi har doim mutlaqo bepul. CSS, JavaScript va React yo'nalishlariga kirish hamda platformadagi maqomingizni (Free, Test Plus, Pro, Pro+, Max) belgilash uchun o'zingizga qulay tarifni tanlang.
         </p>
 
         {hasSubscription && (
@@ -202,10 +205,10 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-5">
           {displayPlans.map((plan) => {
-              const isUltra = plan.id === '3_months' || plan.tier === 'Ultra';
+              const isMax = plan.id === '3_months' || plan.tier === 'Max' || plan.tier === 'Ultra' || plan.name?.toLowerCase().includes('max') || plan.name?.toLowerCase().includes('ultra');
               const isProPlus = plan.id === '2_months' || plan.tier === 'Pro+' || plan.name?.includes('Pro+');
-              const isPro = plan.id === '1_month' || (plan.tier === 'Pro' && !isProPlus);
-              const isPlus = plan.id === '7_days' || plan.tier === 'Plus';
+              const isPro = plan.id === '1_month' || ((plan.tier === 'Pro' || plan.name?.includes('Pro')) && !isProPlus);
+              const isPlus = plan.id === '7_days' || plan.tier === 'Plus' || plan.tier === 'Test Plus' || plan.name?.toLowerCase().includes('plus');
               const pricing = getPlanPricing(plan.id, plan.price, plan.originalPrice);
 
               return (
@@ -214,7 +217,7 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                   className={`rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative transition-all duration-300 hover:-translate-y-1 ${
                     isProPlus
                       ? 'bg-white dark:bg-[#0a1510] border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20'
-                      : isUltra
+                      : isMax
                       ? 'bg-white dark:bg-[#130d1c] border-2 border-purple-500/80 shadow-xl shadow-purple-500/10'
                       : isPro
                       ? 'bg-white dark:bg-[#0c1220] border-2 border-blue-500/60 shadow-lg shadow-blue-500/15'
@@ -223,19 +226,25 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                 >
                   {isPlus && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-sky-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-sky-500/30 whitespace-nowrap">
-                      <Sparkles className="w-3 h-3 mr-1 fill-white" /> Test Uchun Sinang
+                      <Sparkles className="w-3 h-3 mr-1 fill-white" /> TEST PLUS
+                    </div>
+                  )}
+
+                  {isPro && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-blue-500/30 whitespace-nowrap">
+                      <Star className="w-3 h-3 mr-1 fill-white" /> PRO
                     </div>
                   )}
 
                   {isProPlus && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-emerald-500/30 whitespace-nowrap">
-                      <Star className="w-3 h-3 mr-1 fill-white" /> Tavsiya Etiladi
+                      <Star className="w-3 h-3 mr-1 fill-white" /> PRO+ • TAVSIYA
                     </div>
                   )}
 
-                  {isUltra && (
+                  {isMax && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-purple-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-purple-500/30 whitespace-nowrap">
-                      <Crown className="w-3 h-3 mr-1 fill-white" /> Super Tejam
+                      <Crown className="w-3 h-3 mr-1 fill-white" /> MAX
                     </div>
                   )}
 
@@ -251,7 +260,7 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                           ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/25' 
                           : 'bg-purple-500/15 text-purple-400 border border-purple-500/25'
                       }`}>
-                        {plan.statusTitle || plan.name} Status
+                        {plan.statusTitle || (isMax ? 'Max' : isProPlus ? 'Pro+' : isPro ? 'Pro' : 'Test Plus')} Status
                       </span>
                       <span className="text-[11px] text-gray-400 font-medium">{plan.duration}</span>
                     </div>
@@ -333,7 +342,7 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                       className={`w-full py-3.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md cursor-pointer ${
                         isProPlus
                           ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/25 ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-gray-900'
-                          : isUltra
+                          : isMax
                           ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-500/25'
                           : isPro
                           ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25'
@@ -367,10 +376,10 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
               <thead>
                 <tr className="border-b border-gray-100 dark:border-white/5 text-gray-500 dark:text-gray-400">
                   <th className="py-3 px-4 font-bold">Imkoniyat</th>
-                  <th className="py-3 px-3 text-center font-bold text-sky-500">Plus (7 kun)</th>
+                  <th className="py-3 px-3 text-center font-bold text-sky-500">Test Plus (7 kun)</th>
                   <th className="py-3 px-3 text-center font-bold text-blue-500">Pro (1 oy)</th>
                   <th className="py-3 px-3 text-center font-bold text-emerald-500">Pro+ (2 oy)</th>
-                  <th className="py-3 px-3 text-center font-bold text-purple-400">Ultra (3 oy)</th>
+                  <th className="py-3 px-3 text-center font-bold text-purple-400">Max (3 oy)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -401,10 +410,10 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
                       )}
                     </td>
                     <td className="py-3.5 px-3 text-center">
-                      {typeof row.ultra === 'boolean' ? (
-                        row.ultra ? <Check className="w-4 h-4 text-purple-500 mx-auto" /> : <X className="w-4 h-4 text-gray-400 mx-auto" />
+                      {typeof row.max === 'boolean' ? (
+                        row.max ? <Check className="w-4 h-4 text-purple-500 mx-auto" /> : <X className="w-4 h-4 text-gray-400 mx-auto" />
                       ) : (
-                        <span className="text-xs font-bold text-purple-400">{row.ultra}</span>
+                        <span className="text-xs font-bold text-purple-400">{row.max}</span>
                       )}
                     </td>
                   </tr>

@@ -57,12 +57,12 @@ export const DashboardSubscriptionStatus = ({
       {/* 4 ta Asosiy Ko'rsatkich Kartochkalari (Mobileda ixcham 2x2 grid) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* 1. Status / Tarif */}
-        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
+        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1 sm:space-y-2">
           <div className="flex items-center space-x-1.5 sm:space-x-2 text-gray-400">
-            <TierIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${hasSubscription ? tierInfo.textColor : 'text-gray-400'}`} />
+            <TierIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${hasSubscription ? tierInfo.textColor : 'text-gray-400'} flex-shrink-0`} />
             <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate">Tarif Statusi</span>
           </div>
-          <p className={`text-sm sm:text-lg lg:text-xl font-black truncate ${hasSubscription ? tierInfo.textColor : 'text-gray-900 dark:text-white'}`}>
+          <p className={`text-xs sm:text-base lg:text-lg font-black truncate ${hasSubscription ? tierInfo.textColor : 'text-gray-900 dark:text-white'}`}>
             {tierInfo.title}
           </p>
           <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate">
@@ -71,12 +71,12 @@ export const DashboardSubscriptionStatus = ({
         </div>
 
         {/* 2. To'lov Qilingan Sana */}
-        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
+        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1 sm:space-y-2">
           <div className="flex items-center space-x-1.5 sm:space-x-2 text-gray-400">
-            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-500" />
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-500 flex-shrink-0" />
             <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate">To'langan Sana</span>
           </div>
-          <p className="text-sm sm:text-lg lg:text-xl font-black text-gray-900 dark:text-white font-mono truncate">
+          <p className="text-xs sm:text-base lg:text-lg font-black text-gray-900 dark:text-white font-mono truncate">
             {hasSubscription ? formatDate(user?.subscription?.start_date) : '—'}
           </p>
           <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate">
@@ -85,12 +85,12 @@ export const DashboardSubscriptionStatus = ({
         </div>
 
         {/* 3. Amal Qilish Muddati */}
-        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
+        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1 sm:space-y-2">
           <div className="flex items-center space-x-1.5 sm:space-x-2 text-gray-400">
-            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0" />
             <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate">Amal Qilish</span>
           </div>
-          <p className="text-sm sm:text-lg lg:text-xl font-black text-gray-900 dark:text-white font-mono truncate">
+          <p className="text-xs sm:text-base lg:text-lg font-black text-gray-900 dark:text-white font-mono truncate">
             {hasSubscription ? formatDate(user?.subscription?.end_date) : 'Cheklanmagan'}
           </p>
           <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate">
@@ -99,12 +99,12 @@ export const DashboardSubscriptionStatus = ({
         </div>
 
         {/* 4. Qolgan Muddat */}
-        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
+        <div className="p-3 sm:p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-1 sm:space-y-2">
           <div className="flex items-center space-x-1.5 sm:space-x-2 text-gray-400">
-            <Hourglass className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
+            <Hourglass className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 flex-shrink-0" />
             <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate">Qolgan Muddat</span>
           </div>
-          <p className="text-sm sm:text-lg lg:text-xl font-black text-gray-900 dark:text-white font-mono truncate">
+          <p className="text-xs sm:text-base lg:text-lg font-black text-gray-900 dark:text-white font-mono truncate">
             {hasSubscription ? `${daysLeft} kun qoldi` : '0 kun'}
           </p>
           <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate">
@@ -115,20 +115,24 @@ export const DashboardSubscriptionStatus = ({
 
       {/* Visual Progress Bar */}
       {hasSubscription && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2.5">
-          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>
-              Faollashgan: <strong className="text-gray-900 dark:text-white font-mono">{formatDate(user?.subscription?.start_date)}</strong> ({elapsedDays} kun o'tdi)
-            </span>
-            <span className="font-bold text-gray-900 dark:text-white">
-              Tugash: <strong className={`font-mono ${tierInfo.textColor}`}>{formatDate(user?.subscription?.end_date)}</strong> ({daysLeft} kun qoldi)
-            </span>
+        <div className="p-3.5 sm:p-5 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center justify-between sm:justify-start gap-1.5">
+              <span>Boshlangan:</span>
+              <strong className="text-gray-900 dark:text-white font-mono">{formatDate(user?.subscription?.start_date)}</strong>
+              <span className="text-gray-400">({elapsedDays} kun o'tdi)</span>
+            </div>
+            <div className="flex items-center justify-between sm:justify-end gap-1.5">
+              <span>Tugash:</span>
+              <strong className={`font-mono font-bold ${tierInfo.textColor}`}>{formatDate(user?.subscription?.end_date)}</strong>
+              <span className="font-semibold text-gray-700 dark:text-gray-200">({daysLeft} kun qoldi)</span>
+            </div>
           </div>
 
           <div className="w-full bg-gray-200 dark:bg-white/10 h-2.5 rounded-full overflow-hidden">
             <div 
               className={`h-full rounded-full transition-all duration-500 bg-gradient-to-r ${
-                tierInfo.tier === 'Ultra' ? 'from-amber-500 via-orange-500 to-yellow-400' :
+                tierInfo.tier === 'Max' || tierInfo.tier === 'Ultra' ? 'from-purple-500 via-indigo-500 to-violet-400' :
                 tierInfo.tier === 'Pro' ? 'from-brand-600 via-emerald-500 to-teal-400' :
                 'from-blue-600 via-indigo-500 to-cyan-400'
               }`}
@@ -136,7 +140,7 @@ export const DashboardSubscriptionStatus = ({
             />
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-gray-400">
+          <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-gray-400">
             <span>Jami davomiylik: {totalDays} kun</span>
             <span className="font-mono font-bold text-brand-600 dark:text-brand-400">{progressPercent}% muddat yakunlandi</span>
           </div>
@@ -218,7 +222,7 @@ export const DashboardSubscriptionStatus = ({
         <button
           type="button"
           onClick={() => onOpenPaymentModal ? onOpenPaymentModal('1_month') : navigate('/tariffs')}
-          className="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center space-x-2 shadow-md shadow-brand-500/20 transition-all cursor-pointer"
+          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-brand-500/20 transition-all cursor-pointer"
         >
           <CreditCard className="w-4 h-4" />
           <span>{hasSubscription ? 'Tarifni Uzaytirish / Yangilash' : 'Obunani Faollashtirish'}</span>

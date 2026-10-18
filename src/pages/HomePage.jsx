@@ -110,15 +110,15 @@ export const HomePage = ({ onOpenPaymentModal }) => {
   const defaultPlans = [
     {
       id: '7_days',
-      tier: 'Plus',
-      name: 'Plus (7 Kunlik)',
+      tier: 'Test Plus',
+      name: 'Test Plus (7 Kunlik)',
       duration: '7 kun to\'liq ochiq',
       originalPrice: '30 000 so\'m',
       originalAmount: 30000,
       price: '20 000 so\'m',
       amount: 20000,
       desc: 'Test uchun sinang va platformaning barcha imkoniyatlaridan foydalaning',
-      badge: 'Test uchun sinang',
+      badge: 'TEST PLUS',
       features: [
         'Barcha 4 ta kurs: HTML, CSS, JS, React',
         '73 ta interaktiv amaliy darslik',
@@ -127,7 +127,7 @@ export const HomePage = ({ onOpenPaymentModal }) => {
         'Yopiq Telegram mentorlik guruhi'
       ],
       notIncluded: [],
-      ctaText: 'Plus Obuna',
+      ctaText: 'Test Plus Obuna',
       isFree: false,
       recommended: false
     },
@@ -141,6 +141,7 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       price: '50 000 so\'m',
       amount: 50000,
       desc: 'Tez sur\'atda chuqur bilim oluvchilar uchun optimal reja',
+      badge: 'PRO',
       features: [
         'Barcha 4 ta kurs: HTML, CSS, JS, React',
         '73 ta interaktiv amaliy darslik',
@@ -163,6 +164,7 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       price: '90 000 so\'m',
       amount: 90000,
       desc: 'Frontend dasturchi bo\'lish uchun eng optimal va tavsiya etilgan reja',
+      badge: 'PRO+ • TAVSIYA',
       features: [
         'Barcha 4 ta kurs: HTML, CSS, JS, React',
         '73 ta amaliy darslik va manbalar',
@@ -178,14 +180,15 @@ export const HomePage = ({ onOpenPaymentModal }) => {
     },
     {
       id: '3_months',
-      tier: 'Ultra',
-      name: 'Ultra (3 Oylik)',
+      tier: 'Max',
+      name: 'Max (3 Oylik)',
       duration: '3 oy to\'liq ochiq',
       originalPrice: '150 000 so\'m',
       originalAmount: 150000,
       price: '120 000 so\'m',
       amount: 120000,
       desc: 'Maksimal tejamkorlik va to\'liq professional tayyorgarlik',
+      badge: 'MAX',
       features: [
         'Barcha mavjud 4 ta kurs va yangi modullar',
         '30 000 so\'m kafolatlangan tejam',
@@ -195,7 +198,7 @@ export const HomePage = ({ onOpenPaymentModal }) => {
         'Shaxsiy portfolio loyihalar tahlili (Code Review)'
       ],
       notIncluded: [],
-      ctaText: 'Ultra Obuna',
+      ctaText: 'Max Obuna',
       isFree: false,
       recommended: false,
       superSaver: true

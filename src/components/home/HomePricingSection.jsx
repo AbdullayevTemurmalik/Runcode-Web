@@ -40,7 +40,7 @@ export const HomePricingSection = ({
         </h2>
 
         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-          HTML kursi har doim Free (Bepul). Qolgan barcha chuqur darslar va yopiq Telegram mentorlik guruhi uchun Plus, Pro yoki Ultra tariflaridan birini tanlang.
+          HTML kursi har doim Free (Bepul). Qolgan barcha chuqur darslar va yopiq Telegram mentorlik guruhi uchun Test Plus, Pro, Pro+ yoki Max tariflaridan birini tanlang.
         </p>
 
         {/* Plan Navigation Controls (Faqat mobil va planshetda < > tugmalari, kompyuterda yo'q) */}
@@ -81,10 +81,10 @@ export const HomePricingSection = ({
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {plansToDisplay.map((plan, idx) => {
-          const isUltra = plan.id === '3_months' || plan.tier === 'Ultra';
+          const isMax = plan.id === '3_months' || plan.tier === 'Max' || plan.tier === 'Ultra' || plan.name?.toLowerCase().includes('max') || plan.name?.toLowerCase().includes('ultra');
           const isProPlus = plan.id === '2_months' || plan.tier === 'Pro+' || plan.name?.includes('Pro+');
-          const isPro = plan.id === '1_month' || (plan.tier === 'Pro' && !isProPlus);
-          const isPlus = plan.id === '7_days' || plan.tier === 'Plus';
+          const isPro = plan.id === '1_month' || ((plan.tier === 'Pro' || plan.name?.includes('Pro')) && !isProPlus);
+          const isPlus = plan.id === '7_days' || plan.tier === 'Plus' || plan.tier === 'Test Plus' || plan.name?.toLowerCase().includes('plus');
           const isSelected = activePlanIndex === idx;
           const pricing = getPlanPricing(plan.id, plan.price, plan.originalPrice);
 
@@ -96,7 +96,7 @@ export const HomePricingSection = ({
               className={`snap-center flex-shrink-0 w-[85vw] sm:w-[320px] md:w-[340px] lg:w-full lg:max-w-none rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative transition-all duration-300 cursor-pointer ${
                 isProPlus
                   ? 'bg-white dark:bg-[#0a1510] border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20'
-                  : isUltra
+                  : isMax
                   ? 'bg-white dark:bg-[#130d1c] border-2 border-purple-500/80 shadow-xl shadow-purple-500/10'
                   : isPro
                   ? 'bg-white dark:bg-[#0c1220] border-2 border-blue-500/60 shadow-lg shadow-blue-500/15'
@@ -105,19 +105,25 @@ export const HomePricingSection = ({
             >
               {isPlus && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-sky-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-sky-500/30 whitespace-nowrap">
-                  <Star className="w-3 h-3 mr-1 fill-white" /> Test Uchun Sinang
+                  <Star className="w-3 h-3 mr-1 fill-white" /> TEST PLUS
+                </div>
+              )}
+
+              {isPro && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-blue-500/30 whitespace-nowrap">
+                  <Star className="w-3 h-3 mr-1 fill-white" /> PRO
                 </div>
               )}
 
               {isProPlus && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-emerald-500/30 whitespace-nowrap">
-                  <Star className="w-3 h-3 mr-1 fill-white" /> Tavsiya Etiladi
+                  <Star className="w-3 h-3 mr-1 fill-white" /> PRO+ • TAVSIYA
                 </div>
               )}
 
-              {isUltra && (
+              {isMax && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-purple-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center shadow-lg shadow-purple-500/30 whitespace-nowrap">
-                  <Crown className="w-3 h-3 mr-1 fill-white" /> Super Tejam
+                  <Crown className="w-3 h-3 mr-1 fill-white" /> MAX
                 </div>
               )}
 
@@ -133,7 +139,7 @@ export const HomePricingSection = ({
                       ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/25'
                       : 'bg-purple-500/15 text-purple-400 border border-purple-500/25'
                   }`}>
-                    {plan.statusTitle || plan.name} Status
+                    {plan.statusTitle || (isMax ? 'Max' : isProPlus ? 'Pro+' : isPro ? 'Pro' : 'Test Plus')} Status
                   </span>
                   <span className="text-[11px] text-gray-400 font-medium">{plan.duration}</span>
                 </div>
@@ -215,7 +221,7 @@ export const HomePricingSection = ({
                   className={`w-full py-3.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md cursor-pointer ${
                     isProPlus
                       ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/25 ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-gray-900'
-                      : isUltra
+                      : isMax
                       ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-500/25'
                       : isPro
                       ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25'

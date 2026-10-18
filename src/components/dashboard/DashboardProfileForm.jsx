@@ -209,54 +209,54 @@ export const DashboardProfileForm = ({
           </div>
         </form>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="p-3.5 rounded-2xl bg-brand-500/10 border border-brand-500/25 shadow-sm">
-            <span className="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider block">Platforma ID (Bot uchun)</span>
-            <p className="text-sm sm:text-base font-black font-mono text-brand-600 dark:text-brand-300 mt-1">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+          <div className="col-span-1 p-3 sm:p-3.5 rounded-2xl bg-brand-500/10 border border-brand-500/25 shadow-sm">
+            <span className="text-[9px] sm:text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider block truncate">Platforma ID (Bot uchun)</span>
+            <p className="text-xs sm:text-base font-black font-mono text-brand-600 dark:text-brand-300 mt-0.5 sm:mt-1 truncate">
               #{user?.id || '—'}
             </p>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">To'liq Ism</span>
-            <p className="text-xs font-semibold text-gray-900 dark:text-white mt-1">{user?.fullName || '—'}</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Username</span>
-            <p className="text-xs font-mono font-semibold text-brand-600 dark:text-brand-400 mt-1">@{user?.username || '—'}</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Telefon Raqami</span>
-            <p className="text-xs font-mono font-semibold text-gray-900 dark:text-white mt-1">{user?.phone || 'Kiritilmagan'}</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Email</span>
-            <p className="text-xs font-semibold text-gray-900 dark:text-white mt-1 truncate">
-              {user?.email || <span className="text-gray-400 italic font-normal">Kiritilmagan</span>}
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Tug'ilgan Sana</span>
-            <p className="text-xs font-semibold text-gray-900 dark:text-white mt-1">
-              {user?.birthDate ? new Date(user.birthDate).toLocaleDateString('uz-UZ') : 'Kiritilmagan'}
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Ta'lim Holati & Status</span>
-            <p className="text-xs font-semibold text-gray-900 dark:text-white mt-1 flex items-center">
+          <div className="col-span-1 p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
+            <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">Ta'lim Statusi</span>
+            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mt-0.5 sm:mt-1 flex items-center truncate">
               {hasSubscription ? (
-                <span className={`font-bold flex items-center ${tierInfo.textColor}`}>
-                  <TierIcon className="w-3.5 h-3.5 mr-1" />
-                  {tierInfo.title} ({daysLeft} kun qoldi)
+                <span className={`font-bold flex items-center truncate ${tierInfo.textColor}`}>
+                  <TierIcon className="w-3.5 h-3.5 mr-1 flex-shrink-0" />
+                  <span className="truncate">{tierInfo.title}</span>
                 </span>
               ) : (
                 <span className="text-gray-500">Bepul Talaba</span>
               )}
+            </p>
+          </div>
+
+          <div className="col-span-2 sm:col-span-1 p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
+            <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">To'liq Ism</span>
+            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mt-0.5 sm:mt-1 truncate">{user?.fullName || '—'}</p>
+          </div>
+
+          <div className="col-span-1 p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
+            <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">Username</span>
+            <p className="text-xs sm:text-sm font-mono font-semibold text-brand-600 dark:text-brand-400 mt-0.5 sm:mt-1 truncate">@{user?.username || '—'}</p>
+          </div>
+
+          <div className="col-span-1 p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
+            <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">Telefon Raqami</span>
+            <p className="text-xs sm:text-sm font-mono font-semibold text-gray-900 dark:text-white mt-0.5 sm:mt-1 truncate">{user?.phone || 'Kiritilmagan'}</p>
+          </div>
+
+          <div className="col-span-2 sm:col-span-1 p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
+            <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">Email</span>
+            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mt-0.5 sm:mt-1 truncate">
+              {user?.email || <span className="text-gray-400 italic font-normal">Kiritilmagan</span>}
+            </p>
+          </div>
+
+          <div className="col-span-2 sm:col-span-1 p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
+            <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">Tug'ilgan Sana</span>
+            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mt-0.5 sm:mt-1 truncate">
+              {user?.birthDate ? new Date(user.birthDate).toLocaleDateString('uz-UZ') : 'Kiritilmagan'}
             </p>
           </div>
         </div>
