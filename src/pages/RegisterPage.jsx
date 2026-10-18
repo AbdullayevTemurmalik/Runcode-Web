@@ -1,154 +1,136 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   User, 
   Lock, 
+  Mail,
   ArrowRight, 
   Code2, 
   AlertCircle, 
-  Loader2, 
-  AtSign,
-  CheckCircle2
+  Loader2,
+  Calendar,
+  CheckCircle2,
+  Hash
 } from 'lucide-react';
 import api from '../services/api';
 import { CustomInput } from '../components/CustomInput';
 import { CustomDatePicker } from '../components/CustomDatePicker';
+import { PasswordStrengthMeter, evaluatePassword } from '../components/PasswordStrengthMeter';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [birthDate, setBirthDate] = useState(''); // 'YYYY-MM-DD'
+  const [age, setAge] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  // Parol murakkabligi tahlili
-  const getPasswordStrength = (pass) => {
-    if (!pass) return { score: 0, label: '', color: '', percent: 0, hasMinLength: false, hasNumber: false, hasUpper: false };
-    
-    const hasMinLength = pass.length >= 6;
-    const hasNumber = /\d/.test(pass);
-    const hasUpper = /[A-Z]/.test(pass);
-    const hasLower = /[a-z]/.test(pass);
-    const hasSpecial = /[^A-Za-z0-9]/.test(pass);
+  // Auto-calculate age whenever birthDate changes
+  useEffect(() => {
+    if (!birthDate) return;
+    const parts = birthDate.split('-');
+    if (parts.length === 3 && parts[0] && parts[1] && parts[2]) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const birth = new Date(year, month, day);
 
-    let points = 0;
-    if (hasMinLength) points += 1;
-    if (hasNumber) points += 1;
-    if (hasUpper) points += 1;
-    if (hasLower) points += 0.5;
-    if (hasSpecial) points += 1;
-    if (pass.length >= 10) points += 0.5;
-
-    const meetsBase = hasMinLength && hasNumber && hasUpper;
-
-    if (!meetsBase || points < 2) {
-      return {
-        score: 1,
-        label: 'Oson',
-        color: 'text-rose-500',
-        barColor: 'bg-rose-500',
-        badgeBg: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
-        percent: 25,
-        hasMinLength,
-        hasNumber,
-        hasUpper
-      };
+      if (!isNaN(birth.getTime())) {
+        const today = new Date();
+        let calculated = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+          calculated--;
+        }
+        if (calculated >= 0 && calculated <= 120) {
+          setAge(String(calculated));
+        }
+      }
     }
+  }, [birthDate]);
 
-    if (points < 3.5) {
-      return {
-        score: 2,
-        label: "O'rta",
-        color: 'text-amber-500',
-        barColor: 'bg-amber-500',
-        badgeBg: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-        percent: 50,
-        hasMinLength,
-        hasNumber,
-        hasUpper
-      };
-    }
-
-    if (points < 4.5) {
-      return {
-        score: 3,
-        label: 'Qiyin',
-        color: 'text-blue-500',
-        barColor: 'bg-blue-500',
-        badgeBg: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-        percent: 75,
-        hasMinLength,
-        hasNumber,
-        hasUpper
-      };
-    }
-
-    return {
-      score: 4,
-      label: 'Mukammal',
-      color: 'text-emerald-500',
-      barColor: 'bg-emerald-500',
-      badgeBg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-      percent: 100,
-      hasMinLength,
-      hasNumber,
-      hasUpper
-    };
-  };
-
-  const passwordStrength = getPasswordStrength(password);
+  const passwordEvaluation = evaluatePassword(password);
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
 
-    // Validate password requirements
-    if (password.length < 6) {
-      setError("Parol kamida 6 ta belgidan iborat bo'lishi kerak.");
-      return;
-    }
-    if (!/[A-Z]/.test(password)) {
-      setError("Parolda kamida 1 ta katta harf (A-Z) bo'lishi shart.");
-      return;
-    }
-    if (!/\d/.test(password)) {
-      setError("Parolda kamida 1 ta raqam (0-9) bo'lishi shart.");
-      return;
+    const errors = {};
+
+    if (!firstName.trim() || firstName.trim().length < 2) {
+      errors.firstName = "Ismingizni kiriting (kamida 2 ta harf).";
     }
 
-    // Validate birth date
+    if (!lastName.trim() || lastName.trim().length < 2) {
+      errors.lastName = "Familiyangizni kiriting (kamida 2 ta harf).";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      errors.email = "Yaroqli email manzilini kiriting (masalan: user@gmail.com).";
+    }
+
     if (!birthDate || birthDate.split('-').length < 3 || birthDate.includes('--')) {
-      setError('Iltimos, tug\'ilgan kuningiz, oyi va yilini to\'liq tanlang.');
+      errors.birthDate = "Tug'ilgan kuningiz, oyi va yilini to'liq tanlang.";
+    }
+
+    const parsedAge = parseInt(age, 10);
+    if (isNaN(parsedAge) || parsedAge < 7 || parsedAge > 120) {
+      errors.age = "Yosh 7 dan 120 gacha bo'lishi kerak.";
+    }
+
+    if (!passwordEvaluation.isValid) {
+      errors.password = "Parol barcha xavfsizlik talablariga javob berishi shart.";
+    }
+
+    if (password !== confirmPassword) {
+      errors.confirmPassword = "Tasdiqlash paroli mos kelmadi.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError("Iltimos, shakldagi barcha xatoliklarni to'g'rilang.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const data = await api.post('/auth/register', {
+      const cleanEmail = email.trim().toLowerCase();
+      const res = await api.post('/auth/signup', {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        username: username.trim().toLowerCase(),
+        email: cleanEmail,
+        birthDate,
+        age: parsedAge,
         password,
-        birthDate
+        confirmPassword
       });
 
-      if (data.success) {
-        // Sign Up dan keyin to'g'ri kirmaydi, Sign In (Login) ga o'tadi!
-        navigate('/login', {
+      if (res.success) {
+        navigate(`/verify-email?email=${encodeURIComponent(cleanEmail)}`, {
           state: {
-            message: 'Ro\'yxatdan muvaffaqiyatli o\'tdingiz! Iltimos, username va parolingiz bilan tizimga kiring.',
-            username: username.trim().toLowerCase()
+            email: cleanEmail,
+            message: res.message || "Ro'yxatdan o'tish muvaffaqiyatli amalga oshirildi. Tasdiqlash kodi emailingizga yuborildi."
           }
         });
       }
     } catch (err) {
-      setError(err.message || 'Ro\'yxatdan o\'tishda xatolik yuz berdi');
+      const errMsg = err.message || "Ro'yxatdan o'tishda xatolik yuz berdi.";
+      setError(errMsg);
+      if (err.field) {
+        setFieldErrors(prev => ({ ...prev, [err.field]: errMsg }));
+      }
     } finally {
       setLoading(false);
     }
@@ -164,7 +146,7 @@ export const RegisterPage = () => {
             <Code2 className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-black text-gray-900 dark:text-white">Ro'yxatdan O'tish</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">RunCode bilan professional dasturlashni boshlang</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">RunCode platformasida professional ta'limni boshlang</p>
         </div>
 
         {error && (
@@ -183,8 +165,12 @@ export const RegisterPage = () => {
               icon={User}
               required
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => {
+                setFirstName(e.target.value);
+                if (fieldErrors.firstName) setFieldErrors(prev => ({ ...prev, firstName: null }));
+              }}
               placeholder="Ali"
+              error={fieldErrors.firstName}
             />
 
             <CustomInput
@@ -192,106 +178,122 @@ export const RegisterPage = () => {
               icon={User}
               required
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(e) => {
+                setLastName(e.target.value);
+                if (fieldErrors.lastName) setFieldErrors(prev => ({ ...prev, lastName: null }));
+              }}
               placeholder="Valiyev"
+              error={fieldErrors.lastName}
             />
           </div>
 
-          {/* 2. Username */}
+          {/* 2. Email */}
           <CustomInput
-            label="Username:"
-            icon={AtSign}
+            label="Email manzil:"
+            icon={Mail}
+            type="email"
             required
-            value={username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-            placeholder="alivaliyev"
-            inputClassName="font-mono"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: null }));
+            }}
+            placeholder="alivaliyev@gmail.com"
+            error={fieldErrors.email}
           />
 
-          {/* 3. Parol (Custom Eye Toggle bilan va Dinamik Murakkablik Ko'rsatkichi) */}
+          {/* 3. Tug'ilgan sana va Yosh */}
+          <div className="space-y-3">
+            <CustomDatePicker
+              label="Tug'ilgan sana:"
+              sublabel="Kun • Oy • Yil"
+              required={true}
+              value={birthDate}
+              onChange={(val) => {
+                setBirthDate(val);
+                if (fieldErrors.birthDate) setFieldErrors(prev => ({ ...prev, birthDate: null }));
+              }}
+              error={fieldErrors.birthDate}
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <CustomInput
+                label="Yosh:"
+                icon={Hash}
+                type="number"
+                min={7}
+                max={120}
+                required
+                value={age}
+                onChange={(e) => {
+                  setAge(e.target.value);
+                  if (fieldErrors.age) setFieldErrors(prev => ({ ...prev, age: null }));
+                }}
+                placeholder="20"
+                sublabel={age ? `${age} yosh` : "Sanadan avtomatik hisoblanadi"}
+                error={fieldErrors.age}
+              />
+            </div>
+          </div>
+
+          {/* 4. Parol va Kuchlilik indikatori */}
           <div className="space-y-2">
             <CustomInput
               label="Parol:"
               icon={Lock}
               isPassword={true}
               required
-              minLength={6}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Kamida 6 ta belgi, 1 ta katta harf, 1 ta raqam"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: null }));
+              }}
+              placeholder="Kamida 8 ta belgi, bosh/kichik harf, raqam, belgi"
+              error={fieldErrors.password}
               sublabel={
                 password ? (
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${passwordStrength.badgeBg}`}>
-                    {passwordStrength.label}
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${passwordEvaluation.badgeBg}`}>
+                    {passwordEvaluation.label}
                   </span>
                 ) : null
               }
             />
 
-            {/* Parol kuchi indikatori (Progress Bar & Talablar) */}
-            {password && (
-              <div className="p-3 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2 text-xs">
-                {/* 4 bosqichli bar */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[11px] font-bold">
-                    <span className="text-gray-500">Parol xavfsizligi:</span>
-                    <span className={passwordStrength.color}>{passwordStrength.label}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full transition-all duration-300 ${passwordStrength.barColor}`}
-                      style={{ width: `${passwordStrength.percent}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Talablar ro'yxati */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 pt-1 text-[11px]">
-                  <div className={`flex items-center space-x-1 font-semibold ${
-                    passwordStrength.hasMinLength ? 'text-emerald-500' : 'text-gray-400'
-                  }`}>
-                    {passwordStrength.hasMinLength ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                    ) : (
-                      <span className="w-3.5 h-3.5 rounded-full border border-gray-300 dark:border-white/20 inline-block flex-shrink-0" />
-                    )}
-                    <span>6+ ta belgi</span>
-                  </div>
-
-                  <div className={`flex items-center space-x-1 font-semibold ${
-                    passwordStrength.hasUpper ? 'text-emerald-500' : 'text-gray-400'
-                  }`}>
-                    {passwordStrength.hasUpper ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                    ) : (
-                      <span className="w-3.5 h-3.5 rounded-full border border-gray-300 dark:border-white/20 inline-block flex-shrink-0" />
-                    )}
-                    <span>Katta harf (A-Z)</span>
-                  </div>
-
-                  <div className={`flex items-center space-x-1 font-semibold ${
-                    passwordStrength.hasNumber ? 'text-emerald-500' : 'text-gray-400'
-                  }`}>
-                    {passwordStrength.hasNumber ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                    ) : (
-                      <span className="w-3.5 h-3.5 rounded-full border border-gray-300 dark:border-white/20 inline-block flex-shrink-0" />
-                    )}
-                    <span>Raqam (0-9)</span>
-                  </div>
-                </div>
-              </div>
-            )}
+            <PasswordStrengthMeter password={password} showRequirements={true} />
           </div>
 
-          {/* 4. Tug'ilgan sana: 100% CUSTOM Dizayndagi DatePicker (Kun, Oy, Yil) */}
-          <CustomDatePicker
-            label="Tug'ilgan sana:"
-            sublabel="Kun • Oy • Yil"
-            required={true}
-            value={birthDate}
-            onChange={(val) => setBirthDate(val)}
-          />
+          {/* 5. Parolni tasdiqlash */}
+          <div className="space-y-1">
+            <CustomInput
+              label="Parolni tasdiqlang:"
+              icon={Lock}
+              isPassword={true}
+              required
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (fieldErrors.confirmPassword) setFieldErrors(prev => ({ ...prev, confirmPassword: null }));
+              }}
+              placeholder="Parolni qayta kiriting"
+              error={fieldErrors.confirmPassword}
+              sublabel={
+                confirmPassword ? (
+                  passwordsMatch ? (
+                    <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Mos keldi
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-rose-500 font-bold">
+                      Mos kelmadi
+                    </span>
+                  )
+                ) : null
+              }
+            />
+            {passwordsMismatch && (
+              <p className="text-[11px] text-rose-500 font-medium">Parollar bir-biriga mos kelmadi.</p>
+            )}
+          </div>
 
           {/* Submit Button */}
           <button

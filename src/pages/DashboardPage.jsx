@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Crown, Sparkles } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Crown, Sparkles } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { LogoutModal } from '../components/LogoutModal';
@@ -264,6 +264,26 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
 
   return (
     <div className="container-custom py-4 sm:py-8 lg:py-12 space-y-4 sm:space-y-6 lg:space-y-8">
+      {/* Legacy Account Security Notice */}
+      {user?.isLegacy && !user?.email_verified && (
+        <div className="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-700 dark:text-brand-300 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center space-x-2.5">
+            <ShieldAlert className="w-4 h-4 flex-shrink-0 text-brand-500" />
+            <span>
+              Hisobingiz xavfsizligini oshirish va parolni oson tiklash uchun emailingizni tasdiqlashingiz tavsiya etiladi.
+            </span>
+          </div>
+          {user.email && (
+            <button
+              onClick={() => navigate(`/verify-email?email=${encodeURIComponent(user.email)}`)}
+              className="px-3.5 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs whitespace-nowrap cursor-pointer transition-colors"
+            >
+              Tasdiqlash
+            </button>
+          )}
+        </div>
+      )}
+
       {/* 1. Header Profile Banner */}
       <DashboardHeaderBanner
         user={user}
