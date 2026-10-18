@@ -89,6 +89,9 @@ export const ForgotPasswordPage = () => {
     } catch (err) {
       // Even if network or rate limit, display message
       setError(err.message || "Tiklash so'rovini yuborishda xatolik yuz berdi.");
+      if (err.remainingSeconds) {
+        setCooldown(err.remainingSeconds);
+      }
     } finally {
       setLoading(false);
     }
@@ -145,6 +148,9 @@ export const ForgotPasswordPage = () => {
       setExpiresIn(300);
     } catch (err) {
       setError(err.message || "Kodni qayta yuborishda xatolik yuz berdi.");
+      if (err.remainingSeconds) {
+        setCooldown(err.remainingSeconds);
+      }
     } finally {
       setResending(false);
     }
@@ -340,7 +346,9 @@ export const ForgotPasswordPage = () => {
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
                 <span>
-                  {cooldown > 0 ? `Kodni qayta yuborish (${cooldown}s)` : "Kodni qayta yuborish"}
+                  {cooldown > 0 
+                    ? (cooldown > 60 ? `Kodni qayta yuborish (${formatTimer(cooldown)})` : `Kodni qayta yuborish (${cooldown}s)`)
+                    : "Kodni qayta yuborish"}
                 </span>
               </button>
             </div>

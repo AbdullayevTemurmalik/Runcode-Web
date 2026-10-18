@@ -235,7 +235,7 @@ export const VerifyEmailPage = () => {
               <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
               <span>
                 {cooldown > 0 
-                  ? `Kodni qayta yuborish (${cooldown} soniya)` 
+                  ? (cooldown > 60 ? `Kodni qayta yuborish (${formatTimer(cooldown)})` : `Kodni qayta yuborish (${cooldown} soniya)`)
                   : "Kodni qayta yuborish"}
               </span>
             </button>

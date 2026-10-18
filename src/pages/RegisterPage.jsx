@@ -503,7 +503,9 @@ export const RegisterPage = () => {
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${sendingOtp ? 'animate-spin' : ''}`} />
                     <span>
-                      {cooldown > 0 ? `Kodni qayta yuborish (${cooldown}s)` : "Kodni qayta yuborish"}
+                      {cooldown > 0 
+                        ? (cooldown > 60 ? `Kodni qayta yuborish (${formatTimer(cooldown)})` : `Kodni qayta yuborish (${cooldown}s)`)
+                        : "Kodni qayta yuborish"}
                     </span>
                   </button>
                 </div>

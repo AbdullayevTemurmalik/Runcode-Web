@@ -68,6 +68,8 @@ api.interceptors.response.use(
     const customError = new Error(message);
     customError.code = error.response?.data?.code;
     customError.status = error.response?.status;
+    customError.remainingSeconds = error.response?.data?.remainingSeconds;
+    customError.data = error.response?.data;
     return Promise.reject(customError);
   }
 );
