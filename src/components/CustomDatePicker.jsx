@@ -36,7 +36,7 @@ export const CustomDatePicker = ({
   disabled = false,
   required = false,
   className = '',
-  minYear = 1995,
+  minYear = 1990,
   maxYear = 2014,
   minAge = 12
 }) => {
@@ -197,7 +197,7 @@ export const CustomDatePicker = ({
         computedAge--;
       }
 
-      // 4. Yosh va Yil chegaralari tekshiruvi (Kamida 12 yosh, 1995-2014)
+      // 4. Yosh va Yil chegaralari tekshiruvi (Kamida 12 yosh, 1990-2014)
       if (computedAge < minAge || y > maxYear) {
         setLocalError("12 yoshdan kichiklar kirishi mumkin emas.");
         onChange?.('');
@@ -458,7 +458,7 @@ export const CustomDatePicker = ({
                     type="button"
                     onClick={() => setViewMode('years')}
                     className="px-2.5 py-1 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-500/10 dark:hover:text-brand-400 transition-colors cursor-pointer flex items-center"
-                    title="Yilni tanlash (1995-2014)"
+                    title="Yilni tanlash (1990-2014)"
                   >
                     <span>{viewYear}</span>
                     <ChevronDown className="w-3 h-3 ml-1" />

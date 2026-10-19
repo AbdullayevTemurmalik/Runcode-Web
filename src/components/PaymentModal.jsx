@@ -28,6 +28,7 @@ import { getStoredPromocode, setStoredPromocode } from '../hooks/useActivePromoc
 import { safeSessionStorage } from '../utils/storage';
 
 const UZUM_PAYMENT_URL = 'https://b.2u.uz/ttc?qr=Nzk5MzoyMDU4NjEzMjowMU00VDA0VlgyNjVYQU1IR1k5SjdNV1ZEODp1OVhXZWtrenRJNmNadm5oZVhXQ1NhOWJOdFk9';
+const CLICK_PAYMENT_URL = 'https://my.click.uz/clickp2p/9E9EB6EE67E40DB610877D03FC6AB8BD136BDBF5F386F48C91E40184E1EB9EE7';
 
 export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   const { user } = useAuth();
@@ -271,11 +272,18 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   };
 
   const [copiedUzumLink, setCopiedUzumLink] = useState(false);
+  const [copiedClickLink, setCopiedClickLink] = useState(false);
 
   const copyUzumLink = () => {
     navigator.clipboard.writeText(UZUM_PAYMENT_URL);
     setCopiedUzumLink(true);
     setTimeout(() => setCopiedUzumLink(false), 2000);
+  };
+
+  const copyClickLink = () => {
+    navigator.clipboard.writeText(CLICK_PAYMENT_URL);
+    setCopiedClickLink(true);
+    setTimeout(() => setCopiedClickLink(false), 2000);
   };
 
   const copyCardNumber = () => {
@@ -659,9 +667,9 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                   >
                     <div className="flex items-center space-x-2">
                       <Smartphone className="w-4 h-4 text-brand-500 flex-shrink-0" />
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">Ilova orqali</p>
+                      <p className="text-xs font-bold text-gray-900 dark:text-white">Click / Ilova</p>
                     </div>
-                    <p className="text-[10px] text-gray-500 text-left mt-1">Payme, Click (30 daq)</p>
+                    <p className="text-[10px] text-gray-500 text-left mt-1">Click QR & Ilova (30 daq)</p>
                   </button>
 
                   <button
@@ -861,6 +869,91 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                         {copiedUzumLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                         <span>{copiedUzumLink ? "Nusxalandi!" : "Nusxa"}</span>
                       </button>
+                    </div>
+                  </div>
+                ) : paymentMethod === 'apps' ? (
+                  /* Click Up QR & Ilova Block */
+                  <div className="space-y-3">
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-950/40 via-blue-900/20 to-gray-900/50 border border-blue-500/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#005cd4] to-[#0099ff] text-white flex items-center justify-center shadow-md shadow-blue-900/40">
+                            <QrCode className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-black text-gray-900 dark:text-white uppercase">Click Up QR To'lov</p>
+                            <p className="text-[10px] text-blue-400">Rasmiy QR-kod & Ilova</p>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded-full border border-blue-500/30">
+                          Tezkor QR
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center py-2">
+                        <div className="w-[260px] h-[260px] sm:w-[350px] sm:h-[350px] aspect-square bg-white p-3 sm:p-4 rounded-2xl shadow-xl flex items-center justify-center border-4 border-blue-500/30">
+                          <img
+                            src="/click-qr.png"
+                            alt="Click Up QR"
+                            className="w-full h-full object-contain select-none"
+                          />
+                        </div>
+                        <p className="text-[11px] text-gray-500 dark:text-blue-300/80 mt-2 text-center">
+                          Click ilovasida QR-kodni skanerlang yoki to'g'ridan-to'g'ri ilovada to'lang
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <a
+                          href={CLICK_PAYMENT_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 py-2.5 px-3 rounded-xl bg-[#005cd4] hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-1.5 transition shadow-sm cursor-pointer"
+                        >
+                          <Smartphone className="w-4 h-4" />
+                          <span>Click Ilovasida To'lash</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+
+                        <button
+                          type="button"
+                          onClick={copyClickLink}
+                          className="py-2.5 px-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 text-xs font-bold transition flex items-center justify-center space-x-1.5 cursor-pointer"
+                          title="To'lov havolasidan nusxa olish"
+                        >
+                          {copiedClickLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                          <span>{copiedClickLink ? "Nusxalandi!" : "Nusxa"}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Karta raqami: 9860 3501 4972 8288 */}
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                      <div>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase">Karta raqami</p>
+                        <p className="text-sm font-mono font-bold text-gray-900 dark:text-white tracking-wider">
+                          {cardInfo.number}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={copyCardNumber}
+                        className="p-2 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg flex items-center space-x-1 text-xs font-semibold cursor-pointer"
+                      >
+                        {copiedCard ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                        <span>{copiedCard ? 'Nusxalandi' : 'Nusxa olish'}</span>
+                      </button>
+                    </div>
+
+                    {/* Karta egasi: Temurmalik Abdullayev */}
+                    <div className="flex items-center justify-between text-xs py-1 px-1">
+                      <span className="text-gray-500 flex items-center space-x-1.5">
+                        <UserCheck className="w-3.5 h-3.5 text-gray-400" />
+                        <span>Karta egasi:</span>
+                      </span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                        {cardInfo.holder}
+                      </span>
                     </div>
                   </div>
                 ) : (

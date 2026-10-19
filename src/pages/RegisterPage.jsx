@@ -246,8 +246,8 @@ export const RegisterPage = () => {
       return;
     }
 
-    if (birthYear < 1995) {
-      setError("Tug'ilgan yil 1995 va 2014 oralig'ida bo'lishi kerak.");
+    if (birthYear < 1990) {
+      setError("Tug'ilgan yil 1990 va 2014 oralig'ida bo'lishi kerak.");
       return;
     }
 
@@ -528,12 +528,12 @@ export const RegisterPage = () => {
               }
             />
 
-            {/* Tug'ilgan sana: Kun, Oy, Yil (1995 - 2014) */}
+            {/* Tug'ilgan sana: Kun, Oy, Yil (1990 - 2014) */}
             <CustomDatePicker
               label="Tug'ilgan sana:"
-              sublabel="Kun • Oy • Yil (1995 - 2014)"
+              sublabel="Kun • Oy • Yil (1990 - 2014)"
               required={true}
-              minYear={1995}
+              minYear={1990}
               maxYear={2014}
               minAge={12}
               value={birthDate}
