@@ -233,7 +233,9 @@ export const DashboardProfileForm = ({
 
           <div className="col-span-2 sm:col-span-1 p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
             <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">To'liq Ism</span>
-            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mt-0.5 sm:mt-1 truncate">{user?.fullName || '—'}</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mt-0.5 sm:mt-1 truncate">
+              {user?.fullName || [user?.firstName || user?.first_name, user?.lastName || user?.last_name].filter(Boolean).join(' ') || '—'}
+            </p>
           </div>
 
           <div className="col-span-1 p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
@@ -256,7 +258,16 @@ export const DashboardProfileForm = ({
           <div className="col-span-2 sm:col-span-1 p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
             <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">Tug'ilgan Sana</span>
             <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mt-0.5 sm:mt-1 truncate">
-              {user?.birthDate ? new Date(user.birthDate).toLocaleDateString('uz-UZ') : 'Kiritilmagan'}
+              {(() => {
+                const raw = user?.birthDate || user?.birth_date;
+                if (!raw) return 'Kiritilmagan';
+                const clean = String(raw).split('T')[0];
+                const parts = clean.split('-');
+                if (parts.length === 3) {
+                  return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                }
+                return clean;
+              })()}
             </p>
           </div>
         </div>

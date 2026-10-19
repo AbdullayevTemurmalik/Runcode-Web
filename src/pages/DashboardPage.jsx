@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ShieldAlert, Crown, Sparkles } from 'lucide-react';
 import api from '../services/api';
@@ -39,36 +39,34 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
   const [saveSuccess, setSaveSuccess] = useState(null);
   const [saveError, setSaveError] = useState(null);
 
+  const populateFieldsFromUser = useCallback((u) => {
+    if (!u) return;
+    const fName = u.firstName || u.first_name || (u.fullName ? u.fullName.split(' ')[0] : '') || '';
+    const lName = u.lastName || u.last_name || (u.fullName ? u.fullName.split(' ').slice(1).join(' ') : '') || '';
+    const rawBirth = u.birthDate || u.birth_date || '';
+    const cleanBirth = rawBirth ? String(rawBirth).split('T')[0] : '';
+    setFirstName(fName);
+    setLastName(lName);
+    setPhone(u.phone || '');
+    setBirthDate(cleanBirth);
+    setEmail(u.email || '');
+  }, []);
+
   useEffect(() => {
-    if (user) {
-      setFirstName(user.firstName || user.fullName?.split(' ')[0] || '');
-      setLastName(user.lastName || user.fullName?.split(' ').slice(1).join(' ') || '');
-      setPhone(user.phone || '');
-      setBirthDate(user.birthDate ? user.birthDate.split('T')[0] : '');
-      setEmail(user.email || '');
+    if (user && !isEditing) {
+      populateFieldsFromUser(user);
     }
-  }, [user]);
+  }, [user, isEditing, populateFieldsFromUser]);
 
   const handleStartEdit = () => {
-    if (user) {
-      setFirstName(user.firstName || user.fullName?.split(' ')[0] || '');
-      setLastName(user.lastName || user.fullName?.split(' ').slice(1).join(' ') || '');
-      setPhone(user.phone || '');
-      setBirthDate(user.birthDate ? user.birthDate.split('T')[0] : '');
-      setEmail(user.email || '');
-    }
+    populateFieldsFromUser(user);
     setIsEditing(true);
     setSaveError(null);
+    setSaveSuccess(null);
   };
 
   const handleCancelEdit = () => {
-    if (user) {
-      setFirstName(user.firstName || user.fullName?.split(' ')[0] || '');
-      setLastName(user.lastName || user.fullName?.split(' ').slice(1).join(' ') || '');
-      setPhone(user.phone || '');
-      setBirthDate(user.birthDate ? user.birthDate.split('T')[0] : '');
-      setEmail(user.email || '');
-    }
+    populateFieldsFromUser(user);
     setIsEditing(false);
     setSaveError(null);
   };
@@ -88,11 +86,14 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
         email: email && email.trim() ? email.trim() : null
       });
 
-      if (data.success && data.user) {
+      if (data && data.success && data.user) {
         updateUser(data.user);
+        populateFieldsFromUser(data.user);
         setSaveSuccess(data.message || 'Profil ma\'lumotlaringiz muvaffaqiyatli saqlandi!');
         setIsEditing(false);
         setTimeout(() => setSaveSuccess(null), 4000);
+      } else {
+        setSaveError(data?.message || 'Profilni yangilashda xatolik yuz berdi');
       }
     } catch (err) {
       setSaveError(err.message || 'Profilni yangilashda xatolik yuz berdi');
