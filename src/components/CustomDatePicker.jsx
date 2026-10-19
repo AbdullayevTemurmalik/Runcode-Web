@@ -35,7 +35,10 @@ export const CustomDatePicker = ({
   error = null,
   disabled = false,
   required = false,
-  className = ''
+  className = '',
+  minYear = 1995,
+  maxYear = 2014,
+  minAge = 12
 }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null);
@@ -43,10 +46,7 @@ export const CustomDatePicker = ({
 
   const [isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState('days'); // 'days' | 'months' | 'years'
-
-  const currentYear = new Date().getFullYear();
-  const maxAllowedYear = currentYear - 7; // Kamida 7 yosh
-  const minAllowedYear = 1940;
+  const [localError, setLocalError] = useState(null);
 
   // Selected date parsed
   const selectedDate = useMemo(() => {
@@ -64,8 +64,11 @@ export const CustomDatePicker = ({
 
   // Calendar view navigation state
   const [viewYear, setViewYear] = useState(() => {
-    if (selectedDate) return selectedDate.year;
-    return 2002; // Foydalanuvchilar uchun qulay standart yil
+    if (selectedDate && selectedDate.year >= minYear && selectedDate.year <= maxYear) {
+      return selectedDate.year;
+    }
+    // Standart 1995 - 2014 oraliqdagi qulay yil
+    return Math.floor((minYear + maxYear) / 2);
   });
 
   const [viewMonth, setViewMonth] = useState(() => {
@@ -73,7 +76,7 @@ export const CustomDatePicker = ({
     return 1;
   });
 
-  // Display text in input field
+  // Display text in input field (Format: DD.MM.YYYY)
   const [inputText, setInputText] = useState(() => {
     if (selectedDate) {
       const d = String(selectedDate.day).padStart(2, '0');
@@ -91,12 +94,15 @@ export const CustomDatePicker = ({
       const m = String(selectedDate.month).padStart(2, '0');
       const y = String(selectedDate.year);
       setInputText(`${d}.${m}.${y}`);
-      setViewYear(selectedDate.year);
+      if (selectedDate.year >= minYear && selectedDate.year <= maxYear) {
+        setViewYear(selectedDate.year);
+      }
       setViewMonth(selectedDate.month);
-    } else {
+      setLocalError(null);
+    } else if (!inputText || inputText.length === 0) {
       setInputText('');
     }
-  }, [selectedDate]);
+  }, [selectedDate, minYear, maxYear]);
 
   // Outside click listener
   useEffect(() => {
@@ -126,14 +132,13 @@ export const CustomDatePicker = ({
     }
   }, [viewMode, viewYear]);
 
-  // Age and Human readable label
+  // Age calculation and Human readable label
   const { readableDate, ageText } = useMemo(() => {
     if (!selectedDate) return { readableDate: null, ageText: null };
     const mObj = MONTHS_UZ.find(m => m.num === selectedDate.month);
     const mName = mObj ? mObj.name : selectedDate.month;
     const formatted = `${selectedDate.day}-${mName}, ${selectedDate.year}`;
 
-    // Age calculation
     const today = new Date();
     let age = today.getFullYear() - selectedDate.year;
     const mDiff = (today.getMonth() + 1) - selectedDate.month;
@@ -145,7 +150,7 @@ export const CustomDatePicker = ({
     return { readableDate: formatted, ageText: ageString };
   }, [selectedDate]);
 
-  // Handle direct typing in the input with auto-dot mask
+  // Handle direct typing in the input with auto-dot mask (KK.OO.YYYY)
   const handleInputChange = (e) => {
     if (disabled) return;
     const rawVal = e.target.value;
@@ -169,25 +174,63 @@ export const CustomDatePicker = ({
       const m = parseInt(digitsOnly.slice(2, 4), 10);
       const y = parseInt(digitsOnly.slice(4, 8), 10);
 
-      if (m >= 1 && m <= 12 && y >= minAllowedYear && y <= maxAllowedYear) {
-        const daysInSelected = new Date(y, m, 0).getDate();
-        if (d >= 1 && d <= daysInSelected) {
-          const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-          onChange?.(iso);
-          setViewYear(y);
-          setViewMonth(m);
-          setIsOpen(false);
-          return;
-        }
+      // 1. Oy to'g'riligini tekshirish
+      if (m < 1 || m > 12) {
+        setLocalError("Noto'g'ri oy kiritildi (01 dan 12 gacha).");
+        onChange?.('');
+        return;
       }
-    } else if (digitsOnly.length === 0) {
-      onChange?.('');
+
+      // 2. Kun to'g'riligini tekshirish
+      const daysInSelected = new Date(y, m, 0).getDate();
+      if (d < 1 || d > daysInSelected) {
+        setLocalError("Noto'g'ri kun kiritildi.");
+        onChange?.('');
+        return;
+      }
+
+      // 3. Yoshni hisoblash
+      const today = new Date();
+      let computedAge = today.getFullYear() - y;
+      const mDiff = (today.getMonth() + 1) - m;
+      if (mDiff < 0 || (mDiff === 0 && today.getDate() < d)) {
+        computedAge--;
+      }
+
+      // 4. Yosh va Yil chegaralari tekshiruvi (Kamida 12 yosh, 1995-2014)
+      if (computedAge < minAge || y > maxYear) {
+        setLocalError("12 yoshdan kichiklar kirishi mumkin emas.");
+        onChange?.('');
+        return;
+      }
+
+      if (y < minYear) {
+        setLocalError(`Tug'ilgan yil ${minYear} va ${maxYear} oralig'ida bo'lishi kerak.`);
+        onChange?.('');
+        return;
+      }
+
+      // Hammasi to'g'ri bo'lsa
+      setLocalError(null);
+      const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      onChange?.(iso);
+      setViewYear(y);
+      setViewMonth(m);
+      setIsOpen(false);
+    } else {
+      setLocalError(null);
+      if (digitsOnly.length === 0) {
+        onChange?.('');
+      } else {
+        onChange?.('');
+      }
     }
   };
 
   const handleClear = (e) => {
     e.stopPropagation();
     setInputText('');
+    setLocalError(null);
     onChange?.('');
     setViewMode('days');
   };
@@ -204,11 +247,15 @@ export const CustomDatePicker = ({
     return (firstDay + 6) % 7;
   }, [viewYear, viewMonth]);
 
+  const isPrevDisabled = viewYear <= minYear && viewMonth <= 1;
+  const isNextDisabled = viewYear >= maxYear && viewMonth >= 12;
+
   const handlePrevMonth = (e) => {
     e.stopPropagation();
+    if (isPrevDisabled) return;
     if (viewMonth === 1) {
       setViewMonth(12);
-      setViewYear(prev => prev - 1);
+      setViewYear(prev => Math.max(minYear, prev - 1));
     } else {
       setViewMonth(prev => prev - 1);
     }
@@ -216,16 +263,38 @@ export const CustomDatePicker = ({
 
   const handleNextMonth = (e) => {
     e.stopPropagation();
+    if (isNextDisabled) return;
     if (viewMonth === 12) {
       setViewMonth(1);
-      setViewYear(prev => prev + 1);
+      setViewYear(prev => Math.min(maxYear, prev + 1));
     } else {
       setViewMonth(prev => prev + 1);
     }
   };
 
   const handleSelectDay = (day) => {
+    const today = new Date();
+    let age = today.getFullYear() - viewYear;
+    const mDiff = (today.getMonth() + 1) - viewMonth;
+    if (mDiff < 0 || (mDiff === 0 && today.getDate() < day)) {
+      age--;
+    }
+
+    if (age < minAge || viewYear > maxYear) {
+      setLocalError("12 yoshdan kichiklar kirishi mumkin emas.");
+      return;
+    }
+
+    if (viewYear < minYear) {
+      setLocalError(`Tug'ilgan yil ${minYear} va ${maxYear} oralig'ida bo'lishi kerak.`);
+      return;
+    }
+
     const iso = `${viewYear}-${String(viewMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dStr = String(day).padStart(2, '0');
+    const mStr = String(viewMonth).padStart(2, '0');
+    setInputText(`${dStr}.${mStr}.${viewYear}`);
+    setLocalError(null);
     onChange?.(iso);
     setIsOpen(false);
     setViewMode('days');
@@ -241,17 +310,19 @@ export const CustomDatePicker = ({
     setViewMode('months');
   };
 
-  // Years list
+  // Faqat 1995 dan 2014 yilgacha bo'lgan yillar ro'yxati
   const yearsList = useMemo(() => {
     const list = [];
-    for (let y = maxAllowedYear; y >= minAllowedYear; y--) {
+    for (let y = maxYear; y >= minYear; y--) {
       list.push(y);
     }
     return list;
-  }, [maxAllowedYear, minAllowedYear]);
+  }, [maxYear, minYear]);
 
   // Current month metadata
   const currentMonthObj = MONTHS_UZ.find(m => m.num === viewMonth) || MONTHS_UZ[0];
+
+  const displayError = error || localError;
 
   return (
     <div ref={containerRef} className={`relative space-y-1.5 ${className}`}>
@@ -284,14 +355,11 @@ export const CustomDatePicker = ({
         </div>
       )}
 
-      {/* 2. Unified Custom Input Field */}
+      {/* 2. Unified Custom Input Field (Direct Typing + Calendar Dropdown) */}
       <div
-        onClick={() => {
-          if (!disabled) setIsOpen(true);
-        }}
-        className={`relative flex items-center transition-all duration-200 rounded-xl border cursor-pointer ${
-          error
-            ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/10'
+        className={`relative flex items-center transition-all duration-200 rounded-xl border ${
+          displayError
+            ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/10 dark:bg-rose-950/20'
             : isOpen
             ? 'border-brand-500 ring-2 ring-brand-500/20 bg-white dark:bg-[#0c0d12]'
             : 'border-gray-200 dark:border-white/10 hover:border-brand-500/40 bg-white dark:bg-[#0c0d12]/90'
@@ -301,24 +369,30 @@ export const CustomDatePicker = ({
             : ''
         }`}
       >
-        {/* Left Calendar Icon */}
-        <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-brand-500">
+        {/* Left Calendar Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!disabled) setIsOpen(prev => !prev);
+          }}
+          disabled={disabled}
+          title="Taqvimni ochish"
+          className="pl-3.5 pr-2 py-2.5 flex items-center text-brand-500 hover:text-brand-600 transition-colors cursor-pointer"
+        >
           <Calendar className="w-4 h-4" />
-        </div>
+        </button>
 
-        {/* Masked Input */}
+        {/* Masked Direct Typing Input (Kun . Oy . Yil) */}
         <input
           ref={inputRef}
           type="text"
           inputMode="numeric"
           value={inputText}
           onChange={handleInputChange}
-          onFocus={() => {
-            if (!disabled) setIsOpen(true);
-          }}
           disabled={disabled}
-          placeholder="KK.OO.YYYY (Masalan: 15.05.2002)"
-          className="w-full py-2.5 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-mono text-xs sm:text-sm focus:outline-none cursor-pointer"
+          placeholder="KK.OO.YYYY (Masalan: 15.05.2004)"
+          className="w-full py-2.5 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-mono text-xs sm:text-sm focus:outline-none cursor-text"
         />
 
         {/* Right Action Buttons */}
@@ -340,6 +414,7 @@ export const CustomDatePicker = ({
               e.stopPropagation();
               if (!disabled) setIsOpen(prev => !prev);
             }}
+            disabled={disabled}
             className="p-1 rounded-lg text-gray-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors cursor-pointer"
             title="Taqvimni ochish"
           >
@@ -359,7 +434,12 @@ export const CustomDatePicker = ({
                 <button
                   type="button"
                   onClick={handlePrevMonth}
-                  className="p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400 transition-colors cursor-pointer"
+                  disabled={isPrevDisabled}
+                  className={`p-1.5 rounded-xl transition-colors ${
+                    isPrevDisabled 
+                      ? 'opacity-30 cursor-not-allowed text-gray-300 dark:text-gray-600' 
+                      : 'hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400 cursor-pointer'
+                  }`}
                   title="Oldingi oy"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -378,6 +458,7 @@ export const CustomDatePicker = ({
                     type="button"
                     onClick={() => setViewMode('years')}
                     className="px-2.5 py-1 rounded-lg text-xs font-bold text-gray-800 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-500/10 dark:hover:text-brand-400 transition-colors cursor-pointer flex items-center"
+                    title="Yilni tanlash (1995-2014)"
                   >
                     <span>{viewYear}</span>
                     <ChevronDown className="w-3 h-3 ml-1" />
@@ -387,7 +468,12 @@ export const CustomDatePicker = ({
                 <button
                   type="button"
                   onClick={handleNextMonth}
-                  className="p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400 transition-colors cursor-pointer"
+                  disabled={isNextDisabled}
+                  className={`p-1.5 rounded-xl transition-colors ${
+                    isNextDisabled 
+                      ? 'opacity-30 cursor-not-allowed text-gray-300 dark:text-gray-600' 
+                      : 'hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400 cursor-pointer'
+                  }`}
                   title="Keyingi oy"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -409,7 +495,7 @@ export const CustomDatePicker = ({
             ) : (
               <div className="w-full flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-900 dark:text-white">
-                  Tug'ilgan yilni tanlang
+                  Yilni tanlang ({minYear} - {maxYear})
                 </span>
                 <button
                   type="button"
@@ -497,7 +583,7 @@ export const CustomDatePicker = ({
             </div>
           )}
 
-          {/* VIEW MODE 3: YEARS (Yillar ro'yxati) */}
+          {/* VIEW MODE 3: YEARS (1995 dan 2014 gacha) */}
           {viewMode === 'years' && (
             <div
               ref={yearsContainerRef}
@@ -549,10 +635,10 @@ export const CustomDatePicker = ({
       )}
 
       {/* 4. Error message display */}
-      {error && (
-        <div className="flex items-center space-x-1.5 text-rose-500 text-[11px] font-medium pt-0.5 animate-in fade-in">
+      {displayError && (
+        <div className="flex items-center space-x-1.5 text-rose-500 dark:text-rose-400 text-xs font-semibold pt-1 animate-in fade-in">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>{error}</span>
+          <span>{displayError}</span>
         </div>
       )}
     </div>

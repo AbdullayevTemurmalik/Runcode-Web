@@ -229,6 +229,28 @@ export const RegisterPage = () => {
       return;
     }
 
+    const parts = birthDate.split('-');
+    const birthYear = parseInt(parts[0], 10);
+    const birthMonth = parseInt(parts[1], 10);
+    const birthDay = parseInt(parts[2], 10);
+
+    const today = new Date();
+    let computedAge = today.getFullYear() - birthYear;
+    const mDiff = (today.getMonth() + 1) - birthMonth;
+    if (mDiff < 0 || (mDiff === 0 && today.getDate() < birthDay)) {
+      computedAge--;
+    }
+
+    if (computedAge < 12 || birthYear > 2014) {
+      setError("12 yoshdan kichiklar kirishi mumkin emas.");
+      return;
+    }
+
+    if (birthYear < 1995) {
+      setError("Tug'ilgan yil 1995 va 2014 oralig'ida bo'lishi kerak.");
+      return;
+    }
+
     // Check username availability on backend
     setUsernameChecking(true);
     try {
@@ -506,11 +528,14 @@ export const RegisterPage = () => {
               }
             />
 
-            {/* Tug'ilgan sana: Kun, Oy, Yil (Yosh so'ralmaydi) */}
+            {/* Tug'ilgan sana: Kun, Oy, Yil (1995 - 2014) */}
             <CustomDatePicker
               label="Tug'ilgan sana:"
-              sublabel="Kun • Oy • Yil"
+              sublabel="Kun • Oy • Yil (1995 - 2014)"
               required={true}
+              minYear={1995}
+              maxYear={2014}
+              minAge={12}
               value={birthDate}
               onChange={(val) => {
                 setBirthDate(val);

@@ -171,6 +171,9 @@ export const DashboardProfileForm = ({
             <CustomDatePicker
               label="Tug'ilgan sana:"
               sublabel="Kun • Oy • Yil"
+              minYear={1940}
+              maxYear={2018}
+              minAge={7}
               value={birthDate}
               onChange={(val) => setBirthDate(val)}
             />
