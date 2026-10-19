@@ -79,8 +79,8 @@ export const HomePage = ({ onOpenPaymentModal }) => {
           if (list.length > 0) {
             setPricingPlans(list.map(p => ({
               ...p,
-              originalPrice: p.originalPrice || (p.id === '3_months' ? '150 000 so\'m' : p.id === '2_months' ? '125 000 so\'m' : p.id === '1_month' ? '75 000 so\'m' : '30 000 so\'m'),
-              originalAmount: p.originalAmount || (p.id === '3_months' ? 150000 : p.id === '2_months' ? 125000 : p.id === '1_month' ? 75000 : 30000)
+              originalPrice: p.originalPrice || (p.id === '3_months' ? '150 000 so\'m' : p.id === '2_months' ? '110 000 so\'m' : p.id === '1_month' ? '60 000 so\'m' : '25 000 so\'m'),
+              originalAmount: p.originalAmount || (p.id === '3_months' ? 150000 : p.id === '2_months' ? 110000 : p.id === '1_month' ? 60000 : 25000)
             })));
           }
         }
@@ -113,10 +113,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       tier: 'Test Plus',
       name: 'Test Plus (7 Kunlik)',
       duration: '7 kun to\'liq ochiq',
-      originalPrice: '30 000 so\'m',
-      originalAmount: 30000,
-      price: '20 000 so\'m',
-      amount: 20000,
+      originalPrice: '25 000 so\'m',
+      originalAmount: 25000,
+      price: '15 000 so\'m',
+      amount: 15000,
       desc: 'Test uchun sinang va platformaning barcha imkoniyatlaridan foydalaning',
       badge: 'TEST PLUS',
       features: [
@@ -136,10 +136,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       tier: 'Pro',
       name: 'Pro (1 Oylik)',
       duration: '1 oy to\'liq ochiq',
-      originalPrice: '75 000 so\'m',
-      originalAmount: 75000,
-      price: '50 000 so\'m',
-      amount: 50000,
+      originalPrice: '60 000 so\'m',
+      originalAmount: 60000,
+      price: '40 000 so\'m',
+      amount: 40000,
       desc: 'Tez sur\'atda chuqur bilim oluvchilar uchun optimal reja',
       badge: 'PRO',
       features: [
@@ -159,10 +159,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       tier: 'Pro+',
       name: 'Pro+ (2 Oylik)',
       duration: '2 oy to\'liq ochiq',
-      originalPrice: '125 000 so\'m',
-      originalAmount: 125000,
-      price: '90 000 so\'m',
-      amount: 90000,
+      originalPrice: '110 000 so\'m',
+      originalAmount: 110000,
+      price: '80 000 so\'m',
+      amount: 80000,
       desc: 'Frontend dasturchi bo\'lish uchun eng optimal va tavsiya etilgan reja',
       badge: 'PRO+ • TAVSIYA',
       features: [

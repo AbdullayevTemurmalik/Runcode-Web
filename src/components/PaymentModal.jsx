@@ -54,9 +54,9 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   const [promoError, setPromoError] = useState('');
 
   const [plans, setPlans] = useState({
-    '7_days': { name: 'Test Plus (7 Kunlik)', originalPrice: '30 000 so\'m', originalAmount: 30000, price: '20 000 so\'m', amount: 20000 },
-    '1_month': { name: 'Pro (1 Oylik)', originalPrice: '75 000 so\'m', originalAmount: 75000, price: '50 000 so\'m', amount: 50000 },
-    '2_months': { name: 'Pro+ (2 Oylik)', originalPrice: '125 000 so\'m', originalAmount: 125000, price: '90 000 so\'m', amount: 90000, recommended: true },
+    '7_days': { name: 'Test Plus (7 Kunlik)', originalPrice: '25 000 so\'m', originalAmount: 25000, price: '15 000 so\'m', amount: 15000 },
+    '1_month': { name: 'Pro (1 Oylik)', originalPrice: '60 000 so\'m', originalAmount: 60000, price: '40 000 so\'m', amount: 40000 },
+    '2_months': { name: 'Pro+ (2 Oylik)', originalPrice: '110 000 so\'m', originalAmount: 110000, price: '80 000 so\'m', amount: 80000, recommended: true },
     '3_months': { name: 'Max (3 Oylik)', originalPrice: '150 000 so\'m', originalAmount: 150000, price: '120 000 so\'m', amount: 120000, superSaver: true }
   });
 
@@ -105,10 +105,10 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
               if (k !== 'free' && !v.isFree && k !== '6_months') {
                 paidPlans[k] = {
                   name: v.name || (k === '3_months' ? 'Max (3 Oylik)' : k === '2_months' ? 'Pro+ (2 Oylik)' : k === '1_month' ? 'Pro (1 Oylik)' : 'Test Plus (7 Kunlik)'),
-                  originalPrice: v.originalPrice || (k === '3_months' ? '150 000 so\'m' : k === '2_months' ? '125 000 so\'m' : k === '1_month' ? '75 000 so\'m' : '30 000 so\'m'),
-                  originalAmount: v.originalAmount || (k === '3_months' ? 150000 : k === '2_months' ? 125000 : k === '1_month' ? 75000 : 30000),
-                  price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '90 000 so\'m' : k === '1_month' ? '50 000 so\'m' : '20 000 so\'m'),
-                  amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 90000 : k === '1_month' ? 50000 : 20000),
+                  originalPrice: v.originalPrice || (k === '3_months' ? '150 000 so\'m' : k === '2_months' ? '110 000 so\'m' : k === '1_month' ? '60 000 so\'m' : '25 000 so\'m'),
+                  originalAmount: v.originalAmount || (k === '3_months' ? 150000 : k === '2_months' ? 110000 : k === '1_month' ? 60000 : 25000),
+                  price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '80 000 so\'m' : k === '1_month' ? '40 000 so\'m' : '15 000 so\'m'),
+                  amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 80000 : k === '1_month' ? 40000 : 15000),
                   recommended: k === '2_months',
                   superSaver: k === '3_months'
                 };
@@ -528,7 +528,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                           let promoBadgeText = '';
 
                           if (activeStored && !isPromoExcluded) {
-                            const baseAmt = plan.amount || 20000;
+                            const baseAmt = plan.amount || 15000;
                             const discountAmt = Math.round((baseAmt * activeStored.discountPercent) / 100);
                             const calculatedFinal = Math.max(0, baseAmt - discountAmt);
                             currentPlanPrice = `${calculatedFinal.toLocaleString('uz-UZ').replace(/,/g, ' ')} so'm`;
@@ -777,7 +777,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                 {(() => {
                   const activeStored = appliedPromo || getStoredPromocode();
                   const isPromoExcluded = !!(activeStored && Array.isArray(activeStored.excludedPlans) && activeStored.excludedPlans.includes(selectedPlan));
-                  const basePlanAmt = plans[selectedPlan]?.amount || 50000;
+                  const basePlanAmt = plans[selectedPlan]?.amount || 40000;
                   const discountAmt = (activeStored && !isPromoExcluded) ? Math.round((basePlanAmt * activeStored.discountPercent) / 100) : 0;
                   const finalPlanAmt = Math.max(0, basePlanAmt - discountAmt);
                   const isDiscounted = activeStored && !isPromoExcluded;

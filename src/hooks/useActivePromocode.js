@@ -5,9 +5,9 @@ const PROMO_STORAGE_KEY = 'runcode_active_promocode';
 const PROMO_EVENT_NAME = 'runcode:promocode_change';
 
 export const PLAN_BASE_AMOUNTS = {
-  '7_days': { standard: 20000, original: 30000 },
-  '1_month': { standard: 50000, original: 75000 },
-  '2_months': { standard: 90000, original: 125000 },
+  '7_days': { standard: 15000, original: 25000 },
+  '1_month': { standard: 40000, original: 60000 },
+  '2_months': { standard: 80000, original: 110000 },
   '3_months': { standard: 120000, original: 150000 }
 };
 

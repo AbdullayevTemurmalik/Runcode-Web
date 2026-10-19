@@ -612,7 +612,7 @@ export const CheckoutPlanSelector = ({
                         To'lov to'liq bo'lmasa qabul qilinmaydi!
                       </p>
                       <p className="text-[11px] sm:text-xs text-rose-800/90 dark:text-rose-200/90 mt-0.5 leading-relaxed">
-                        Belgilangan to'lov summasi <strong>{formattedFinalPrice}</strong> to'liq o'tkazilishi shart. Agar hatto 1 000 yoki 2 000 so'm kam to'lansa ham (masalan, 50 000 o'rniga 49 000 yoki 48 000 so'm), to'lov tizim tomonidan <strong>qabul qilinmaydi</strong> va rad etiladi.
+                        Belgilangan to'lov summasi <strong>{formattedFinalPrice}</strong> to'liq o'tkazilishi shart. Agar hatto 1 000 yoki 2 000 so'm kam to'lansa ham (masalan, 40 000 o'rniga 39 000 yoki 38 000 so'm), to'lov tizim tomonidan <strong>qabul qilinmaydi</strong> va rad etiladi.
                       </p>
                     </div>
                   </div>
