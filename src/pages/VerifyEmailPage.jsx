@@ -13,6 +13,7 @@ import {
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { OtpInput } from '../components/OtpInput';
+import { safeStorage } from '../utils/storage';
 
 export const VerifyEmailPage = () => {
   const location = useLocation();
@@ -81,10 +82,10 @@ export const VerifyEmailPage = () => {
       });
 
       if (res.success && res.token) {
-        localStorage.setItem('runcode_token', res.token);
+        safeStorage.setItem('runcode_token', res.token);
         if (res.user) {
           try {
-            localStorage.setItem('runcode_user', JSON.stringify(res.user));
+            safeStorage.setItem('runcode_user', JSON.stringify(res.user));
           } catch {}
           updateUser(res.user);
         }

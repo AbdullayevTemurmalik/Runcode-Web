@@ -276,6 +276,9 @@ export const ForgotPasswordPage = () => {
                 if (error) setError(null);
               }}
               placeholder="alivaliyev@gmail.com"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
             />
 
             <button

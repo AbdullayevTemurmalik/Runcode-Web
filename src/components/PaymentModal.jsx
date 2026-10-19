@@ -25,6 +25,7 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { getStoredPromocode, setStoredPromocode } from '../hooks/useActivePromocode';
+import { safeSessionStorage } from '../utils/storage';
 
 const UZUM_PAYMENT_URL = 'https://b.2u.uz/ttc?qr=Nzk5MzoyMDU4NjEzMjowMU00VDA0VlgyNjVYQU1IR1k5SjdNV1ZEODp1OVhXZWtrenRJNmNadm5oZVhXQ1NhOWJOdFk9';
 
@@ -293,7 +294,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   useEffect(() => {
     if (!isOpen) return;
     try {
-      const cached = sessionStorage.getItem('runcode_modal_receipt_file');
+      const cached = safeSessionStorage.getItem('runcode_modal_receipt_file');
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed?.dataUrl && parsed?.name) {
@@ -337,7 +338,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
           setFilePreview(null);
         }
         try {
-          sessionStorage.setItem('runcode_modal_receipt_file', JSON.stringify({
+          safeSessionStorage.setItem('runcode_modal_receipt_file', JSON.stringify({
             name: file.name,
             type: file.type,
             lastModified: file.lastModified,
@@ -355,7 +356,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     if (e && e.stopPropagation) e.stopPropagation();
     setSelectedFile(null);
     setFilePreview(null);
-    sessionStorage.removeItem('runcode_modal_receipt_file');
+    safeSessionStorage.removeItem('runcode_modal_receipt_file');
   };
 
   const handleUploadReceipt = async () => {
@@ -379,7 +380,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
 
       if (data.success) {
         setIsSuccess(true);
-        sessionStorage.removeItem('runcode_modal_receipt_file');
+        safeSessionStorage.removeItem('runcode_modal_receipt_file');
         if (typeof refreshNotifications === 'function') {
           refreshNotifications();
         }
@@ -398,7 +399,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     setOrder(null);
     setSelectedFile(null);
     setFilePreview(null);
-    sessionStorage.removeItem('runcode_modal_receipt_file');
+    safeSessionStorage.removeItem('runcode_modal_receipt_file');
     setIsSuccess(false);
     setError(null);
     setAppliedPromo(null);

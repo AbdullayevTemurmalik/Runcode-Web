@@ -22,6 +22,9 @@ export const CustomInput = ({
   minLength,
   maxLength,
   autoComplete,
+  autoCapitalize,
+  autoCorrect,
+  spellCheck,
   id,
   name
 }) => {
@@ -62,9 +65,9 @@ export const CustomInput = ({
   const actualType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
   const sizeClasses = {
-    sm: 'py-2 px-3 text-xs rounded-xl',
-    md: 'py-2.5 px-3.5 text-xs sm:text-sm rounded-xl',
-    lg: 'py-3.5 px-4 text-sm sm:text-base rounded-2xl'
+    sm: 'py-2 px-3 text-base sm:text-xs rounded-xl',
+    md: 'py-2.5 px-3.5 text-base sm:text-sm rounded-xl',
+    lg: 'py-3.5 px-4 text-base rounded-2xl'
   };
 
   return (
@@ -123,6 +126,9 @@ export const CustomInput = ({
           minLength={minLength}
           maxLength={maxLength}
           autoComplete={autoComplete}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
+          spellCheck={spellCheck}
           className={`w-full bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none transition-all ${
             sizeClasses[size] || sizeClasses.md
           } ${Icon ? 'pl-2' : ''} ${isPassword ? 'pr-10' : ''} ${inputClassName}`}

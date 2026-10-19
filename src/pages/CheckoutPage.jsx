@@ -11,6 +11,7 @@ import { CheckoutReceiptDropzone } from '../components/checkout/CheckoutReceiptD
 import { CheckoutCardPreview } from '../components/checkout/CheckoutCardPreview';
 import { CheckoutPendingNotice } from '../components/checkout/CheckoutPendingNotice';
 import { CancelOrderModal } from '../components/checkout/CancelOrderModal';
+import { safeSessionStorage } from '../utils/storage';
 
 export const CheckoutPage = () => {
   const [searchParams] = useSearchParams();
@@ -21,10 +22,10 @@ export const CheckoutPage = () => {
   const planParam = searchParams.get('plan') || '7_days';
 
   const [selectedPlan, setSelectedPlan] = useState(() => {
-    return sessionStorage.getItem('runcode_checkout_selected_plan') || planParam || '7_days';
+    return safeSessionStorage.getItem('runcode_checkout_selected_plan') || planParam || '7_days';
   });
   const [paymentMethod, setPaymentMethod] = useState(() => {
-    const saved = sessionStorage.getItem('runcode_checkout_payment_method');
+    const saved = safeSessionStorage.getItem('runcode_checkout_payment_method');
     if (saved === 'uzum') return 'uzum';
     return 'apps';
   });
@@ -46,13 +47,13 @@ export const CheckoutPage = () => {
   // Tanlovlarni sessionStorage ga saqlash
   useEffect(() => {
     if (selectedPlan) {
-      sessionStorage.setItem('runcode_checkout_selected_plan', selectedPlan);
+      safeSessionStorage.setItem('runcode_checkout_selected_plan', selectedPlan);
     }
   }, [selectedPlan]);
 
   useEffect(() => {
     if (paymentMethod) {
-      sessionStorage.setItem('runcode_checkout_payment_method', paymentMethod);
+      safeSessionStorage.setItem('runcode_checkout_payment_method', paymentMethod);
     }
   }, [paymentMethod]);
 
@@ -87,7 +88,7 @@ export const CheckoutPage = () => {
     const queryPlan = searchParams.get('plan');
     if (queryPlan && plans[queryPlan]) {
       setSelectedPlan(queryPlan);
-      sessionStorage.setItem('runcode_checkout_selected_plan', queryPlan);
+      safeSessionStorage.setItem('runcode_checkout_selected_plan', queryPlan);
     }
   }, [searchParams, isStarted, order, plans]);
 
@@ -137,12 +138,12 @@ export const CheckoutPage = () => {
             setOrder(active);
             if (active.planName) {
               setSelectedPlan(active.planName);
-              sessionStorage.setItem('runcode_checkout_selected_plan', active.planName);
+              safeSessionStorage.setItem('runcode_checkout_selected_plan', active.planName);
             }
             if (active.paymentMethod) {
               const safeMethod = active.paymentMethod === 'uzum' ? 'uzum' : 'apps';
               setPaymentMethod(safeMethod);
-              sessionStorage.setItem('runcode_checkout_payment_method', safeMethod);
+              safeSessionStorage.setItem('runcode_checkout_payment_method', safeMethod);
             }
             
             if (active.appliedPromocode) {
@@ -329,7 +330,7 @@ export const CheckoutPage = () => {
         setTimeLeft(0);
         setSelectedFile(null);
         setFilePreview(null);
-        sessionStorage.removeItem('runcode_checkout_receipt_file');
+        safeSessionStorage.removeItem('runcode_checkout_receipt_file');
         setShowCancelModal(false);
         setStatusNotice('To\'lov so\'rovi bekor qilindi. Endi istalgan boshqa tarif rejasini va to\'lov usulini erkin tanlashingiz mumkin.');
       } else {
@@ -345,7 +346,7 @@ export const CheckoutPage = () => {
   // Tanlangan chek faylini sessiyadan qayta tiklash (sahifa yangilanganda / render bo'lganda yo'qolib ketmasligi uchun)
   useEffect(() => {
     try {
-      const cached = sessionStorage.getItem('runcode_checkout_receipt_file');
+      const cached = safeSessionStorage.getItem('runcode_checkout_receipt_file');
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed?.dataUrl && parsed?.name) {
@@ -389,7 +390,7 @@ export const CheckoutPage = () => {
           setFilePreview(null);
         }
         try {
-          sessionStorage.setItem('runcode_checkout_receipt_file', JSON.stringify({
+          safeSessionStorage.setItem('runcode_checkout_receipt_file', JSON.stringify({
             name: file.name,
             type: file.type,
             lastModified: file.lastModified,
@@ -407,7 +408,7 @@ export const CheckoutPage = () => {
     if (e && e.stopPropagation) e.stopPropagation();
     setSelectedFile(null);
     setFilePreview(null);
-    sessionStorage.removeItem('runcode_checkout_receipt_file');
+    safeSessionStorage.removeItem('runcode_checkout_receipt_file');
   };
 
   const handleUploadReceipt = async () => {
@@ -434,7 +435,7 @@ export const CheckoutPage = () => {
 
       if (res.success) {
         setIsSuccess(true);
-        sessionStorage.removeItem('runcode_checkout_receipt_file');
+        safeSessionStorage.removeItem('runcode_checkout_receipt_file');
         if (typeof refreshNotifications === 'function') {
           refreshNotifications();
         }

@@ -97,6 +97,9 @@ export const LoginPage = () => {
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             placeholder="masalan: user@gmail.com"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
           />
 
           <div>

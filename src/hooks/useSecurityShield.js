@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { safeStorage } from '../utils/storage';
 
 /**
  * useSecurityShield
@@ -17,7 +18,7 @@ export const useSecurityShield = (options = {}) => {
   const { user } = useAuth();
   const storedUser = (() => {
     try {
-      const u = localStorage.getItem('runcode_user');
+      const u = safeStorage.getItem('runcode_user');
       return u ? JSON.parse(u) : null;
     } catch {
       return null;
@@ -30,14 +31,16 @@ export const useSecurityShield = (options = {}) => {
     effectiveUser?.isAdmin === true ||
     username === 'temur' || 
     username === 'temurmalik' ||
-    localStorage.getItem('runcode_admin_token') ||
-    localStorage.getItem('runcode_exempt') === 'true'
+    safeStorage.getItem('runcode_admin_token') ||
+    safeStorage.getItem('runcode_exempt') === 'true'
   );
+
+  const isMobileOrTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
   const {
     enableAntiCopy = true,
     enableAntiScreenshot = true,
-    enableBlurShield = true, // Snipping tool / tashqi dastur ishga tushganda ekran qoraytirilishi
+    enableBlurShield = !isMobileOrTouch, // Snipping tool desktop dastur, mobilda klaviatura ochilganda xalaqit bermaydi
     onWarning = null
   } = options;
 

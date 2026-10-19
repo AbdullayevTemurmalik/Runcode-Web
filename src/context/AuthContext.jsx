@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
+import { safeStorage } from '../utils/storage';
 import { ConcurrentLoginModal } from '../components/ConcurrentLoginModal';
 
 const defaultAuthValue = {
@@ -21,7 +22,7 @@ const AuthContext = createContext(defaultAuthValue);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('runcode_user');
+      const saved = safeStorage.getItem('runcode_user');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
@@ -34,15 +35,15 @@ export const AuthProvider = ({ children }) => {
   });
 
   const logout = useCallback(() => {
-    localStorage.removeItem('runcode_token');
-    localStorage.removeItem('runcode_user');
+    safeStorage.removeItem('runcode_token');
+    safeStorage.removeItem('runcode_user');
     setUser(null);
   }, []);
 
   const fetchCurrentUser = async () => {
-    const token = localStorage.getItem('runcode_token');
+    const token = safeStorage.getItem('runcode_token');
     if (!token) {
-      localStorage.removeItem('runcode_user');
+      safeStorage.removeItem('runcode_user');
       setUser(null);
       setLoading(false);
       return;
@@ -53,7 +54,7 @@ export const AuthProvider = ({ children }) => {
       if (data.success && data.user) {
         setUser(data.user);
         try {
-          localStorage.setItem('runcode_user', JSON.stringify(data.user));
+          safeStorage.setItem('runcode_user', JSON.stringify(data.user));
         } catch {}
       } else {
         logout();
@@ -99,7 +100,7 @@ export const AuthProvider = ({ children }) => {
     if (!user) return;
 
     const checkCurrentSession = async () => {
-      const token = localStorage.getItem('runcode_token');
+      const token = safeStorage.getItem('runcode_token');
       if (!token) return;
       try {
         await api.get('/auth/check-session');
@@ -132,10 +133,10 @@ export const AuthProvider = ({ children }) => {
       : { username: identifier, email: identifier, password };
     const data = await api.post('/auth/login', payload);
     if (data.success && data.token) {
-      localStorage.setItem('runcode_token', data.token);
+      safeStorage.setItem('runcode_token', data.token);
       setUser(data.user);
       try {
-        localStorage.setItem('runcode_user', JSON.stringify(data.user));
+        safeStorage.setItem('runcode_user', JSON.stringify(data.user));
       } catch {}
     }
     return data;
@@ -144,10 +145,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (fullName, email, password) => {
     const data = await api.post('/auth/register', { fullName, email, password });
     if (data.success && data.token) {
-      localStorage.setItem('runcode_token', data.token);
+      safeStorage.setItem('runcode_token', data.token);
       setUser(data.user);
       try {
-        localStorage.setItem('runcode_user', JSON.stringify(data.user));
+        safeStorage.setItem('runcode_user', JSON.stringify(data.user));
       } catch {}
     }
     return data;
@@ -156,10 +157,10 @@ export const AuthProvider = ({ children }) => {
   const googleLogin = async (email, fullName, googleId) => {
     const data = await api.post('/auth/google', { email, fullName, googleId });
     if (data.success && data.token) {
-      localStorage.setItem('runcode_token', data.token);
+      safeStorage.setItem('runcode_token', data.token);
       setUser(data.user);
       try {
-        localStorage.setItem('runcode_user', JSON.stringify(data.user));
+        safeStorage.setItem('runcode_user', JSON.stringify(data.user));
       } catch {}
     }
     return data;
@@ -173,7 +174,7 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => {
       const nextUser = { ...prev, ...newUserData };
       try {
-        localStorage.setItem('runcode_user', JSON.stringify(nextUser));
+        safeStorage.setItem('runcode_user', JSON.stringify(nextUser));
       } catch {}
       return nextUser;
     });

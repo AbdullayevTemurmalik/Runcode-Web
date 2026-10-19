@@ -18,6 +18,7 @@ import {
   QrCode,
   Ban
 } from 'lucide-react';
+import { safeSessionStorage } from '../../utils/storage';
 import api from '../../services/api';
 import { getStoredPromocode } from '../../hooks/useActivePromocode';
 
@@ -125,7 +126,7 @@ export const CheckoutPlanSelector = ({
       return;
     }
     setSelectedPlan(key);
-    sessionStorage.setItem('runcode_checkout_selected_plan', key);
+    safeSessionStorage.setItem('runcode_checkout_selected_plan', key);
     const activeStored = appliedPromo || getStoredPromocode();
     if (activeStored?.code) {
       const isExcluded = Array.isArray(activeStored.excludedPlans) && activeStored.excludedPlans.includes(key);
@@ -387,7 +388,7 @@ export const CheckoutPlanSelector = ({
             onClick={() => {
               if (isStarted) return;
               setPaymentMethod('apps');
-              sessionStorage.setItem('runcode_checkout_payment_method', 'apps');
+              safeSessionStorage.setItem('runcode_checkout_payment_method', 'apps');
             }}
             disabled={isStarted && paymentMethod !== 'apps' && paymentMethod !== 'click'}
             className={`p-3 rounded-2xl border-2 flex flex-col justify-between transition-all ${
@@ -428,7 +429,7 @@ export const CheckoutPlanSelector = ({
             onClick={() => {
               if (isStarted) return;
               setPaymentMethod('uzum');
-              sessionStorage.setItem('runcode_checkout_payment_method', 'uzum');
+              safeSessionStorage.setItem('runcode_checkout_payment_method', 'uzum');
             }}
             disabled={isStarted && paymentMethod !== 'uzum'}
             className={`p-3 rounded-2xl border-2 flex flex-col justify-between transition-all ${

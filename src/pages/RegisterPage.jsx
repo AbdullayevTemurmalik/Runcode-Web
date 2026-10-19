@@ -23,17 +23,18 @@ import { CustomInput } from '../components/CustomInput';
 import { CustomDatePicker } from '../components/CustomDatePicker';
 import { OtpInput } from '../components/OtpInput';
 import { PasswordStrengthMeter, evaluatePassword } from '../components/PasswordStrengthMeter';
+import { safeStorage } from '../utils/storage';
 
 const SIGNUP_STORAGE_KEY = 'runcode_signup_wizard_state';
 
 const getInitialSignupState = () => {
   try {
-    const raw = localStorage.getItem(SIGNUP_STORAGE_KEY);
+    const raw = safeStorage.getItem(SIGNUP_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     // 3 soatdan ortiq eski saqlangan holat bo'lsa tozalash
     if (parsed.savedAt && Date.now() - parsed.savedAt > 3 * 60 * 60 * 1000) {
-      localStorage.removeItem(SIGNUP_STORAGE_KEY);
+      safeStorage.removeItem(SIGNUP_STORAGE_KEY);
       return null;
     }
     return parsed;
@@ -149,7 +150,7 @@ export const RegisterPage = () => {
         otpExpiresTimestamp: otpSent && expiresIn > 0 ? Date.now() + expiresIn * 1000 : null,
         cooldownUntilTimestamp: cooldown > 0 ? Date.now() + cooldown * 1000 : null
       };
-      localStorage.setItem(SIGNUP_STORAGE_KEY, JSON.stringify(stateToSave));
+      safeStorage.setItem(SIGNUP_STORAGE_KEY, JSON.stringify(stateToSave));
     } catch (e) {
       console.warn('Signup state storage error:', e);
     }
@@ -157,7 +158,7 @@ export const RegisterPage = () => {
 
   // Boshidan boshlash (barcha maydonlarni tozalash)
   const handleResetForm = () => {
-    localStorage.removeItem(SIGNUP_STORAGE_KEY);
+    safeStorage.removeItem(SIGNUP_STORAGE_KEY);
     setFirstName('');
     setLastName('');
     setUsername('');
@@ -367,11 +368,11 @@ export const RegisterPage = () => {
 
       if (res.success && res.token) {
         // Wizard holatini muvaffaqiyatli yakunlanganda tozalash
-        localStorage.removeItem(SIGNUP_STORAGE_KEY);
-        localStorage.setItem('runcode_token', res.token);
+        safeStorage.removeItem(SIGNUP_STORAGE_KEY);
+        safeStorage.setItem('runcode_token', res.token);
         if (res.user) {
           try {
-            localStorage.setItem('runcode_user', JSON.stringify(res.user));
+            safeStorage.setItem('runcode_user', JSON.stringify(res.user));
           } catch {}
           updateUser(res.user);
         }
@@ -493,6 +494,9 @@ export const RegisterPage = () => {
               }}
               placeholder="alivaliyev"
               inputClassName="font-mono"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               sublabel={
                 usernameStatus ? (
                   <span className={`text-[10px] font-bold ${usernameStatus.available ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -559,6 +563,9 @@ export const RegisterPage = () => {
                   if (error) setError(null);
                 }}
                 placeholder="alivaliyev@gmail.com"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
 
               {!otpSent && (
