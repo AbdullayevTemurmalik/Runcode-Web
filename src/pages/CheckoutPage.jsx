@@ -66,8 +66,8 @@ export const CheckoutPage = () => {
   const [plans, setPlans] = useState({
     '7_days': { name: 'Test Plus (7 Kunlik)', originalPrice: '25 000 so\'m', originalAmount: 25000, price: '15 000 so\'m', amount: 15000, duration: '7 kun to\'liq ochiq' },
     '1_month': { name: 'Pro (1 Oylik)', originalPrice: '60 000 so\'m', originalAmount: 60000, price: '40 000 so\'m', amount: 40000, duration: '1 oy to\'liq ochiq' },
-    '2_months': { name: 'Pro+ (2 Oylik)', originalPrice: '110 000 so\'m', originalAmount: 110000, price: '80 000 so\'m', amount: 80000, duration: '2 oy to\'liq ochiq', recommended: true },
-    '3_months': { name: 'Max (3 Oylik)', originalPrice: '150 000 so\'m', originalAmount: 150000, price: '120 000 so\'m', amount: 120000, duration: '3 oy to\'liq ochiq', superSaver: true }
+    '2_months': { name: 'Pro+ (2 Oylik)', originalPrice: '100 000 so\'m', originalAmount: 100000, price: '70 000 so\'m', amount: 70000, duration: '2 oy to\'liq ochiq', recommended: true },
+    '3_months': { name: 'Max (3 Oylik)', originalPrice: '140 000 so\'m', originalAmount: 140000, price: '100 000 so\'m', amount: 100000, duration: '3 oy to\'liq ochiq', superSaver: true }
   });
 
   const [cardInfo, setCardInfo] = useState({
@@ -104,10 +104,10 @@ export const CheckoutPage = () => {
               if (k !== 'free' && !v.isFree && k !== '6_months') {
                 paid[k] = {
                   name: v.name || (k === '3_months' ? 'Max (3 Oylik)' : k === '2_months' ? 'Pro+ (2 Oylik)' : k === '1_month' ? 'Pro (1 Oylik)' : 'Test Plus (7 Kunlik)'),
-                  originalPrice: v.originalPrice || (k === '3_months' ? '150 000 so\'m' : k === '2_months' ? '110 000 so\'m' : k === '1_month' ? '60 000 so\'m' : '25 000 so\'m'),
-                  originalAmount: v.originalAmount || (k === '3_months' ? 150000 : k === '2_months' ? 110000 : k === '1_month' ? 60000 : 25000),
-                  price: v.price || (k === '3_months' ? '120 000 so\'m' : k === '2_months' ? '80 000 so\'m' : k === '1_month' ? '40 000 so\'m' : '15 000 so\'m'),
-                  amount: v.amount || (k === '3_months' ? 120000 : k === '2_months' ? 80000 : k === '1_month' ? 40000 : 15000),
+                  originalPrice: v.originalPrice || (k === '3_months' ? '140 000 so\'m' : k === '2_months' ? '100 000 so\'m' : k === '1_month' ? '60 000 so\'m' : '25 000 so\'m'),
+                  originalAmount: v.originalAmount || (k === '3_months' ? 140000 : k === '2_months' ? 100000 : k === '1_month' ? 60000 : 25000),
+                  price: v.price || (k === '3_months' ? '100 000 so\'m' : k === '2_months' ? '70 000 so\'m' : k === '1_month' ? '40 000 so\'m' : '15 000 so\'m'),
+                  amount: v.amount || (k === '3_months' ? 100000 : k === '2_months' ? 70000 : k === '1_month' ? 40000 : 15000),
                   duration: v.duration || (k === '3_months' ? '3 oy to\'liq' : k === '2_months' ? '2 oy to\'liq' : k === '1_month' ? '1 oy to\'liq' : '7 kun to\'liq'),
                   recommended: k === '2_months',
                   superSaver: k === '3_months'

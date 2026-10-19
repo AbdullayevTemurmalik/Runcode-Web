@@ -14,7 +14,8 @@ import {
   X,
   Loader2,
   Crown,
-  Layers
+  Layers,
+  ChevronDown
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -76,10 +77,10 @@ const DEFAULT_PLANS = [
     name: 'Pro+ (2 Oylik)',
     statusTitle: 'Pro+',
     duration: '2 oy to\'liq ochiq',
-    originalPrice: '110 000 so\'m',
-    originalAmount: 110000,
-    price: '80 000 so\'m',
-    amount: 80000,
+    originalPrice: '100 000 so\'m',
+    originalAmount: 100000,
+    price: '70 000 so\'m',
+    amount: 70000,
     desc: 'Frontend dasturchi bo\'lish uchun eng tavsiya etilgan reja',
     badge: 'PRO+ • TAVSIYA',
     features: [
@@ -101,10 +102,10 @@ const DEFAULT_PLANS = [
     name: 'Max (3 Oylik)',
     statusTitle: 'Max',
     duration: '3 oy to\'liq ochiq',
-    originalPrice: '150 000 so\'m',
-    originalAmount: 150000,
-    price: '120 000 so\'m',
-    amount: 120000,
+    originalPrice: '140 000 so\'m',
+    originalAmount: 140000,
+    price: '100 000 so\'m',
+    amount: 100000,
     desc: 'Maksimal tejamkorlik va to\'liq professional tayyorgarlik',
     badge: 'MAX',
     features: [
@@ -127,6 +128,7 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
   const { hasSubscription, user } = useAuth();
   const [pricingPlans, setPricingPlans] = useState(DEFAULT_PLANS);
   const [loading, setLoading] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   useEffect(() => {
     const fetchTariffs = async () => {
@@ -424,33 +426,91 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
         </div>
       </div>
 
-      {/* 4. FAQ */}
-      <div className="container-custom max-w-3xl mx-auto space-y-6">
+      {/* 4. FAQ - Tez-tez beriladigan savollar */}
+      <div className="container-custom max-w-xl mx-auto space-y-6 pt-4 pb-8">
         <div className="text-center space-y-2">
-          <HelpCircle className="w-6 h-6 text-brand-500 mx-auto" />
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Tez-tez beriladigan savollar</h3>
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-[11px] font-bold uppercase tracking-wider border border-brand-500/20">
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>Yordam va Savollar</span>
+          </div>
+          <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+            Tez-tez beriladigan savollar
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+            HTML kursi, obuna shartlari va to'lov tasdiqlanishi bo'yicha eng muhim ma'lumotlar.
+          </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {[
             {
+              id: 'faq-html',
+              icon: Sparkles,
+              iconBg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
               q: "HTML kursi haqiqatdan ham bepulmi?",
               a: "Ha! HTML darslarimiz har qanday foydalanuvchi uchun mutlaqo bepul. Siz istalgan vaqtda kursni boshlashingiz, interaktiv kod muharririda topshiriqlarni bajarishingiz va imtihondan o'tib o'z bilimlaringizni sinashingiz mumkin."
             },
             {
+              id: 'faq-sub',
+              icon: Clock,
+              iconBg: 'bg-sky-500/10 text-sky-500 border-sky-500/20',
               q: "Obuna muddati tugagach nima bo'ladi?",
               a: "Obuna muddati tugaganida siz yana Free maqomiga qaytasiz va HTML kursidan foydalanishda davom etishingiz mumkin. Barcha topshirgan imtihon natijalaringiz va o'qish tarixingiz tizimda abadiy saqlanadi."
             },
             {
+              id: 'faq-payment',
+              icon: CreditCard,
+              iconBg: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
               q: "To'lov qanday tasdiqlanadi?",
               a: "To'lovni boshlash tugmasini bosganingizda rasmiy karta raqami chiqadi va 30 daqiqalik (bankomat orqali 60 daqiqalik) taymer ishga tushadi. Chek rasmini yuklaganingizdan so'ng, admin moderatsiyasi orqali tezda tasdiqlanadi va obunangiz faollashadi."
             }
-          ].map((faq, i) => (
-            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#0c0d12]/90 border border-gray-200 dark:border-white/5">
-              <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-2">{faq.q}</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{faq.a}</p>
-            </div>
-          ))}
+          ].map((faq, i) => {
+            const isOpen = openFaqIndex === i;
+            const Icon = faq.icon;
+
+            return (
+              <div
+                key={faq.id}
+                className={`rounded-2xl transition-all duration-300 border overflow-hidden ${
+                  isOpen
+                    ? 'bg-white dark:bg-[#101422] border-brand-500/40 shadow-lg shadow-brand-500/5 ring-1 ring-brand-500/20'
+                    : 'bg-white/80 dark:bg-[#0c0d12]/80 border-gray-200/80 dark:border-white/5 hover:border-brand-500/30'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaqIndex(prev => prev === i ? null : i)}
+                  className="w-full p-4 flex items-center justify-between text-left gap-3 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 border ${faq.iconBg}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug">
+                      {faq.q}
+                    </span>
+                  </div>
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-transform duration-300 flex-shrink-0 ${
+                    isOpen ? 'rotate-180 text-brand-500' : 'text-gray-400'
+                  }`}>
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </button>
+
+                <div
+                  className={`grid transition-all duration-300 ease-in-out ${
+                    isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="px-4 pb-4 pt-1 text-xs text-gray-600 dark:text-gray-300 leading-relaxed border-t border-gray-100 dark:border-white/5">
+                      {faq.a}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

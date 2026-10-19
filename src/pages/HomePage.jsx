@@ -79,8 +79,8 @@ export const HomePage = ({ onOpenPaymentModal }) => {
           if (list.length > 0) {
             setPricingPlans(list.map(p => ({
               ...p,
-              originalPrice: p.originalPrice || (p.id === '3_months' ? '150 000 so\'m' : p.id === '2_months' ? '110 000 so\'m' : p.id === '1_month' ? '60 000 so\'m' : '25 000 so\'m'),
-              originalAmount: p.originalAmount || (p.id === '3_months' ? 150000 : p.id === '2_months' ? 110000 : p.id === '1_month' ? 60000 : 25000)
+              originalPrice: p.originalPrice || (p.id === '3_months' ? '140 000 so\'m' : p.id === '2_months' ? '100 000 so\'m' : p.id === '1_month' ? '60 000 so\'m' : '25 000 so\'m'),
+              originalAmount: p.originalAmount || (p.id === '3_months' ? 140000 : p.id === '2_months' ? 100000 : p.id === '1_month' ? 60000 : 25000)
             })));
           }
         }
@@ -159,10 +159,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       tier: 'Pro+',
       name: 'Pro+ (2 Oylik)',
       duration: '2 oy to\'liq ochiq',
-      originalPrice: '110 000 so\'m',
-      originalAmount: 110000,
-      price: '80 000 so\'m',
-      amount: 80000,
+      originalPrice: '100 000 so\'m',
+      originalAmount: 100000,
+      price: '70 000 so\'m',
+      amount: 70000,
       desc: 'Frontend dasturchi bo\'lish uchun eng optimal va tavsiya etilgan reja',
       badge: 'PRO+ • TAVSIYA',
       features: [
@@ -183,10 +183,10 @@ export const HomePage = ({ onOpenPaymentModal }) => {
       tier: 'Max',
       name: 'Max (3 Oylik)',
       duration: '3 oy to\'liq ochiq',
-      originalPrice: '150 000 so\'m',
-      originalAmount: 150000,
-      price: '120 000 so\'m',
-      amount: 120000,
+      originalPrice: '140 000 so\'m',
+      originalAmount: 140000,
+      price: '100 000 so\'m',
+      amount: 100000,
       desc: 'Maksimal tejamkorlik va to\'liq professional tayyorgarlik',
       badge: 'MAX',
       features: [

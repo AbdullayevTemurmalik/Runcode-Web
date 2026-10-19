@@ -7,8 +7,8 @@ const PROMO_EVENT_NAME = 'runcode:promocode_change';
 export const PLAN_BASE_AMOUNTS = {
   '7_days': { standard: 15000, original: 25000 },
   '1_month': { standard: 40000, original: 60000 },
-  '2_months': { standard: 80000, original: 110000 },
-  '3_months': { standard: 120000, original: 150000 }
+  '2_months': { standard: 70000, original: 100000 },
+  '3_months': { standard: 100000, original: 140000 }
 };
 
 export const formatRemainingCountdown = (expiresAt) => {
