@@ -93,7 +93,7 @@ export const Navbar = ({ onOpenPaymentModal }) => {
                   RunCode<span className="text-brand-500">.uz</span>
                 </span>
                 <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400 tracking-wider uppercase mt-1">
-                  By Temurmalik
+                  Online Ta'lim Platformasi
                 </span>
               </div>
             </Link>

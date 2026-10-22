@@ -462,7 +462,7 @@ export const TariffsPage = ({ onOpenPaymentModal }) => {
               icon: CreditCard,
               iconBg: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
               q: "To'lov qanday tasdiqlanadi?",
-              a: "To'lovni boshlash tugmasini bosganingizda rasmiy karta raqami chiqadi va 30 daqiqalik (bankomat orqali 60 daqiqalik) taymer ishga tushadi. Chek rasmini yuklaganingizdan so'ng, admin moderatsiyasi orqali tezda tasdiqlanadi va obunangiz faollashadi."
+              a: "To'lovni boshlash tugmasini bosganingizda rasmiy to'lov QR-kodi (Click Up yoki Uzum Bank) chiqadi va 30 daqiqalik taymer ishga tushadi. QR-kodni skanerlab yoki to'g'ridan-to'g'ri ilovada to'lab, chek rasmini yuklaganingizdan so'ng, admin moderatsiyasi orqali tezda tasdiqlanadi va obunangiz faollashadi."
             }
           ].map((faq, i) => {
             const isOpen = openFaqIndex === i;

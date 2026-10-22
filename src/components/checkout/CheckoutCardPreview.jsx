@@ -22,13 +22,8 @@ const UZUM_PAYMENT_URL = 'https://b.2u.uz/ttc?qr=Nzk5MzoyMDU4NjEzMjowMU00VDA0Vlg
 const CLICK_PAYMENT_URL = 'https://my.click.uz/clickp2p/9E9EB6EE67E40DB610877D03FC6AB8BD136BDBF5F386F48C91E40184E1EB9EE7';
 
 export const CheckoutCardPreview = ({
-  cardInfo,
   activePlanObj,
   paymentMethod,
-  copiedCard,
-  copyCardNumber,
-  copiedPhone,
-  copyPhoneNumber,
   appliedPromo
 }) => {
   const [copiedUzumLink, setCopiedUzumLink] = useState(false);

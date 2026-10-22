@@ -30,13 +30,11 @@ export const DashboardOrdersTable = ({ orders, formatDate }) => {
                 ? 'Max Obuna (3 Oylik)'
                 : (ord.plan_name || 'Standart');
 
-              const methodLabel = ord.payment_method === 'apps' 
-                ? 'Ilova (Click/Payme)' 
-                : ord.payment_method === 'bankomat' 
-                ? 'Bankomat' 
-                : ord.payment_method === 'payme' 
-                ? 'Payme' 
-                : 'Karta / Ilova';
+              const methodLabel = ord.payment_method === 'apps' || ord.payment_method === 'click'
+                ? 'Click Up (QR)' 
+                : ord.payment_method === 'uzum' 
+                ? 'Uzum Bank (QR)' 
+                : 'QR-kod / Ilova';
 
               return (
                 <div 
@@ -117,7 +115,7 @@ export const DashboardOrdersTable = ({ orders, formatDate }) => {
                         {(ord.amount || 0).toLocaleString()} so'm
                       </td>
                       <td className="px-6 py-4 capitalize text-gray-500">
-                        {ord.payment_method === 'apps' ? 'Ilova (Click/Payme)' : ord.payment_method === 'bankomat' ? 'Bankomat' : ord.payment_method === 'payme' ? 'Payme' : 'Karta / Ilova'}
+                        {(ord.payment_method === 'apps' || ord.payment_method === 'click') ? 'Click Up (QR)' : ord.payment_method === 'uzum' ? 'Uzum Bank (QR)' : 'QR-kod / Ilova'}
                       </td>
                       <td className="px-6 py-4">
                         {ord.status === 'approved' ? (

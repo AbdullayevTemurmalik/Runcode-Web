@@ -75,7 +75,7 @@ export const CheckoutPendingNotice = ({ activePlanObj, paymentMethod }) => {
         <div className="grid grid-cols-2 gap-1.5 text-[10px] pt-0.5">
           <div className="p-2 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
             <span className="font-black text-emerald-600 dark:text-emerald-400 block mb-0.5">01. Rekvizit</span>
-            <span className="text-gray-500 dark:text-gray-400">Karta yoki QR-kod</span>
+            <span className="text-gray-500 dark:text-gray-400">QR-kod orqali</span>
           </div>
           <div className="p-2 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
             <span className="font-black text-sky-600 dark:text-sky-400 block mb-0.5">02. To'lov</span>

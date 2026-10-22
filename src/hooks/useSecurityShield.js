@@ -10,7 +10,7 @@ import { safeStorage } from '../utils/storage';
  * lardan maksimal darajada himoya qiluvchi React hook.
  * 
  * Maxsus istisno (Exemption):
- * Agar foydalanuvchi admin yoki 'temur' / 'temurmalik' bo'lsa,
+ * Agar foydalanuvchi admin bo'lsa,
  * xatoliklarni tekshirish, skrinshot qilish va matnlarni ko'chirib olish uchun
  * barcha cheklovlar to'liq bekor qilinadi (bypass).
  */
@@ -29,8 +29,8 @@ export const useSecurityShield = (options = {}) => {
   const isExempt = Boolean(
     effectiveUser?.role === 'admin' || 
     effectiveUser?.isAdmin === true ||
-    username === 'temur' || 
-    username === 'temurmalik' ||
+    username === 'admin' || 
+    username === 'runcode' ||
     safeStorage.getItem('runcode_admin_token') ||
     safeStorage.getItem('runcode_exempt') === 'true'
   );

@@ -34,8 +34,6 @@ export const CheckoutPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
-  const [copiedCard, setCopiedCard] = useState(false);
-  const [copiedPhone, setCopiedPhone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [cancellingOrder, setCancellingOrder] = useState(false);
@@ -68,15 +66,6 @@ export const CheckoutPage = () => {
     '1_month': { name: 'Pro (1 Oylik)', originalPrice: '60 000 so\'m', originalAmount: 60000, price: '40 000 so\'m', amount: 40000, duration: '1 oy to\'liq ochiq' },
     '2_months': { name: 'Pro+ (2 Oylik)', originalPrice: '100 000 so\'m', originalAmount: 100000, price: '70 000 so\'m', amount: 70000, duration: '2 oy to\'liq ochiq', recommended: true },
     '3_months': { name: 'Max (3 Oylik)', originalPrice: '140 000 so\'m', originalAmount: 140000, price: '100 000 so\'m', amount: 100000, duration: '3 oy to\'liq ochiq', superSaver: true }
-  });
-
-  const [cardInfo, setCardInfo] = useState({
-    number: '',
-    rawNumber: '',
-    holder: '',
-    phone: '',
-    rawPhone: '',
-    bank: ''
   });
 
   // URL query o'zgarsa yoki mavjud bo'lsa
@@ -117,16 +106,6 @@ export const CheckoutPage = () => {
             if (Object.keys(paid).length > 0) {
               setPlans(paid);
             }
-          }
-          if (configRes.cardDetails) {
-            setCardInfo({
-              number: configRes.cardDetails.cardNumber || '',
-              rawNumber: configRes.cardDetails.cardRawNumber || '',
-              holder: (configRes.cardDetails.cardHolder || '').toUpperCase(),
-              phone: configRes.cardDetails.phone || '',
-              rawPhone: configRes.cardDetails.rawPhone || '',
-              bank: configRes.cardDetails.bank || ''
-            });
           }
         }
 
@@ -198,20 +177,6 @@ export const CheckoutPage = () => {
       return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
-
-  const copyCardNumber = () => {
-    if (!cardInfo.rawNumber) return;
-    navigator.clipboard.writeText(cardInfo.rawNumber);
-    setCopiedCard(true);
-    setTimeout(() => setCopiedCard(false), 2000);
-  };
-
-  const copyPhoneNumber = () => {
-    if (!cardInfo.phone) return;
-    navigator.clipboard.writeText(cardInfo.phone);
-    setCopiedPhone(true);
-    setTimeout(() => setCopiedPhone(false), 2000);
   };
 
   const handleApplyPromocode = async (codeToApply) => {
@@ -524,7 +489,7 @@ export const CheckoutPage = () => {
         )}
 
         {isSuccess ? (
-          <CheckoutSuccessView activePlanObj={activePlanObj} cardInfo={cardInfo} />
+          <CheckoutSuccessView activePlanObj={activePlanObj} />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 sm:gap-3 xl:gap-3.5 items-start lg:items-stretch">
             {/* CHAP USTUN: Reja tanlash, To'lov turi va Chek yuklash (Desktopda 6 ustun) */}
@@ -555,17 +520,12 @@ export const CheckoutPage = () => {
                 onOpenCancelModal={() => setShowCancelModal(true)}
               />
 
-              {/* MOBILDA: To'lov boshlanganda Karta/QR birinchi ko'rinadi */}
+              {/* MOBILDA: To'lov boshlanganda QR birinchi ko'rinadi */}
               {isStarted && (
                 <div className="block lg:hidden">
                   <CheckoutCardPreview
-                    cardInfo={cardInfo}
                     activePlanObj={activePlanObj}
                     paymentMethod={paymentMethod}
-                    copiedCard={copiedCard}
-                    copyCardNumber={copyCardNumber}
-                    copiedPhone={copiedPhone}
-                    copyPhoneNumber={copyPhoneNumber}
                     appliedPromo={appliedPromo}
                   />
                 </div>
@@ -587,19 +547,14 @@ export const CheckoutPage = () => {
             </div>
 
             {/* O'NG USTUN (Faqat Desktopda ko'rinadi - 6 ustun):
-                - Agar to'lov boshlangan bo'lsa: Karta/QR va 4 Qoida
+                - Agar to'lov boshlangan bo'lsa: QR va 4 Qoida
                 - Agar to'lov boshlanmagan bo'lsa: Himoyalangan xulosa bloki (CheckoutPendingNotice)
             */}
             <div className="hidden lg:flex lg:col-span-6 flex-col gap-2.5 sm:gap-3 h-full">
               {isStarted ? (
                 <CheckoutCardPreview
-                  cardInfo={cardInfo}
                   activePlanObj={activePlanObj}
                   paymentMethod={paymentMethod}
-                  copiedCard={copiedCard}
-                  copyCardNumber={copyCardNumber}
-                  copiedPhone={copiedPhone}
-                  copyPhoneNumber={copyPhoneNumber}
                   appliedPromo={appliedPromo}
                 />
               ) : (

@@ -24,7 +24,7 @@ export const Footer = () => {
                   RunCode<span className="text-brand-500">.uz</span>
                 </span>
                 <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400 tracking-wider uppercase mt-1">
-                  By Temurmalik
+                  Online Ta'lim Platformasi
                 </span>
               </div>
             </Link>
@@ -33,12 +33,12 @@ export const Footer = () => {
             </p>
             <div className="flex items-center space-x-3 pt-2">
               <a
-                href="https://github.com/AbdullayevTemurmalik"
+                href="https://github.com"
                 target="_blank"
                 rel="noreferrer"
                 className="group relative w-11 h-11 rounded-2xl bg-[#24292e] text-white flex items-center justify-center hover:scale-110 hover:shadow-lg hover:shadow-gray-900/30 transition-all duration-300 cursor-pointer"
                 aria-label="GitHub Profil"
-                title="GitHub: AbdullayevTemurmalik"
+                title="GitHub Profil"
               >
                 <Github className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
                 <span className="sr-only">GitHub</span>
@@ -114,9 +114,9 @@ export const Footer = () => {
         </div>
 
         <div className="border-t border-gray-100 dark:border-gray-800/80 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <p>© {new Date().getFullYear()} RunCode.uz By Temurmalik. Barcha huquqlar himoyalangan.</p>
+          <p>© {new Date().getFullYear()} RunCode.uz. Barcha huquqlar himoyalangan.</p>
           <p className="flex items-center mt-2 sm:mt-0">
-            Temurmalik tomonidan dasturchilar uchun mehr bilan yaratilgan.
+            Dasturchilar uchun mehr bilan yaratilgan.
           </p>
         </div>
       </div>

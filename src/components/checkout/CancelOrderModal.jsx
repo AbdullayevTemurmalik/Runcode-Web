@@ -24,7 +24,7 @@ const CANCEL_REASONS = [
   {
     id: 'change_method',
     title: "To'lov usulini o'zgartirmoqchiman",
-    desc: "Ilova, Uzum Bank (QR) yoki Bankomat to'lov usulini almashtirmoqchiman"
+    desc: "Click Up yoki Uzum Bank (QR) to'lov usulini almashtirmoqchiman"
   },
   {
     id: 'other',

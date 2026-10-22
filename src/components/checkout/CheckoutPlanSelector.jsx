@@ -372,7 +372,7 @@ export const CheckoutPlanSelector = ({
         )}
       </div>
 
-      {/* 2. To'lov usulini tanlash (Ilova vs Uzum Bank vs Bankomat) */}
+      {/* 2. To'lov usulini tanlash (Click Up vs Uzum Bank QR) */}
       <div className="p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0c101a] border border-gray-200 dark:border-white/10 shadow-sm flex flex-col space-y-2">
         <div className="flex items-center space-x-2">
           <CreditCard className="w-4 h-4 text-brand-500" />

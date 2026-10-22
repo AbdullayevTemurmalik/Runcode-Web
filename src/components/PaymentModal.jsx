@@ -10,12 +10,9 @@ import {
   Copy, 
   Check, 
   Smartphone, 
-  Building2,
   FileCheck,
   ShieldCheck,
   Loader2,
-  Phone,
-  UserCheck,
   Tag,
   Percent,
   QrCode,
@@ -35,14 +32,12 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   const { refreshNotifications } = useNotification();
 
   const [selectedPlan, setSelectedPlan] = useState(initialPlan);
-  const [paymentMethod, setPaymentMethod] = useState('apps'); // 'apps' or 'bankomat'
+  const [paymentMethod, setPaymentMethod] = useState('apps'); // 'apps' (Click) or 'uzum'
   const [isStepTwo, setIsStepTwo] = useState(false);
   const [order, setOrder] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0); // seconds
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
-  const [copiedCard, setCopiedCard] = useState(false);
-  const [copiedPhone, setCopiedPhone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -59,14 +54,6 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     '1_month': { name: 'Pro (1 Oylik)', originalPrice: '60 000 so\'m', originalAmount: 60000, price: '40 000 so\'m', amount: 40000 },
     '2_months': { name: 'Pro+ (2 Oylik)', originalPrice: '100 000 so\'m', originalAmount: 100000, price: '70 000 so\'m', amount: 70000, recommended: true },
     '3_months': { name: 'Max (3 Oylik)', originalPrice: '140 000 so\'m', originalAmount: 140000, price: '100 000 so\'m', amount: 100000, superSaver: true }
-  });
-
-  const [cardInfo, setCardInfo] = useState({
-    number: '',
-    rawNumber: '',
-    holder: '',
-    phone: '',
-    rawPhone: ''
   });
 
   useEffect(() => {
@@ -93,7 +80,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     };
   }, [isOpen]);
 
-  // Barcha tarif va karta ma'lumotlarini to'g'ridan-to'g'ri backenddan olish
+  // Barcha tarif va to'lov ma'lumotlarini to'g'ridan-to'g'ri backenddan olish
   useEffect(() => {
     if (!isOpen) return;
     const fetchBackendConfig = async () => {
@@ -118,15 +105,6 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
             if (Object.keys(paidPlans).length > 0) {
               setPlans(paidPlans);
             }
-          }
-          if (res.cardDetails) {
-            setCardInfo({
-              number: res.cardDetails.cardNumber,
-              rawNumber: res.cardDetails.cardRawNumber,
-              holder: res.cardDetails.cardHolder,
-              phone: res.cardDetails.phone,
-              rawPhone: res.cardDetails.rawPhone || res.cardDetails.phone?.replace(/\s+/g, '')
-            });
           }
         }
       } catch (err) {
@@ -211,7 +189,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     }
   }, [isOpen]);
 
-  // 2-Qadamga o'tish va teskari taymerni boshlash (Ilova: 30 min, Bankomat: 1 soat)
+  // 2-Qadamga o'tish va teskari taymerni boshlash (30 daqiqa)
   const handleStartPayment = async () => {
     setError(null);
     setLoading(true);
@@ -230,15 +208,14 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
       });
       if (res.success && res.order) {
         setOrder(res.order);
-        setTimeLeft(res.order.remainingSeconds || (paymentMethod === 'bankomat' ? 3600 : 1800));
+        setTimeLeft(res.order.remainingSeconds || 1800);
         setIsStepTwo(true);
       } else {
         setError(res.message || 'To\'lov so\'rovini yaratishda xatolik');
       }
     } catch (err) {
       setIsStepTwo(true);
-      const defaultSeconds = paymentMethod === 'bankomat' ? 3600 : 1800;
-      setTimeLeft(defaultSeconds);
+      setTimeLeft(1800);
     } finally {
       setLoading(false);
     }
@@ -284,20 +261,6 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
     navigator.clipboard.writeText(CLICK_PAYMENT_URL);
     setCopiedClickLink(true);
     setTimeout(() => setCopiedClickLink(false), 2000);
-  };
-
-  const copyCardNumber = () => {
-    if (!cardInfo.rawNumber) return;
-    navigator.clipboard.writeText(cardInfo.rawNumber);
-    setCopiedCard(true);
-    setTimeout(() => setCopiedCard(false), 2000);
-  };
-
-  const copyPhoneNumber = () => {
-    if (!cardInfo.phone) return;
-    navigator.clipboard.writeText(cardInfo.phone);
-    setCopiedPhone(true);
-    setTimeout(() => setCopiedPhone(false), 2000);
   };
 
   // Tanlangan chek faylini sessiyadan qayta tiklash
@@ -471,7 +434,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                 To'lov Cheki Muvaffaqiyatli Yuborildi!
               </h4>
               <p className="text-xs text-gray-600 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
-                Sizning {plans[selectedPlan]?.name} to'lov chekingiz qabul qilindi. Tez orada admin kartaga pul tushganini tekshirib tasdiqlaydi (odatda 1 soatdan - 2 soatgacha). Tasdiqlangach sizga shaxsiy bildirishnoma boradi va Telegram guruh ochiladi.
+                Sizning {plans[selectedPlan]?.name} to'lov chekingiz qabul qilindi. Tez orada admin to'lov tushganini tekshirib tasdiqlaydi (odatda 1 soatdan - 2 soatgacha). Tasdiqlangach sizga shaxsiy bildirishnoma boradi va Telegram guruh ochiladi.
               </p>
               <button
                 onClick={handleReset}
@@ -657,7 +620,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   To'lov qayerdan amalga oshiriladi?
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 gap-2.5">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('apps')}
@@ -668,8 +631,8 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                     }`}
                   >
                     <div className="flex items-center space-x-2">
-                      <Smartphone className="w-4 h-4 text-brand-500 flex-shrink-0" />
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">Click / Ilova</p>
+                      <QrCode className="w-4 h-4 text-brand-500 flex-shrink-0" />
+                      <p className="text-xs font-bold text-gray-900 dark:text-white">Click Up</p>
                     </div>
                     <p className="text-[10px] text-gray-500 text-left mt-1">Click QR & Ilova (30 daq)</p>
                   </button>
@@ -689,22 +652,6 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                     </div>
                     <p className="text-[10px] text-purple-400 text-left mt-1">QR & Ilova (30 daq)</p>
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('bankomat')}
-                    className={`p-3 rounded-2xl border flex flex-col justify-between transition-all cursor-pointer ${
-                      paymentMethod === 'bankomat'
-                        ? 'border-amber-500 bg-amber-500/5 ring-2 ring-amber-500/20'
-                        : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <Building2 className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">Bankomat</p>
-                    </div>
-                    <p className="text-[10px] text-gray-500 text-left mt-1">Naqd / ATM (1 soat)</p>
-                  </button>
                 </div>
               </div>
 
@@ -712,19 +659,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
               <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 text-xs flex items-start space-x-2.5">
                 <Clock className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
                 <p className="leading-relaxed">
-                  {paymentMethod === 'bankomat' ? (
-                    <>
-                      "To'lovni Boshlash" tugmasini bosganingizdan so'ng hisob rekvizitlari ochiladi va <strong>1 soatlik (60 daqiqa) teskari taymer</strong> ishga tushadi. 1 soat ichida to'lov qilib chek yuklashingiz zarur.
-                    </>
-                  ) : paymentMethod === 'uzum' ? (
-                    <>
-                      "To'lovni Boshlash" tugmasini bosganingizdan so'ng Uzum Bank rasmiy QR-kodi va ilovada to'lash tugmasi chiqadi hamda <strong>30 daqiqalik teskari taymer</strong> ishga tushadi.
-                    </>
-                  ) : (
-                    <>
-                      "To'lovni Boshlash" tugmasini bosganingizdan so'ng karta raqami chiqadi va <strong>30 daqiqalik teskari taymer</strong> ishga tushadi. 30 daqiqa ichida chek yuklashingiz zarur.
-                    </>
-                  )}
+                  "To'lovni Boshlash" tugmasini bosganingizdan so'ng rasmiy <strong>QR-kod va ilovada to'lash tugmasi</strong> ochiladi hamda <strong>30 daqiqalik teskari taymer</strong> ishga tushadi. QR-kodni skanerlab yoki ilovada to'lab, chek rasmini yuklashingiz zarur.
                 </p>
               </div>
 
@@ -740,7 +675,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
 
             </div>
           ) : (
-            /* 2-Qadam: Karta rekvizitlari, faol taymer va Chek yuklash */
+            /* 2-Qadam: QR-kod to'lov rekvizitlari, faol taymer va Chek yuklash */
             <div className="space-y-5">
               
               <div className="flex items-center justify-between pb-1">
@@ -764,10 +699,10 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                      {paymentMethod === 'bankomat' ? 'Bankomat to\'lovi uchun qolgan vaqt:' : 'Chek yuklash uchun qolgan vaqt:'}
+                      Chek yuklash uchun qolgan vaqt:
                     </p>
                     <p className="text-[10px] text-gray-500">
-                      {paymentMethod === 'bankomat' ? '1 soat (60 daqiqa) limit' : '30 daqiqa limit'} • Vaqt tugasa so'rov bekor qilinadi
+                      30 daqiqa limit • Vaqt tugasa so'rov bekor qilinadi
                     </p>
                   </div>
                 </div>
@@ -776,7 +711,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                 </div>
               </div>
 
-              {/* Karta ma'lumotlari */}
+              {/* To'lov ma'lumotlari */}
               <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 space-y-3">
                 <div className="flex items-center justify-between text-xs text-gray-500 pb-2 border-b border-gray-200/60 dark:border-gray-700/60">
                   <span className="font-semibold">Tanlangan tarif:</span>
@@ -873,7 +808,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                       </button>
                     </div>
                   </div>
-                ) : paymentMethod === 'apps' ? (
+                ) : (
                   /* Click Up QR & Ilova Block */
                   <div className="space-y-3">
                     <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-950/40 via-blue-900/20 to-gray-900/50 border border-blue-500/30 space-y-3">
@@ -929,64 +864,6 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <>
-                    {/* Karta raqami */}
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-semibold uppercase">Karta raqami</p>
-                        <p className="text-sm font-mono font-bold text-gray-900 dark:text-white tracking-wider">
-                          {cardInfo.number}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={copyCardNumber}
-                        className="p-2 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg flex items-center space-x-1 text-xs font-semibold cursor-pointer"
-                      >
-                        {copiedCard ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                        <span>{copiedCard ? 'Nusxalandi' : 'Nusxa olish'}</span>
-                      </button>
-                    </div>
-
-                    {/* Karta egasi */}
-                    <div className="flex items-center justify-between text-xs py-1 px-1">
-                      <span className="text-gray-500 flex items-center space-x-1.5">
-                        <UserCheck className="w-3.5 h-3.5 text-gray-400" />
-                        <span>Karta egasi:</span>
-                      </span>
-                      <span className="font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
-                        {cardInfo.holder}
-                      </span>
-                    </div>
-
-                    {/* Bankomat tanlansa ulangan nomer chiqishi */}
-                    {paymentMethod === 'bankomat' && (
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50">
-                        <div className="flex items-center space-x-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                            <Phone className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <p className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold uppercase">
-                              Ulangan telefon raqam:
-                            </p>
-                            <p className="text-xs font-mono font-bold text-gray-900 dark:text-white">
-                              {cardInfo.phone}
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={copyPhoneNumber}
-                          className="p-2 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg flex items-center space-x-1 text-xs font-semibold cursor-pointer"
-                        >
-                          {copiedPhone ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                          <span>{copiedPhone ? 'Nusxalandi' : 'Nusxa'}</span>
-                        </button>
-                      </div>
-                    )}
-                  </>
                 )}
 
               </div>
