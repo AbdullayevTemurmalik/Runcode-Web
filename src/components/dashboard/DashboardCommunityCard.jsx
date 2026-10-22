@@ -8,9 +8,7 @@ export const DashboardCommunityCard = ({
   navigate
 }) => {
   const botUsername = 'RunCodeVerifyBot';
-  const botUrl = user?.id 
-    ? `https://t.me/${botUsername}?start=${user.id}` 
-    : `https://t.me/${botUsername}`;
+  const botUrl = `https://t.me/${botUsername}`;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 rounded-3xl bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-800 shadow-sm relative overflow-hidden">

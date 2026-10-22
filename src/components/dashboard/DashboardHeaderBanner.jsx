@@ -35,9 +35,9 @@ export const DashboardHeaderBanner = ({
             )}
           </div>
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
-            {/* Odamga yaqqol ko'rinadigan ID raqami (@RunCodeVerifyBot uchun) */}
+            {/* Odamga yaqqol ko'rinadigan ID raqami */}
             <div 
-              title="Sizning RunCode ID raqamingiz (@RunCodeVerifyBot uchun)"
+              title="Sizning RunCode ID raqamingiz"
               className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-xl bg-brand-500/15 border border-brand-500/35 shadow-sm ring-1 ring-brand-500/20"
             >
               <span className="text-[10px] sm:text-[11px] uppercase font-bold text-gray-400">ID:</span>
