@@ -62,11 +62,11 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   });
 
   const [cardInfo, setCardInfo] = useState({
-    number: '9860 3501 4972 8288',
-    rawNumber: '9860350149728288',
-    holder: 'Temurmalik Abdullayev',
-    phone: '+998 90 696 79 99',
-    rawPhone: '+998906967999'
+    number: '',
+    rawNumber: '',
+    holder: '',
+    phone: '',
+    rawPhone: ''
   });
 
   useEffect(() => {
@@ -287,13 +287,15 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
   };
 
   const copyCardNumber = () => {
-    navigator.clipboard.writeText(cardInfo.rawNumber || '9860350149728288');
+    if (!cardInfo.rawNumber) return;
+    navigator.clipboard.writeText(cardInfo.rawNumber);
     setCopiedCard(true);
     setTimeout(() => setCopiedCard(false), 2000);
   };
 
   const copyPhoneNumber = () => {
-    navigator.clipboard.writeText(cardInfo.phone || '+998 90 696 79 99');
+    if (!cardInfo.phone) return;
+    navigator.clipboard.writeText(cardInfo.phone);
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2000);
   };
@@ -926,39 +928,10 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                         </button>
                       </div>
                     </div>
-
-                    {/* Karta raqami: 9860 3501 4972 8288 */}
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-semibold uppercase">Karta raqami</p>
-                        <p className="text-sm font-mono font-bold text-gray-900 dark:text-white tracking-wider">
-                          {cardInfo.number}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={copyCardNumber}
-                        className="p-2 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg flex items-center space-x-1 text-xs font-semibold cursor-pointer"
-                      >
-                        {copiedCard ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                        <span>{copiedCard ? 'Nusxalandi' : 'Nusxa olish'}</span>
-                      </button>
-                    </div>
-
-                    {/* Karta egasi: Temurmalik Abdullayev */}
-                    <div className="flex items-center justify-between text-xs py-1 px-1">
-                      <span className="text-gray-500 flex items-center space-x-1.5">
-                        <UserCheck className="w-3.5 h-3.5 text-gray-400" />
-                        <span>Karta egasi:</span>
-                      </span>
-                      <span className="font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
-                        {cardInfo.holder}
-                      </span>
-                    </div>
                   </div>
                 ) : (
                   <>
-                    {/* Karta raqami: 9860 3501 4972 8288 */}
+                    {/* Karta raqami */}
                     <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                       <div>
                         <p className="text-[10px] text-gray-400 font-semibold uppercase">Karta raqami</p>
@@ -976,7 +949,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                       </button>
                     </div>
 
-                    {/* Karta egasi: Temurmalik Abdullayev */}
+                    {/* Karta egasi */}
                     <div className="flex items-center justify-between text-xs py-1 px-1">
                       <span className="text-gray-500 flex items-center space-x-1.5">
                         <UserCheck className="w-3.5 h-3.5 text-gray-400" />
@@ -987,7 +960,7 @@ export const PaymentModal = ({ isOpen, onClose, initialPlan = '7_days' }) => {
                       </span>
                     </div>
 
-                    {/* Bankomat tanlansa ulangan nomer chiqishi: +998 90 696 79 99 */}
+                    {/* Bankomat tanlansa ulangan nomer chiqishi */}
                     {paymentMethod === 'bankomat' && (
                       <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50">
                         <div className="flex items-center space-x-2.5">

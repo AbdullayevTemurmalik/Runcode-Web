@@ -71,12 +71,12 @@ export const CheckoutPage = () => {
   });
 
   const [cardInfo, setCardInfo] = useState({
-    number: '9860 3501 4972 8288',
-    rawNumber: '9860350149728288',
-    holder: 'TEMURMALIK ABDULLAYEV',
-    phone: '+998 90 696 79 99',
-    rawPhone: '+998906967999',
-    bank: 'HUMO'
+    number: '',
+    rawNumber: '',
+    holder: '',
+    phone: '',
+    rawPhone: '',
+    bank: ''
   });
 
   // URL query o'zgarsa yoki mavjud bo'lsa
@@ -120,12 +120,12 @@ export const CheckoutPage = () => {
           }
           if (configRes.cardDetails) {
             setCardInfo({
-              number: configRes.cardDetails.cardNumber || '9860 3501 4972 8288',
-              rawNumber: configRes.cardDetails.cardRawNumber || '9860350149728288',
-              holder: (configRes.cardDetails.cardHolder || 'TEMURMALIK ABDULLAYEV').toUpperCase(),
-              phone: configRes.cardDetails.phone || '+998 90 696 79 99',
-              rawPhone: configRes.cardDetails.rawPhone || '+998906967999',
-              bank: configRes.cardDetails.bank || 'HUMO'
+              number: configRes.cardDetails.cardNumber || '',
+              rawNumber: configRes.cardDetails.cardRawNumber || '',
+              holder: (configRes.cardDetails.cardHolder || '').toUpperCase(),
+              phone: configRes.cardDetails.phone || '',
+              rawPhone: configRes.cardDetails.rawPhone || '',
+              bank: configRes.cardDetails.bank || ''
             });
           }
         }
@@ -201,12 +201,14 @@ export const CheckoutPage = () => {
   };
 
   const copyCardNumber = () => {
+    if (!cardInfo.rawNumber) return;
     navigator.clipboard.writeText(cardInfo.rawNumber);
     setCopiedCard(true);
     setTimeout(() => setCopiedCard(false), 2000);
   };
 
   const copyPhoneNumber = () => {
+    if (!cardInfo.phone) return;
     navigator.clipboard.writeText(cardInfo.phone);
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2000);
