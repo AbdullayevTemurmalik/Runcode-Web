@@ -49,13 +49,13 @@ export const HomeHero = ({ isAuthenticated }) => {
               </Link>
 
               <a
-                href="https://t.me/TM_Backdev"
+                href="https://t.me/+KE2PyftcdDQ2YTQy"
                 target="_blank"
                 rel="noreferrer"
                 className="px-6 py-3.5 rounded-full border border-gray-300 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold text-xs sm:text-sm flex items-center space-x-2 transition-colors cursor-pointer"
               >
                 <Send className="w-4 h-4 text-sky-500" />
-                <span>@TM_Backdev</span>
+                <span>Telegram Hamjamiyat</span>
               </a>
             </div>
 

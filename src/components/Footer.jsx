@@ -44,23 +44,23 @@ export const Footer = () => {
                 <span className="sr-only">GitHub</span>
               </a>
               <a
-                href="https://instagram.com/temur.s1"
+                href="https://instagram.com"
                 target="_blank"
                 rel="noreferrer"
                 className="group relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white flex items-center justify-center hover:scale-110 hover:shadow-lg hover:shadow-pink-500/40 transition-all duration-300 cursor-pointer"
                 aria-label="Instagram Profil"
-                title="Instagram: @temur.s1"
+                title="Instagram Profil"
               >
                 <Instagram className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
                 <span className="sr-only">Instagram</span>
               </a>
               <a
-                href="https://t.me/TM_Backdev"
+                href="https://t.me/RunCodeVerifyBot"
                 target="_blank"
                 rel="noreferrer"
                 className="group relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#229ED9] to-[#1e8ec3] text-white flex items-center justify-center hover:scale-110 hover:shadow-lg hover:shadow-sky-500/40 transition-all duration-300 cursor-pointer"
-                aria-label="Telegram Profil"
-                title="Telegram: @TM_Backdev"
+                aria-label="Telegram Bot"
+                title="Telegram: @RunCodeVerifyBot"
               >
                 <Send className="w-5 h-5 group-hover:scale-110 -translate-x-0.5 transition-transform duration-200" />
                 <span className="sr-only">Telegram</span>
