@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, ShieldAlert, Crown, Sparkles } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Crown, Sparkles, Award, ExternalLink } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { LogoutModal } from '../components/LogoutModal';
@@ -26,6 +26,7 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
   const [communityError, setCommunityError] = useState(null);
 
   const [orders, setOrders] = useState([]);
+  const [certificates, setCertificates] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
 
   // Profilni tahrirlash holatlari (Pencil icon)
@@ -108,8 +109,12 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
         if (typeof refreshUser === 'function') {
           await refreshUser();
         }
-        const orderRes = await api.get('/payments/my-orders');
+        const [orderRes, certRes] = await Promise.all([
+          api.get('/payments/my-orders').catch(() => ({ success: false })),
+          api.get('/certificates/my').catch(() => ({ success: false }))
+        ]);
         if (orderRes && orderRes.success) setOrders(orderRes.orders || []);
+        if (certRes && certRes.success) setCertificates(certRes.certificates || []);
       } catch (err) {
         console.error('Kabinet ma\'lumotlarini olishda xatolik:', err);
       } finally {
@@ -350,7 +355,67 @@ export const DashboardPage = ({ onOpenPaymentModal }) => {
         navigate={navigate}
       />
 
-      {/* 5. To'lovlar Tarixi */}
+      {/* 5. Mening Sertifikatlarim */}
+      {certificates && certificates.length > 0 && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#0c101c] border border-gray-200 dark:border-white/10 shadow-xl space-y-5">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+              <Award className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                Mening Sertifikatlarim
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Kurslarni muvaffaqiyatli tamomlab qo'lga kiritilgan rasmiy sertifikatlar
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {certificates.map((cert) => (
+              <div
+                key={cert.id}
+                className="p-5 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/5 space-y-3 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">
+                      № {cert.certificate_number}
+                    </span>
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      {cert.score}%
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white mt-2">
+                    {cert.course_name}
+                  </h4>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                    Berilgan sana: {formatDate(cert.issued_at)}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-gray-200 dark:border-white/5 flex items-center justify-between">
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                    Rasman Tasdiqlangan
+                  </span>
+                  <a
+                    href={`/verify/${cert.certificate_number}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition-colors"
+                  >
+                    <span>Ko'rish</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6. To'lovlar Tarixi */}
       <DashboardOrdersTable
         orders={orders}
         formatDate={formatDate}

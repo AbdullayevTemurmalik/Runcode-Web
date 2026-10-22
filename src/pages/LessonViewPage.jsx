@@ -82,6 +82,7 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
               }
               if (!targetLesson) {
                 targetLesson = lessons[0];
+                navigate(`/courses/${courseSlug}/lesson/${targetLesson.id}`, { replace: true });
               }
               fetchLessonDetail(targetLesson.id);
             }
@@ -98,6 +99,8 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
           const targetLesson = lessons.find(l => String(l.id) === String(lessonId));
           if (targetLesson && targetLesson.id !== currentLesson?.id) {
             fetchLessonDetail(targetLesson.id);
+          } else if (!targetLesson) {
+            navigate(`/courses/${courseSlug}/lesson/${lessons[0].id}`, { replace: true });
           }
         }
       }
@@ -425,6 +428,15 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
             Obunani Faollashtirish
           </button>
         )}
+      </div>
+    );
+  }
+
+  if (!currentLesson) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <Loader2 className="w-10 h-10 text-brand-500 animate-spin" />
+        <p className="text-xs font-semibold text-gray-500">Darslik yuklanmoqda...</p>
       </div>
     );
   }

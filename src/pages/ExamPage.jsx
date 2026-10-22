@@ -44,6 +44,11 @@ export const ExamPage = () => {
   const [lockedInfo, setLockedInfo] = useState(null);
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [reviewFilter, setReviewFilter] = useState('all');
+  const [claiming, setClaiming] = useState(false);
+  const [claimedCert, setClaimedCert] = useState(null);
+  const [claimError, setClaimError] = useState(null);
+  const [studentFullName, setStudentFullName] = useState('');
+  const [showClaimModal, setShowClaimModal] = useState(false);
 
   useEffect(() => {
     const fetchExam = async () => {
@@ -144,12 +149,46 @@ export const ExamPage = () => {
     }
   };
 
+  const handleOpenClaimModal = () => {
+    const defaultName = user?.fullName || user?.full_name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username || '';
+    setStudentFullName(defaultName);
+    setClaimError(null);
+    setShowClaimModal(true);
+  };
+
+  const handleClaimCertificate = async (e) => {
+    if (e) e.preventDefault();
+    const finalName = studentFullName.trim();
+    if (!finalName || finalName.length < 3) {
+      setClaimError("Iltimos, ism va familiyangizni to'liq kiriting (kamida 3 ta belgi).");
+      return;
+    }
+    setClaiming(true);
+    setClaimError(null);
+    try {
+      const res = await api.post('/certificates/claim', {
+        courseId: examData?.course_id || examData?.id,
+        studentName: finalName
+      });
+      if (res.success && res.certificate) {
+        setClaimedCert(res.certificate);
+        setShowClaimModal(false);
+      }
+    } catch (err) {
+      setClaimError(err.response?.data?.message || err.message || "Sertifikatni rasmiylashtirishda xatolik yuz berdi.");
+    } finally {
+      setClaiming(false);
+    }
+  };
+
   const handleRetake = () => {
     setAnswers({});
     setResult(null);
     setError(null);
     setSecondsElapsed(0);
     setReviewFilter('all');
+    setClaimedCert(null);
+    setShowClaimModal(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
@@ -310,6 +349,24 @@ export const ExamPage = () => {
                 </div>
 
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  {claimedCert ? (
+                    <Link
+                      to={`/verify/${claimedCert.certificate_number || claimedCert.certificateNumber}`}
+                      className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/25 flex items-center justify-center space-x-2 transition-all cursor-pointer"
+                    >
+                      <Award className="w-4 h-4" />
+                      <span>Sertifikatni Ko'rish</span>
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleOpenClaimModal}
+                      className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/25 flex items-center justify-center space-x-2 transition-all cursor-pointer"
+                    >
+                      <Award className="w-4 h-4" />
+                      <span>Sertifikatni Qabul Qilish</span>
+                    </button>
+                  )}
                   <Link
                     to="/courses"
                     className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2 transition-all cursor-pointer"
@@ -683,6 +740,71 @@ export const ExamPage = () => {
             <span>Imtihon Natijasini Tekshirish & Yuborish</span>
           </button>
         </form>
+      )}
+
+      {/* Sertifikatni qabul qilish modali */}
+      {showClaimModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="w-full max-w-md bg-white dark:bg-[#0c101c] rounded-3xl p-6 sm:p-8 border border-gray-200 dark:border-white/10 shadow-2xl space-y-5">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+              <Award className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white">
+                Sertifikatni Rasmiylashtirish
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Sertifikatda aks etadigan to'liq ism va familiyangizni tasdiqlang.
+              </p>
+            </div>
+
+            {claimError && (
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 text-xs">
+                {claimError}
+              </div>
+            )}
+
+            <form onSubmit={handleClaimCertificate} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                  Ism va Familiyangiz
+                </label>
+                <input
+                  type="text"
+                  value={studentFullName}
+                  onChange={(e) => setStudentFullName(e.target.value)}
+                  placeholder="Masalan: Sardor Rahimov"
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-xs font-medium focus:outline-none focus:border-brand-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowClaimModal(false)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  disabled={claiming}
+                  className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 disabled:opacity-50 flex items-center space-x-1.5 transition-colors"
+                >
+                  {claiming ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Tayyorlanmoqda...</span>
+                    </>
+                  ) : (
+                    <span>Tasdiqlash va Olish</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
     </div>
