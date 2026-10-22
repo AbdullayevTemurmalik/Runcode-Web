@@ -1,10 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Copy, Check, ClipboardPaste } from 'lucide-react';
+import { Copy, Check, ClipboardPaste, ShieldCheck } from 'lucide-react';
 
 /**
  * Reusable 6-digit OTP input component
  * Supports auto-focus, paste, backspace, left/right arrow navigation,
+ * smooth 6-box staggered entrance animation,
  * and 1-click clipboard paste / copy action next to the code.
+ * Strict zero emoji policy enforced.
  */
 export const OtpInput = ({
   value = '',
@@ -115,6 +117,26 @@ export const OtpInput = ({
 
   return (
     <div className={`space-y-3 ${className}`}>
+      <style>{`
+        @keyframes otpBoxPopIn {
+          0% {
+            opacity: 0;
+            transform: translateY(12px) scale(0.9);
+          }
+          60% {
+            opacity: 1;
+            transform: translateY(-2px) scale(1.04);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .otp-box-anim {
+          animation: otpBoxPopIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+      `}</style>
+
       <div className="flex items-center justify-center gap-1.5 sm:gap-2.5">
         {Array.from({ length }).map((_, idx) => (
           <input
@@ -131,13 +153,18 @@ export const OtpInput = ({
             onPaste={handlePaste}
             disabled={disabled}
             aria-label={`Digit ${idx + 1}`}
-            className={`w-10 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black font-mono rounded-2xl border transition-all duration-200 outline-none
+            style={{
+              animationDelay: `${idx * 65}ms`,
+              animationFillMode: 'both'
+            }}
+            className={`otp-box-anim w-10 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black font-mono rounded-2xl border outline-none
+              transition-all duration-200 transform
               ${
                 isError
-                  ? 'border-rose-500 bg-rose-50/20 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/20'
+                  ? 'border-rose-500 bg-rose-50/20 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/20 scale-95'
                   : digits[idx]
-                  ? 'border-brand-500 bg-brand-500/5 text-gray-900 dark:text-white ring-2 ring-brand-500/20'
-                  : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#12131a] text-gray-900 dark:text-white hover:border-brand-500/40 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25'
+                  ? 'border-brand-500 bg-brand-500/5 text-gray-900 dark:text-white ring-2 ring-brand-500/20 scale-100'
+                  : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#12131a] text-gray-900 dark:text-white hover:border-brand-500/40 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 focus:scale-105'
               }
               ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-white/5' : ''}
             `}
@@ -150,13 +177,17 @@ export const OtpInput = ({
           onClick={value ? handleCopyCode : handlePasteFromClipboard}
           disabled={disabled}
           title={value ? "Kodni nusxalash" : "Xotiradan qo'yish"}
-          className={`w-10 h-13 sm:w-12 sm:h-14 flex items-center justify-center rounded-2xl border transition-all duration-200 cursor-pointer ${
+          className={`otp-box-anim w-10 h-13 sm:w-12 sm:h-14 flex items-center justify-center rounded-2xl border transition-all duration-200 cursor-pointer ${
             copied
               ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500 ring-2 ring-emerald-500/20'
               : justPasted
               ? 'border-brand-500 bg-brand-500/10 text-brand-500 ring-2 ring-brand-500/20'
               : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#12131a] text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400 hover:border-brand-500/40'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          style={{
+            animationDelay: `${length * 65}ms`,
+            animationFillMode: 'both'
+          }}
         >
           {copied ? (
             <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
@@ -194,6 +225,12 @@ export const OtpInput = ({
             </button>
           </>
         )}
+      </div>
+
+      {/* Security notice */}
+      <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+        <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
+        <span>Ma'lumotlaringiz xavfsiz shifrlangan va ishonchli qo'llarda</span>
       </div>
     </div>
   );
