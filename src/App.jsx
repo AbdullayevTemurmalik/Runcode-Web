@@ -21,7 +21,6 @@ import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { TariffsPage } from './pages/TariffsPage';
 import { CheckoutPage } from './pages/CheckoutPage';
-import { CertificateVerifyPage } from './pages/CertificateVerifyPage';
 import { useSecurityShield } from './hooks/useSecurityShield';
 import { SecurityCurtain } from './components/SecurityCurtain';
 
@@ -108,8 +107,6 @@ const AppContent = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/signup" element={<RegisterPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route path="/verify/:certificateNumber" element={<CertificateVerifyPage />} />
-          <Route path="/verify" element={<Navigate to="/" replace />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
           <Route
