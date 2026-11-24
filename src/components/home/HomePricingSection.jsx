@@ -93,14 +93,14 @@ export const HomePricingSection = ({
               key={plan.id}
               ref={(el) => (cardRefs.current[idx] = el)}
               onClick={() => setActivePlanIndex(idx)}
-              className={`snap-center flex-shrink-0 w-[85vw] sm:w-[320px] md:w-[340px] lg:w-full lg:max-w-none rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative transition-all duration-300 cursor-pointer ${
+              className={`snap-center flex-shrink-0 w-[85vw] sm:w-[320px] md:w-[340px] lg:w-full lg:max-w-none rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative transform-gpu hover:-translate-y-1.5 transition-all duration-200 will-change-transform cursor-pointer ${
                 isProPlus
-                  ? 'bg-white dark:bg-[#0a1510] border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20'
+                  ? 'bg-white dark:bg-[#0a1510] border-2 border-emerald-500 shadow-xl shadow-emerald-500/20'
                   : isMax
-                  ? 'bg-white dark:bg-[#130d1c] border-2 border-purple-500/80 shadow-xl shadow-purple-500/10'
+                  ? 'bg-white dark:bg-[#130d1c] border-2 border-purple-500/80 shadow-lg shadow-purple-500/10'
                   : isPro
-                  ? 'bg-white dark:bg-[#0c1220] border-2 border-blue-500/60 shadow-lg shadow-blue-500/15'
-                  : 'bg-white dark:bg-[#081520] border-2 border-sky-400/60 shadow-lg shadow-sky-500/10'
+                  ? 'bg-white dark:bg-[#0c1220] border-2 border-blue-500/60 shadow-md shadow-blue-500/15'
+                  : 'bg-white dark:bg-[#081520] border-2 border-sky-400/60 shadow-md shadow-sky-500/10'
               } ${isSelected ? 'ring-2 ring-brand-500 ring-offset-2 dark:ring-offset-[#080c14]' : ''}`}
             >
               {isPlus && (

@@ -13,6 +13,9 @@ import {
 export const HomeHero = ({ isAuthenticated }) => {
   return (
     <section className="relative pt-10 sm:pt-16 pb-8 overflow-hidden">
+      {/* Premium Ambient Glow */}
+      <div className="absolute top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[320px] bg-gradient-to-tr from-emerald-500/15 via-teal-500/10 to-transparent blur-3xl rounded-full pointer-events-none -z-10" />
+
       <div className="container-custom relative z-10">
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -20,8 +23,11 @@ export const HomeHero = ({ isAuthenticated }) => {
           {/* Left Content */}
           <div className="lg:col-span-7 space-y-6 text-left">
             
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs font-bold tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs font-bold tracking-wide backdrop-blur-sm shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
               <span>Platforma 2.0 ishga tushdi</span>
               <ArrowRight className="w-3.5 h-3.5 text-brand-500 ml-1" />
             </div>
@@ -42,7 +48,7 @@ export const HomeHero = ({ isAuthenticated }) => {
               <Link
                 to={isAuthenticated ? "/courses" : "/login"}
                 state={isAuthenticated ? undefined : { message: "Kurslarni ko'rish va o'qish uchun avval tizimga kiring." }}
-                className="px-7 py-3.5 rounded-full bg-white text-gray-950 hover:bg-gray-100 font-bold text-xs sm:text-sm shadow-xl flex items-center space-x-2 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                className="px-7 py-3.5 rounded-full bg-gradient-to-r from-brand-600 via-emerald-500 to-teal-500 hover:from-brand-500 hover:to-emerald-400 text-white font-bold text-xs sm:text-sm shadow-lg shadow-brand-500/25 flex items-center space-x-2 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
               >
                 <span>Boshlash</span>
                 <ArrowRight className="w-4 h-4" />
@@ -52,7 +58,7 @@ export const HomeHero = ({ isAuthenticated }) => {
                 href="https://t.me/+KE2PyftcdDQ2YTQy"
                 target="_blank"
                 rel="noreferrer"
-                className="px-6 py-3.5 rounded-full border border-gray-300 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold text-xs sm:text-sm flex items-center space-x-2 transition-colors cursor-pointer"
+                className="px-6 py-3.5 rounded-full border border-gray-300 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold text-xs sm:text-sm flex items-center space-x-2 shadow-sm transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
               >
                 <Send className="w-4 h-4 text-sky-500" />
                 <span>Telegram Hamjamiyat</span>
@@ -85,7 +91,8 @@ export const HomeHero = ({ isAuthenticated }) => {
 
           {/* Right: Modern Terminal Window (Mockup) */}
           <div className="lg:col-span-5">
-            <div className="rounded-3xl bg-[#0c101b] border border-gray-800/80 shadow-2xl p-5 sm:p-6 text-left font-mono text-xs sm:text-sm space-y-4 relative overflow-hidden group">
+            <div className="rounded-3xl bg-[#0c101b]/95 border border-gray-800/80 hover:border-emerald-500/40 shadow-2xl hover:shadow-emerald-500/10 p-5 sm:p-6 text-left font-mono text-xs sm:text-sm space-y-4 relative overflow-hidden group transition-all duration-300">
+              <div className="absolute -top-16 -right-16 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/20 transition-all duration-500" />
               
               {/* Window Controls */}
               <div className="flex items-center justify-between pb-3 border-b border-gray-800/60 text-gray-500 text-[11px]">

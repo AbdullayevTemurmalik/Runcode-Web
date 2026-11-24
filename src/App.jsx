@@ -52,7 +52,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className={`flex flex-col ${isCheckout ? 'min-h-screen lg:h-screen lg:max-h-screen overflow-y-auto lg:overflow-hidden' : 'min-h-screen'} bg-gray-50 text-gray-900 dark:bg-[#0b0f19] dark:text-gray-100 transition-colors protected-container`}>
+    <div className={`flex flex-col ${isCheckout ? 'min-h-screen lg:h-screen lg:max-h-screen overflow-y-auto lg:overflow-hidden' : 'min-h-screen'} bg-gray-50 text-gray-900 dark:bg-[#080c14] dark:text-gray-100 protected-container`}>
       <SecurityCurtain 
         isPrtScnTriggered={isPrtScnTriggered} 
         isWindowBlurred={false} 

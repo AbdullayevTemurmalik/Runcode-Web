@@ -20,11 +20,66 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { renderTechLogo } from '../components/TechLogos';
 
+const DEFAULT_BASE_COURSES = [
+  {
+    id: 1,
+    slug: 'html',
+    title: 'HTML Dasturlash Asoslari',
+    description: "Web sahifalarning asosi va semantik strukturasi. Bepul o'rganing va amaliy kod yozish ko'nikmalariga ega bo'ling!",
+    category: 'frontend',
+    categoryLabel: 'Frontend',
+    levelLabel: "Boshlang'ich",
+    lessonsCount: '11 ta dars',
+    studentsCount: "100+ o'quvchi",
+    is_premium: false,
+    isUpcoming: false
+  },
+  {
+    id: 2,
+    slug: 'css',
+    title: 'CSS va Zamonaviy Dizayn',
+    description: "Flexbox, Grid, Animatsiyalar, Media Queries (Responsiv dizayn) va BEM metodologiyasini chuqur o'rganish.",
+    category: 'frontend',
+    categoryLabel: 'Frontend',
+    levelLabel: "O'rta daraja",
+    lessonsCount: '19 ta dars',
+    studentsCount: "100+ o'quvchi",
+    is_premium: true,
+    isUpcoming: false
+  },
+  {
+    id: 3,
+    slug: 'javascript',
+    title: "JavaScript To'liq Kurs",
+    description: "Boshlang'ich tushunchalardan tortib DOM, Events, Asinxron dasturlash (Promises, Async/Await), OOP va Event Loopgacha mukammal bilim.",
+    category: 'frontend',
+    categoryLabel: 'Frontend',
+    levelLabel: 'Murakkab',
+    lessonsCount: '28 ta dars',
+    studentsCount: "100+ o'quvchi",
+    is_premium: true,
+    isUpcoming: false
+  },
+  {
+    id: 4,
+    slug: 'react',
+    title: 'React.js Ekotizimi',
+    description: 'Komponentlar, JSX, Hooks (useState, useEffect, useContext), React Router, Axios, CRUD va xotirani optimallashtirish.',
+    category: 'frontend',
+    categoryLabel: 'Frontend',
+    levelLabel: 'Murakkab',
+    lessonsCount: '15 ta dars',
+    studentsCount: "100+ o'quvchi",
+    is_premium: true,
+    isUpcoming: false
+  }
+];
+
 export const CoursesPage = ({ onOpenPaymentModal }) => {
   const { user, hasSubscription } = useAuth();
   const navigate = useNavigate();
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState(DEFAULT_BASE_COURSES);
+  const [loading, setLoading] = useState(false); // Silliq o'tish: ekranni o'chirib-yoqmaydi
 
   // Tanlangan tab (Select)
   const [activeTab, setActiveTab] = useState('all');
@@ -32,19 +87,19 @@ export const CoursesPage = ({ onOpenPaymentModal }) => {
   const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchCourses = async () => {
       try {
         const data = await api.get('/courses');
-        if (data && data.success) {
-          setCourses(data.courses || []);
+        if (isMounted && data && data.success && data.courses?.length > 0) {
+          setCourses(data.courses);
         }
       } catch (err) {
         console.error('Kurslarni yuklashda xatolik:', err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchCourses();
+    return () => { isMounted = false; };
   }, []);
 
   // Platformadagi 8 ta asosiy kurs (4 ta mavjud + 4 ta tez kunda)
@@ -83,60 +138,7 @@ export const CoursesPage = ({ onOpenPaymentModal }) => {
     });
 
     // Agar bazadan hali kelmagan bo'lsa default 4 ta real kurs
-    const baseCourses = realCourseList.length > 0 ? realCourseList : [
-      {
-        id: 1,
-        slug: 'html',
-        title: 'HTML Dasturlash Asoslari',
-        description: 'Web sahifalarning asosi va semantik strukturasi. Bepul o\'rganing va amaliy kod yozish ko\'nikmalariga ega bo\'ling!',
-        category: 'frontend',
-        categoryLabel: 'Frontend',
-        levelLabel: 'Boshlang\'ich',
-        lessonsCount: '11 ta dars',
-        studentsCount: '100+ o\'quvchi',
-        is_premium: false,
-        isUpcoming: false
-      },
-      {
-        id: 2,
-        slug: 'css',
-        title: 'CSS va Zamonaviy Dizayn',
-        description: 'Flexbox, Grid, Animatsiyalar, Media Queries (Responsiv dizayn) va BEM metodologiyasini chuqur o\'rganish.',
-        category: 'frontend',
-        categoryLabel: 'Frontend',
-        levelLabel: 'O\'rta daraja',
-        lessonsCount: '19 ta dars',
-        studentsCount: '100+ o\'quvchi',
-        is_premium: true,
-        isUpcoming: false
-      },
-      {
-        id: 3,
-        slug: 'javascript',
-        title: 'JavaScript To\'liq Kurs',
-        description: 'Boshlang\'ich tushunchalardan tortib DOM, Events, Asinxron dasturlash (Promises, Async/Await), OOP va Event Loopgacha mukammal bilim.',
-        category: 'frontend',
-        categoryLabel: 'Frontend',
-        levelLabel: 'Murakkab',
-        lessonsCount: '28 ta dars',
-        studentsCount: '100+ o\'quvchi',
-        is_premium: true,
-        isUpcoming: false
-      },
-      {
-        id: 4,
-        slug: 'react',
-        title: 'React.js Ekotizimi',
-        description: 'Komponentlar, JSX, Hooks (useState, useEffect, useContext), React Router, Axios, CRUD va xotirani optimallashtirish.',
-        category: 'frontend',
-        categoryLabel: 'Frontend',
-        levelLabel: 'Murakkab',
-        lessonsCount: '15 ta dars',
-        studentsCount: '100+ o\'quvchi',
-        is_premium: true,
-        isUpcoming: false
-      }
-    ];
+    const baseCourses = realCourseList.length > 0 ? realCourseList : DEFAULT_BASE_COURSES;
 
     // 2. Platformadagi 4 ta rasmiy Tez Kunda kursi (Jami aynan 8 ta kurs bo'ladi)
     const upcomingList = [
@@ -365,7 +367,7 @@ export const CoursesPage = ({ onOpenPaymentModal }) => {
                 <div
                   key={course.id}
                   onClick={(e) => handleCourseClick(e, course)}
-                  className="cursor-pointer group relative rounded-3xl p-6 sm:p-7 bg-white dark:bg-[#0c0d12]/90 border border-gray-200 dark:border-white/5 hover:border-brand-500/60 shadow-sm hover:shadow-2xl hover:shadow-brand-500/10 transition-all duration-300 transform hover:-translate-y-2 flex flex-col justify-between"
+                  className="cursor-pointer group relative rounded-3xl p-6 sm:p-7 bg-white dark:bg-[#0c0d12]/95 border border-gray-200 dark:border-white/10 hover:border-emerald-500/60 shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 transform-gpu hover:-translate-y-1.5 transition-all duration-200 will-change-transform flex flex-col justify-between"
                 >
                   <div>
                     {/* Yuqori Nishonlar */}

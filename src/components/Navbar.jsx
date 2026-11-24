@@ -104,11 +104,10 @@ export const Navbar = ({ onOpenPaymentModal }) => {
                 <Link
                   key={item.label}
                   to={item.path}
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-                  className={`px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all ${
+                  className={`px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold transition-colors duration-150 border ${
                     location.pathname === item.path
-                      ? 'text-brand-600 dark:text-brand-400 bg-brand-500/10 border border-brand-500/20 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/60'
+                      ? 'text-brand-600 dark:text-brand-400 bg-brand-500/10 border-brand-500/25 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/60 border-transparent'
                   }`}
                 >
                   {item.label}

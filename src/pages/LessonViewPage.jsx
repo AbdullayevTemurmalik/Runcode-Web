@@ -16,14 +16,11 @@ import {
   ShieldAlert, 
   Loader2, 
   Sparkles,
-  Code2,
-  Terminal,
-  Play
+  Code2
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { MarkdownViewer } from '../components/MarkdownViewer';
-import { CodePlayground } from '../components/CodePlayground';
 import { renderTechLogo } from '../components/TechLogos';
 import { 
   splitLessonsInto4Modules, 
@@ -249,160 +246,6 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
     }
   };
 
-  // Interaktiv amaliy mashq uchun maxsus topshiriq ma'lumotlari
-  const getPlaygroundData = () => {
-    const slug = courseSlug?.toLowerCase() || 'html';
-    const title = currentLesson?.title || 'Dars amaliyoti';
-
-    if (slug === 'html') {
-      return {
-        taskTitle: `Amaliy Vazifa: ${title}`,
-        taskDescription: "Quyidagi muharrirda semantik HTML teglari (h1, p, button) orqali o'z shaxsiy profilingiz yoki loyihangizning bosh sahifasi elementlarini yarating va tekshiring.",
-        initialCode: `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      padding: 24px;
-      background: #0f172a;
-      color: #f8fafc;
-      text-align: center;
-    }
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 24px;
-      max-width: 400px;
-      margin: 0 auto;
-    }
-    h1 { color: #38bdf8; font-size: 20px; margin-bottom: 8px; }
-    p { color: #94a3b8; font-size: 14px; line-height: 1.5; }
-    .btn {
-      display: inline-block;
-      margin-top: 14px;
-      background: #0284c7;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Salom, Men RunCode O'quvchisiman!</h1>
-    <p>HTML asoslarini o'rganmoqdaman. Quyidagi kodni o'zgartiring va 'Ishga Tushirish' tugmasini bosing.</p>
-    <button class="btn" onclick="alert('Zo\\'r natija!')">Meni Bosing</button>
-  </div>
-</body>
-</html>`,
-        validationRule: (code) => code.includes('<h1') && (code.includes('<p') || code.includes('<button'))
-      };
-    }
-
-    if (slug === 'css') {
-      return {
-        taskTitle: `Amaliy Dizayn Vazifasi: ${title}`,
-        taskDescription: "CSS uslublari (ranglar, border-radius, flexbox yoki animatsiya) yordamida zamonaviy interfeys elementini yasang.",
-        initialCode: `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body {
-      background: #090d16;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: sans-serif;
-      margin: 0;
-    }
-    .badge {
-      background: linear-gradient(135deg, #6366f1, #a855f7);
-      padding: 16px 28px;
-      border-radius: 9999px;
-      font-weight: bold;
-      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
-      transition: transform 0.3s ease;
-      cursor: pointer;
-    }
-    .badge:hover {
-      transform: scale(1.05);
-    }
-  </style>
-</head>
-<body>
-  <div class="badge">RunCode CSS Master</div>
-</body>
-</html>`,
-        validationRule: (code) => code.includes('style') && (code.includes('background') || code.includes('color'))
-      };
-    }
-
-    if (slug === 'javascript') {
-      return {
-        taskTitle: `JS Skript Vazifasi: ${title}`,
-        taskDescription: "Interaktiv hisoblagich yoki funksiyani yozing va konsolda natijani tekshiring.",
-        initialCode: `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { background: #0b0f19; color: #fff; font-family: sans-serif; text-align: center; padding: 40px; }
-    button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; cursor: pointer; }
-    #display { font-size: 32px; font-weight: bold; margin: 20px; color: #60a5fa; }
-  </style>
-</head>
-<body>
-  <h2>JavaScript Hisoblagich</h2>
-  <div id="display">0</div>
-  <button id="counterBtn">Qiymatni oshirish (+1)</button>
-
-  <script>
-    let count = 0;
-    const btn = document.getElementById('counterBtn');
-    const display = document.getElementById('display');
-
-    btn.addEventListener('click', () => {
-      count++;
-      display.textContent = count;
-      console.log('Hozirgi hisob:', count);
-    });
-  </script>
-</body>
-</html>`,
-        validationRule: (code) => code.includes('<script') && (code.includes('addEventListener') || code.includes('function') || code.includes('count'))
-      };
-    }
-
-    // React fallback
-    return {
-      taskTitle: `React UI Vazifasi: ${title}`,
-      taskDescription: "Oddiy interfeys komponentini yarating va interaktiv rejimda tekshirib ko'ring.",
-      initialCode: `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { background: #0f172a; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .box { background: #1e293b; padding: 30px; border-radius: 16px; border: 1px solid #334155; text-align: center; }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h3 style="color: #38bdf8;">React Komponenti</h3>
-    <p style="color: #94a3b8;">Zamonaviy veb ilovalar uchun komponentlar arxitekturasi</p>
-  </div>
-</body>
-</html>`,
-      validationRule: (code) => code.includes('React') || code.includes('Komponent') || code.includes('style')
-    };
-  };
-
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
@@ -447,7 +290,6 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
   const completedCount = course.lessons.filter(l => l.is_completed).length;
   const progressPercent = Math.round((completedCount / course.lessons.length) * 100);
   const isAllLessonsCompleted = course.lessons.length > 0 && completedCount === course.lessons.length;
-  const playgroundData = getPlaygroundData();
 
   // Joriy dars qaysi modulga tegishli va u ochiqmi?
   const currentMod = modules.find(m => m.lessons.some(l => l.id === currentLesson?.id));
@@ -837,21 +679,6 @@ export const LessonViewPage = ({ onOpenPaymentModal }) => {
 
               {/* Lesson Markdown Content */}
               <MarkdownViewer content={currentLesson.content_markdown} />
-
-              {/* Interactive Code Playground / Amaliy Mashg'ulot */}
-              <div className="pt-6 border-t border-gray-100 dark:border-white/5">
-                <CodePlayground
-                  taskTitle={playgroundData.taskTitle}
-                  taskDescription={playgroundData.taskDescription}
-                  initialCode={playgroundData.initialCode}
-                  validationRule={playgroundData.validationRule}
-                  onSuccess={() => {
-                    if (user && !currentLesson.is_completed) {
-                      handleCompleteLesson();
-                    }
-                  }}
-                />
-              </div>
 
               {/* Prev / Next Lesson Navigation & Quiz CTAs */}
               <div className="pt-8 border-t border-gray-200 dark:border-white/5 flex flex-wrap items-center justify-between gap-3">

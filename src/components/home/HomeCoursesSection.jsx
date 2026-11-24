@@ -50,32 +50,32 @@ export const HomeCoursesSection = ({
             <div
               key={c.id}
               onClick={(e) => onCourseClick(e, c)}
-              className="cursor-pointer rounded-3xl bg-[#0f1422] border border-gray-800/80 p-5 xl:p-6 flex flex-col justify-between hover:border-brand-500/60 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-brand-500/10 transform hover:-translate-y-2 group"
+              className="cursor-pointer rounded-3xl bg-white dark:bg-[#0f1422] border border-gray-200 dark:border-gray-800/80 p-5 xl:p-6 flex flex-col justify-between hover:border-emerald-500/60 shadow-md hover:shadow-xl hover:shadow-emerald-500/10 transform-gpu hover:-translate-y-1.5 transition-all duration-200 will-change-transform group"
             >
               <div>
                 {/* Card Header: Grid Pattern Texture with Tech Logo */}
-                <div className="relative rounded-2xl bg-[#0b0e17] border border-gray-800/60 p-8 flex items-center justify-center mb-5 overflow-hidden min-h-[140px]">
+                <div className="relative rounded-2xl bg-gray-50/90 dark:bg-[#0b0e17] border border-gray-200/80 dark:border-gray-800/60 p-8 flex items-center justify-center mb-5 overflow-hidden min-h-[140px]">
                   
                   {/* Subtle Grid Lines Background */}
                   <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:16px_16px]" />
 
                   {/* Level Badge in Top Left */}
-                  <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-gray-800/80 text-gray-300 border border-gray-700/60">
+                  <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-white/90 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700/60 shadow-xs">
                     {levelText}
                   </span>
 
                   {/* Lock / Unlock Status Badge in Top Right */}
                   <div className="absolute top-3 right-3">
                     {!c.is_premium ? (
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center shadow-xs">
                         <Sparkles className="w-3 h-3 mr-1" /> Bepul
                       </span>
                     ) : canAccess ? (
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center shadow-xs">
                         <Unlock className="w-3 h-3 mr-1" /> Ochiq (Obuna)
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center shadow-xs">
                         <Lock className="w-3 h-3 mr-1" /> Qulflangan
                       </span>
                     )}
@@ -89,27 +89,27 @@ export const HomeCoursesSection = ({
 
                 {/* Category & Online Badges */}
                 <div className="flex items-center space-x-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-800 text-gray-300 uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     {categoryText}
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center space-x-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center space-x-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span>ONLINE</span>
                   </span>
                 </div>
 
                 {/* Title & Description */}
-                <h3 className="text-lg font-bold text-white mt-3 group-hover:text-brand-400 transition-colors duration-300">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mt-3 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300">
                   {c.title}
                 </h3>
-                <p className="text-xs text-gray-400 mt-2 leading-relaxed line-clamp-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 leading-relaxed line-clamp-2">
                   {c.description}
                 </p>
               </div>
 
               {/* Bottom Footer Info: 100+ o'quvchi & Darslar soni */}
-              <div className="pt-6 border-t border-gray-800/60 mt-6 flex items-center justify-between">
-                <div className="flex items-center space-x-3 text-xs text-gray-400">
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800/60 mt-6 flex items-center justify-between">
+                <div className="flex items-center space-x-3 text-xs text-gray-500 dark:text-gray-400">
                   <span className="flex items-center">
                     <BookOpen className="w-3.5 h-3.5 mr-1 text-brand-500" />
                     {c.lesson_count || 12} ta dars
